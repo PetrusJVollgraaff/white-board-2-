@@ -1,12 +1,15 @@
+import { TopNav } from "./JS/display/nav";
 import { RulerRenderer } from "./JS/display/ruler";
 import ViewPort from "./JS/display/viewport";
 import { Vector } from "./JS/utils/vector";
 
 class DrawingBoard {
+  #topNav = document.getElementById("top_navbar");
   #mainC = document.getElementById("main-canvas");
   #mainCtx = this.#mainC.getContext("2d");
   #viewportElm = document.getElementById("viewport");
   #rulers = null;
+  #topnav = null;
 
   #stageSize = {
     "800,600": { w: 800, h: 600 },
@@ -17,7 +20,7 @@ class DrawingBoard {
     "2480,3508": { w: 2480, h: 3508 },
     "3508,2480": { w: 3508, h: 2480 },
 
-    "2550,3300": { w: 2550, h: 330 },
+    "2550,3300": { w: 2550, h: 3300 },
     "1080,1080": { w: 1080, h: 1080 },
   };
 
@@ -50,8 +53,45 @@ class DrawingBoard {
 
     this.#bindEvents();
 
+    this.#topnav = new TopNav(this.#topNav, (data) => {
+      const { action } = data;
+
+      switch (action) {
+        case "setSize":
+          return this.#setSize(data);
+        case "setZoom":
+          return this.#setZoom(data);
+      }
+    });
+
+    new ResizeObserver(() => {
+      this.#rulers.syncSizes(this.#StageProperties);
+      this.#render();
+    }).observe(this.#viewportElm);
+
     this.#rulers.syncSizes(this.#StageProperties);
     this.#fitToViewport();
+  }
+
+  #setSize(data) {
+    this.#StageProperties.size = data?.size
+      ? this.#stageSize[data?.size]
+      : data.custom;
+    this.#fitToViewport();
+  }
+
+  #setZoom(data) {
+    if (data.value == "fit") {
+      this.#fitToViewport();
+    } else {
+      const zoom = this._vp.getZoom;
+      const zoomstep = ViewPort.zoom_step;
+
+      var z = data.value == "in" ? zoom * zoomstep : zoom / zoomstep;
+      this._vp.applyZoom(z, this.#StageProperties.offset);
+      this.#StageProperties.offset = this._vp.getOffset;
+      this.#render();
+    }
   }
 
   #setStageProperties() {
@@ -78,6 +118,8 @@ class DrawingBoard {
     this.#mainCtx.scale(zoom, zoom);
     this.#mainCtx.translate(offset.x / zoom, offset.y / zoom);
     this.#mainCtx.restore();
+
+    document.getElementById("zoom-level").textContent = this._vp.zoomLabel;
   }
 
   #fitToViewport() {
@@ -88,8 +130,8 @@ class DrawingBoard {
   }
 
   #vpPt(e) {
-    const r = this.#viewportElm.getBoundingClientRect();
-    return new Vector({ x: e.clientX - r.left, y: e.clientY - r.top });
+    const { left, top } = this.#viewportElm.getBoundingClientRect();
+    return new Vector({ x: e.clientX - left, y: e.clientY - top });
   }
 
   #onWheel(e) {

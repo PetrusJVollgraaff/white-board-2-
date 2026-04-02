@@ -7,17 +7,23 @@
 }
 
 :root {
-  --bg: #1e1e2e;
-  --surface: #252535;
-  --surface2: #2e2e42;
-  --border: #3a3a52;
+  --bg: #16161f;
+  --surface: #1e1e2c;
+  --surface2: #262636;
+  --surface3: #30304a;
+  --border: #3a3a55;
   --accent: #7c6af7;
-  --accent2: #5bc4d1;
-  --text: #e2e2f0;
-  --text-dim: #888aaa;
-  --ruler-bg: #1a1a28;
+  --accent-dim: rgba(124, 106, 247, 0.18);
+  --green: #4ec9a0;
+  --danger: #f76a6a;
+  --warn: #f7c46a;
+  --text: #e0e0f0;
+  --text-dim: #8888aa;
+  --text-muted: #50506a;
+  --ruler-bg: #13131c;
   --ruler-size: 22px;
   --toolbar-h: 46px;
+  --panel-w: 228px;
 }
 body {
   background: var(--bg);
@@ -30,6 +36,36 @@ body {
   user-select: none;
   display: flex;
   flex-direction: column;
+}
+
+/* Top Nav Bar */
+#top_navbar {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 8px;
+  height: var(--toolbar-h);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+}
+
+#top_navbar > ul {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  list-style-type: none;
+}
+
+#top_navbar > ul > li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0px 5px;
 }
 
 /* ── Main ── */
@@ -101,4 +137,43 @@ body {
 }
 #main-area #viewport.select-mode {
   cursor: default;
+}
+
+select,
+input[type="number"] {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 4px;
+  padding: 2px 5px;
+  font-size: 11px;
+  height: 26px;
+}
+
+button {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 4px;
+  padding: 2px 8px;
+  height: 26px;
+  cursor: pointer;
+  font-size: 11px;
+  transition:
+    background 0.12s,
+    border-color 0.12s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 26px;
+  white-space: nowrap;
+}
+button:hover {
+  background: var(--surface3);
+  border-color: var(--accent);
+}
+button:active {
+  background: var(--accent);
+  color: #fff;
 }

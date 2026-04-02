@@ -11,7 +11,32 @@
 </head>
 
 <body>
-
+  <nav id="top_navbar">
+    <ul>
+      <li>
+        <select id="sel-size">
+          <option value="800,600">800×600</option>
+          <option value="1920,1080">1920×1080 HD</option>
+          <option value="2560,1440">2560×1440 2K</option>
+          <option value="3840,2160">3840×2160 4K</option>
+          <option value="2480,3508">A4 Portrait 300dpi</option>
+          <option value="3508,2480">A4 Landscape 300dpi</option>
+          <option value="2550,3300">US Letter 300dpi</option>
+          <option value="1080,1080">1080×1080 Square</option>
+          <option value="custom">Custom…</option>
+        </select>
+        <input id="cw" type="number" placeholder="W" min="1" max="9999" style="display:none;width:52px" />
+        <input id="ch" type="number" placeholder="H" min="1" max="9999" style="display:none;width:52px" />
+      </li>
+      <li>
+        <span class="tlbl">Zoom</span>
+        <button id="btn-zout" title="Zoom Out (−)">−</button>
+        <span id="zoom-level">100%</span>
+        <button id="btn-zin" title="Zoom In (+)">+</button>
+        <button id="btn-fit" title="Fit to screen">Fit</button>
+      </li>
+    </ul>
+  </nav>
   <main id="main-area">
     <div id="ruler"></div>
     <canvas id="ruler-h"></canvas>

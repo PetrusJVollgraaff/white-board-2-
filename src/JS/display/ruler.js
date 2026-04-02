@@ -21,11 +21,8 @@ class RulerRenderer {
   }
 
   draw(viewport, StageProperties) {
-    console.log(viewport, StageProperties);
     const zoom = viewport.getZoom;
     const { offset, size } = StageProperties;
-
-    console.log("world", size.w * zoom, size.h * zoom);
 
     this.#drawH(offset.x, zoom, size.w);
     this.#drawV(offset.y, zoom, size.h);
