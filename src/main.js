@@ -4,6 +4,7 @@ import ViewPort from "./JS/display/viewport";
 import { Vector } from "./JS/utils/vector";
 
 class DrawingBoard {
+  #mainArea = document.getElementById("main-area");
   #topNav = document.getElementById("top_navbar");
   #mainC = document.getElementById("main-canvas");
   #mainCtx = this.#mainC.getContext("2d");
@@ -61,6 +62,8 @@ class DrawingBoard {
           return this.#setSize(data);
         case "setZoom":
           return this.#setZoom(data);
+        case "setRuler":
+          return this.#setRuler(data);
       }
     });
 
@@ -71,6 +74,11 @@ class DrawingBoard {
 
     this.#rulers.syncSizes(this.#StageProperties);
     this.#fitToViewport();
+  }
+
+  #setRuler(data) {
+    var action = data.value ? "remove" : "add";
+    this.#mainArea.classList[action]("rulers-hidden");
   }
 
   #setSize(data) {

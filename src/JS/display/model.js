@@ -1,30 +1,32 @@
 class Modal {
+  #settings = {
+    ajaxData: null,
+    ajaxUrl: null,
+    title: "Modal",
+    buttons: null,
+    content: null,
+    customClass: null,
+    outsideClose: true,
+    onClose: null,
+    onOpen: null,
+    width: 150,
+    height: 100,
+    autoOpen: true,
+    overlayer: true,
+  };
+
+  #popupEl = null;
   constructor(options, callback = () => {}) {
-    this.settings = {
-      ...{
-        ajaxData: null,
-        ajaxUrl: null,
-        title: "Modal",
-        buttons: null,
-        content: null,
-        customClass: null,
-        outsideClose: true,
-        onClose: null,
-        onOpen: null,
-        width: 150,
-        height: 100,
-        autoOpen: true,
-        overlayer: true,
-      },
+    this.#settings = {
+      ...this.#settings,
       ...options,
     };
     this.callback = callback;
     this.#build();
-    this.popupEl = null;
 
     this.OutsideClick = this.#outsideClickListener.bind(this);
 
-    if (this.settings.autoOpen) {
+    if (this.#settings.autoOpen) {
       this.open();
     }
   }
@@ -35,11 +37,11 @@ class Modal {
       attributes: { class: "modal_innerctn" },
     });
 
-    if (this.settings.title != "") {
+    if (this.#settings.title != "") {
       InnerCtnDiv.appendChild(
         createDOMElement({
           attributes: { class: "modal_headerctn" },
-          text: this.settings.title,
+          text: this.#settings.title,
         }),
       );
     }
@@ -47,10 +49,9 @@ class Modal {
     const ContentDiv = createDOMElement({
       attributes: { class: "content_ctn" },
     });
+    const { customClass } = this.#settings;
     const BtnDiv = createDOMElement({ attributes: { class: "btn_ctn" } });
-    if (this.settings.customClass != undefined) {
-      this.CtnDiv.classList.add(this.settings.customClass);
-    }
+    if (customClass) this.CtnDiv.classList.add(customClass);
 
     this.CtnDiv.appendChild(InnerCtnDiv);
     InnerCtnDiv.appendChild(ContentDiv);
@@ -58,15 +59,16 @@ class Modal {
   }
 
   #loadContent(fallback) {
-    if (this?.popupEl) {
-      var contentCtn = this.popupEl.getElementsByClassName("content_ctn");
-      if (this.settings.content) {
-        switch (typeof this.settings.content) {
+    if (this.#popupEl) {
+      const { content, ajaxUrl, ajaxData } = this.#settings;
+      var contentCtn = this.#popupEl.getElementsByClassName("content_ctn");
+      if (content) {
+        switch (typeof content) {
           case "string":
-            contentCtn[0].innerHTML = this.settings.content;
+            contentCtn[0].innerHTML = content;
             break;
           case "object":
-            contentCtn[0].appendChild(this.settings.content);
+            contentCtn[0].appendChild(content);
             break;
         }
 
@@ -74,12 +76,12 @@ class Modal {
 
         if (typeof fallback == "function") fallback();
         this.#appendToBody();
-      } else if (this.settings.ajaxUrl) {
-        const request = !this.settings.ajaxData
-          ? new Request(this.settings.ajaxUrl)
-          : new Request(this.settings.ajaxUrl, {
+      } else if (ajaxUrl) {
+        const request = !ajaxData
+          ? new Request(ajaxUrl)
+          : new Request(ajaxUrl, {
               method: "POST",
-              body: JSON.stringify(this.settings.ajaxData),
+              body: JSON.stringify(ajaxData),
               headers: {
                 //"Content-Type": "application/x-www-form-urlencoded ",
                 "Content-Type": "application/json",
@@ -115,96 +117,82 @@ class Modal {
   }
 
   #loadButtons() {
-    var btnCtn = this.popupEl.getElementsByClassName("btn_ctn");
-    if (
-      this.settings?.buttons &&
-      typeof this.settings?.buttons == "object" &&
-      this.settings.buttons.length > 0
-    ) {
-      this.settings.buttons.forEach((btn) => {
+    const { buttons } = this.settings;
+    var btnCtn = this.#popupEl.getElementsByClassName("btn_ctn");
+    if (buttons && typeof buttons == "object" && buttons.length > 0) {
+      buttons.forEach((btn) => {
+        const { title, tooltip, form, customClass, click } = btn;
+
         var button = createDOMElement({
           type: "button",
           attributes: { class: "modal_ctn" },
-          text: btn?.title,
+          text: title,
         });
 
-        if (btn?.tooltip) {
-          button.setAttribute("title", btn.tooltip);
-        }
-        if (btn?.form) {
-          button.setAttribute("form", btn.form);
-        }
-
-        if (btn?.customClass) {
-          button.classList.add(btn.customClass);
-        }
+        if (tooltip) button.setAttribute("title", tooltip);
+        if (form) button.setAttribute("form", form);
+        if (customClass) button.classList.add(customClass);
 
         btnCtn[0].appendChild(button); //  insertAdjacentHTML("beforeend", buttonHTML);
 
-        if (btn?.click)
+        if (click)
           button.addEventListener("click", (evt) => {
-            btn.click(this, evt);
+            click(this, evt);
           });
       });
     }
   }
 
   open() {
-    if (this.settings.overlayer) {
+    const { overlayer, OutsideClick } = this.#settings;
+    if (overlayer) {
       this.OverDiv = createDOMElement({
         attributes: {
           class: "modal_overlay",
-          onclick:
-            this.settings?.outsideClose && this.settings.overlayer
-              ? this.OutsideClick
-              : "",
+          onclick: outsideClose && overlayer ? this.OutsideClick : "",
         },
       });
       this.OverDiv.appendChild(this.CtnDiv);
-      this.popupEl = this.OverDiv;
+      this.#popupEl = this.OverDiv;
     } else {
-      this.popupEl = this.CtnDiv;
+      this.#popupEl = this.CtnDiv;
       this.#EventListener();
     }
 
     this.#loadContent(() => {
-      if (typeof this.settings.onOpen == "function") {
-        this.settings.onOpen(this);
-      }
+      const { onOpen } = this.#settings;
+      if (typeof onOpen == "function") onOpen(this);
     });
   }
 
   #appendToBody() {
     const body = document.getElementsByTagName("body");
-    body[0].appendChild(this.popupEl);
+    body[0].appendChild(this.#popupEl);
   }
 
   disablebtn() {
-    var btnCtn = this.popupEl.getElementsByClassName("btn_ctn");
+    var btnCtn = this.#popupEl.getElementsByClassName("btn_ctn");
     btnCtn[0].querySelectorAll("button").forEach((btn) => {
       btn.setAttribute("disabled", true);
     });
   }
 
   enablebtn() {
-    var btnCtn = this.popupEl.getElementsByClassName("btn_ctn");
+    var btnCtn = this.#popupEl.getElementsByClassName("btn_ctn");
     btnCtn[0].querySelectorAll("button").forEach((btn) => {
       btn.setAttribute("disabled", false);
     });
   }
 
   close() {
-    if (this.settings?.onClose && typeof this.settings?.onClose == "function") {
-      this.settings.onClose();
-    }
-
-    this.popupEl.remove();
+    const { onClose } = this.#settings;
+    if (onClose && typeof onClose == "function") onClose();
+    this.#popupEl.remove();
   }
 
   #EventListener() {
-    if (!this.settings.overlayer) {
-      document.addEventListener("click", this.OutsideClick);
-    }
+    const { overlayer } = this.#settings;
+    if (!overlayer) document.addEventListener("click", this.OutsideClick);
   }
 
   #outsideClickListener(e) {
@@ -215,34 +203,36 @@ class Modal {
 }
 
 class AlertPopup {
-  constructor(options) {
-    this.settings = {
-      ...{
-        title: "Alert",
-        buttons: [
-          {
-            title: "Cancel",
-            click: (modal) => {
-              modal.close();
-            },
-          },
-        ],
-        content: null,
-        customClass: null,
-        outsideClose: false,
-        onClose: null,
-        onOpen: null,
-        width: 150,
-        height: 100,
-        autoOpen: true,
-        overlayer: false,
-        position: "center",
-        autoClose: false,
-        timer: 1000,
+  #settings = {
+    title: "Alert",
+    buttons: [
+      {
+        title: "Cancel",
+        click: (modal) => {
+          modal.close();
+        },
       },
+    ],
+    content: null,
+    customClass: null,
+    outsideClose: false,
+    onClose: null,
+    onOpen: null,
+    width: 150,
+    height: 100,
+    autoOpen: true,
+    overlayer: false,
+    position: "center",
+    autoClose: false,
+    timer: 1000,
+  };
+  #popupEl = null;
+  constructor(options) {
+    this.#settings = {
+      ...this.#settings,
       ...options,
     };
-    this.popupEl = null;
+
     this.#build();
     this.open();
   }
@@ -253,11 +243,11 @@ class AlertPopup {
       attributes: { class: "alert_innerctn" },
     });
 
-    if (this.settings.title != "") {
+    if (this.#settings.title != "") {
       InnerCtnDiv.appendChild(
         createDOMElement({
           attributes: { class: "alert_headerctn" },
-          text: this.settings.title,
+          text: this.#settings.title,
         }),
       );
     }
@@ -266,8 +256,8 @@ class AlertPopup {
       attributes: { class: "content_ctn" },
     });
     const BtnDiv = createDOMElement({ attributes: { class: "btn_ctn" } });
-    if (this.settings.customClass != undefined) {
-      this.CtnDiv.classList.add(this.settings.customClass);
+    if (this.#settings?.customClass) {
+      this.CtnDiv.classList.add(this.#settings.customClass);
     }
 
     this.CtnDiv.appendChild(InnerCtnDiv);
@@ -276,98 +266,151 @@ class AlertPopup {
   }
 
   #loadContent(fallback) {
-    if (this?.popupEl) {
-      var contentCtn = this.popupEl.getElementsByClassName("content_ctn");
-      switch (typeof this.settings.content) {
-        case "string":
-          contentCtn[0].innerHTML = this.settings.content;
-          break;
-        case "object":
-          contentCtn[0].appendChild(this.settings.content);
-          break;
-      }
-
-      this.#loadButtons();
-
-      if (typeof fallback == "function") fallback();
+    if (!this.#popupEl) return;
+    const { content } = this.#settings;
+    var contentCtn = this.#popupEl.getElementsByClassName("content_ctn");
+    switch (typeof content) {
+      case "string":
+        contentCtn[0].innerHTML = content;
+        break;
+      case "object":
+        contentCtn[0].appendChild(content);
+        break;
     }
+
+    this.#loadButtons();
+
+    if (typeof fallback == "function") fallback();
   }
 
   #loadButtons() {
-    var btnCtn = this.popupEl.getElementsByClassName("btn_ctn");
-    if (
-      this.settings?.buttons &&
-      typeof this.settings?.buttons == "object" &&
-      this.settings.buttons.length > 0
-    ) {
-      this.settings.buttons.forEach((btn) => {
+    const { buttons } = this.#settings;
+    var btnCtn = this.#popupEl.getElementsByClassName("btn_ctn");
+    if (buttons && typeof buttons == "object" && buttons.length > 0) {
+      buttons.forEach((btn) => {
+        const { title, tooltip, form, customClass, click } = btn;
+
         var button = createDOMElement({
           type: "button",
           attributes: { class: "modal_ctn" },
-          text: btn?.title,
+          text: title,
         });
 
-        if (btn?.tooltip) {
-          button.setAttribute("title", btn.tooltip);
-        }
-        if (btn?.form) {
-          button.setAttribute("form", btn.form);
-        }
-
-        if (btn?.customClass) {
-          button.classList.add(btn.customClass);
-        }
+        if (tooltip) button.setAttribute("title", tooltip);
+        if (form) button.setAttribute("form", form);
+        if (customClass) button.classList.add(customClass);
 
         btnCtn[0].appendChild(button); //  insertAdjacentHTML("beforeend", buttonHTML);
 
-        if (btn?.click)
+        if (typeof click == "function")
           button.addEventListener("click", (evt) => {
-            btn.click(this, evt);
+            click(this, evt);
           });
       });
     }
   }
 
   open() {
+    const { overlayer, outsideClose, onOpen, autoClose, timer } =
+      this.#settings;
     const body = document.getElementsByTagName("body");
-    if (this.settings.overlayer) {
+    if (overlayer) {
       this.OverDiv = createDOMElement({
         attributes: {
           class: "alert_overlay",
-          onclick:
-            this.settings?.outsideClose && this.settings.overlayer
-              ? this.OutsideClick
-              : () => {},
+          onclick: outsideClose && overlayer ? this.OutsideClick : () => {},
         },
       });
       this.OverDiv.appendChild(this.CtnDiv);
-      this.popupEl = this.OverDiv;
+      this.#popupEl = this.OverDiv;
     } else {
-      this.popupEl = this.CtnDiv;
+      this.#popupEl = this.CtnDiv;
     }
 
-    body[0].appendChild(this.popupEl);
-    this.popupEl.style.zIndex =
+    body[0].appendChild(this.#popupEl);
+    this.#popupEl.style.zIndex =
       10 + document.querySelectorAll(".modal_ctn, .alert_ctn").length;
 
     this.#loadContent(() => {
-      if (typeof this.settings.onOpen == "function") {
-        this.settings.onOpen(this);
+      if (typeof onOpen == "function") {
+        onOpen(this);
       }
     });
 
-    if (this.settings.autoClose) {
+    if (autoClose) {
       setTimeout(() => {
         this.close();
-      }, this.settings.timer);
+      }, timer);
     }
   }
 
   close() {
-    if (this.settings?.onClose && typeof this.settings?.onClose == "function") {
-      this.settings.onClose();
-    }
-
-    this.popupEl.remove();
+    const { onClose } = this.#settings;
+    if (onClose && typeof onClose == "function") onClose();
+    this.#popupEl.remove();
   }
+}
+
+/** Create a DOM Element
+ * @param {string} type - Type of DOM element, eg. 'div', 'input', etc...
+ * @param {Array<{ key: string, value: string }>} attributes - Attributes of the element, eg. 'onchange', 'title', etc...
+ * @param {string} text - Text for inside the element
+ * @returns {HTMLElement} - The created DOM element.
+ */
+function createDOMElement(
+  { type = "div", attributes = null, text = null } = { type: "div" },
+) {
+  const element = document.createElement(type);
+  if (text) element.innerText = text;
+
+  if (attributes) {
+    Object.entries(attributes).forEach(([key, value]) => {
+      if (key.indexOf("on") !== 0) element.setAttribute(key, value);
+      //element.addEventListener(key.substring(2), value);
+    });
+  }
+  return element;
+}
+
+async function fetchWithProgress(url, options, onProgress) {
+  const response = await fetch(url, options);
+
+  if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+  // Get total size if server sent Content-Length
+  const contentLength = response.headers.get("Content-Length");
+  if (!contentLength)
+    console.warn("No Content-Length header, cannot show accurate progress");
+
+  const reader = response.body.getReader();
+  const total = contentLength ? parseInt(contentLength, 10) : 0;
+  let received = 0;
+  let chunks = [];
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    chunks.push(value);
+    received += value.length;
+
+    if (total) {
+      const percent = Math.round((received / total) * 100);
+      onProgress(percent);
+    } else {
+      // If no total size, just pulse from 0-90%
+      const percent = Math.min(90, Math.round(received / 1000));
+      onProgress(percent);
+    }
+  }
+
+  // Reconstruct body
+  const fullBody = new Uint8Array(received);
+  let position = 0;
+  for (let chunk of chunks) {
+    fullBody.set(chunk, position);
+    position += chunk.length;
+  }
+
+  return new TextDecoder().decode(fullBody);
 }

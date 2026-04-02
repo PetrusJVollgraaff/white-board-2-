@@ -1,0 +1,33 @@
+class ZoomPanel {
+  #callback = () => {};
+  #elmP = null;
+  constructor(elmP, callback) {
+    this.#elmP = elmP;
+    this.#callback = callback;
+
+    this.#init();
+  }
+
+  #init() {
+    this.zoomInBtn = this.#elmP.querySelector("#btn-zin");
+    this.zoomOutBtn = this.#elmP.querySelector("#btn-zout");
+    this.zoomFitBtn = this.#elmP.querySelector("#btn-fit");
+
+    this.#eventListener();
+  }
+
+  #eventListener() {
+    this.zoomInBtn.addEventListener("click", () => {
+      this.#callback({ action: "setZoom", value: "in" });
+    });
+
+    this.zoomOutBtn.addEventListener("click", () => {
+      this.#callback({ action: "setZoom", value: "out" });
+    });
+
+    this.zoomFitBtn.addEventListener("click", () =>
+      this.#callback({ action: "setZoom", value: "fit" }),
+    );
+  }
+}
+export { ZoomPanel };
