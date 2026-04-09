@@ -1,0 +1,18 @@
+import { LayerPanel } from "../panels/layerPanel";
+
+class RightNav {
+  #callback = () => {};
+  #elmP = null;
+  constructor(elmP, callback) {
+    this.#elmP = elmP;
+    this.#callback = callback;
+
+    new LayerPanel(this.#elmP, this.#callback);
+
+    this.#init();
+  }
+
+  #init() {}
+}
+
+export { RightNav };

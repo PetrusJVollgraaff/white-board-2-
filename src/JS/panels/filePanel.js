@@ -1,0 +1,68 @@
+import { createDOMElement } from "../display/model";
+
+class FilePanel {
+  #callback = () => {};
+  #elmP = null;
+
+  static loadFile(attr, callback) {
+    const attributes = { ...{ type: "file" }, ...attr };
+    const input = createDOMElement({ type: "input", attributes });
+
+    input.click();
+
+    input.addEventListener("change", (e) => {
+      const f = e.target.files[0];
+      if (!f) return;
+      const { name } = f.name;
+
+      const r = new FileReader();
+      r.onload = (ev) => {
+        const { result } = ev.target;
+        callback({ result, name });
+        input.remove();
+      };
+
+      r.readAsText(f);
+    });
+  }
+
+  constructor(elmP, callback) {
+    this.#elmP = elmP;
+    this.#callback = callback;
+
+    this.#init();
+  }
+
+  #init() {
+    this.saveBtn = this.#elmP.querySelector("#btn-save");
+    this.loadBtn = this.#elmP.querySelector("#btn-load");
+    this.exportBtn = this.#elmP.querySelector("#btn-export");
+
+    this.loadInput = this.#elmP.querySelector("#inp-load");
+    this.formatSelector = this.#elmP.querySelector("#sel-fmt");
+
+    this.#eventListener();
+  }
+
+  #eventListener() {
+    this.saveBtn.addEventListener("click", () => {
+      this.#callback({ action: "setFile", value: "save" });
+    });
+
+    this.loadBtn.addEventListener("click", () => {
+      FilePanel.loadFile({ accept: ".json" }, (data) => {
+        this.#callback({ ...{ action: "setFile", value: "load" }, ...data });
+      });
+    });
+
+    this.exportBtn.addEventListener("click", () =>
+      this.#callback({ action: "setFile", value: "export" }),
+    );
+
+    this.formatSelector.addEventListener("change", (evt) => {
+      const format = evt.target.value;
+      this.#callback({ action: "setFile", value: "format", format });
+    });
+  }
+}
+export { FilePanel };

@@ -1,0 +1,33 @@
+class HistoryPanel {
+  #callback = () => {};
+  #elmP = null;
+  constructor(elmP, callback) {
+    this.#elmP = elmP;
+    this.#callback = callback;
+
+    this.#init();
+  }
+
+  #init() {
+    this.undoBtn = this.#elmP.querySelector("#btn-undo");
+    this.redoBtn = this.#elmP.querySelector("#btn-redo");
+    this.delBtn = this.#elmP.querySelector("#btn-del");
+
+    this.#eventListener();
+  }
+
+  #eventListener() {
+    this.undoBtn.addEventListener("click", () => {
+      this.#callback({ action: "setHistory", value: "undo" });
+    });
+
+    this.redoBtn.addEventListener("click", () => {
+      this.#callback({ action: "setHistory", value: "redo" });
+    });
+
+    this.delBtn.addEventListener("click", () =>
+      this.#callback({ action: "setHistory", value: "delete" }),
+    );
+  }
+}
+export { HistoryPanel };

@@ -1,0 +1,49 @@
+class LayerPanel {
+  #elmP = null;
+  #callback = () => {};
+  constructor(elmP, callback) {
+    this.#elmP = elmP;
+    this.#callback = callback;
+
+    this.#init();
+  }
+
+  #init() {
+    this.addBtn = this.#elmP.querySelector("#lp-add");
+    this.dupBtn = this.#elmP.querySelector("#lp-dup");
+    this.upBtn = this.#elmP.querySelector("#lp-up");
+    this.downBtn = this.#elmP.querySelector("#lp-down");
+    this.delBtn = this.#elmP.querySelector("#lp-del");
+
+    this.layerList = this.#elmP.querySelector("#layer-list");
+    this.OpInput = this.#elmP.querySelector("#lp-opacity");
+
+    this.mergedownBtn = this.#elmP.querySelector("#btn-merge-down");
+    this.mergetoBtn = this.#elmP.querySelector("#btn-merge-to");
+    this.unmerge = this.#elmP.querySelector("#btn-unmerge");
+    this.mergemodeBtn = this.#elmP.querySelector("#btn-merge-mode");
+    this.mergecancelBtn = this.#elmP.querySelector("#btn-cancel-merge");
+    this.flattenBtn = this.#elmP.querySelector("#btn-flatten");
+
+    this.#eventListener();
+  }
+
+  #eventListener() {
+    this.addBtn.addEventListener("click", () => {});
+    this.dupBtn.addEventListener("click", () => {});
+    this.upBtn.addEventListener("click", () => {});
+    this.downBtn.addEventListener("click", () => {});
+    this.delBtn.addEventListener("click", () => {});
+
+    this.OpInput.addEventListener("change", () => {});
+
+    this.mergedownBtn.addEventListener("click", () => {});
+    this.mergetoBtn.addEventListener("click", () => {});
+    this.unmerge.addEventListener("click", () => {});
+    this.mergemodeBtn.addEventListener("click", () => {});
+    this.mergecancelBtn.addEventListener("click", () => {});
+    this.flattenBtn.addEventListener("click", () => {});
+  }
+}
+
+export { LayerPanel };

@@ -1,16 +1,19 @@
-import { TopNav } from "./JS/display/nav";
+import { TopNav } from "./JS/display/topnav";
 import { RulerRenderer } from "./JS/display/ruler";
 import ViewPort from "./JS/display/viewport";
 import { Vector } from "./JS/utils/vector";
+import { ExportManager } from "./JS/utils/export";
+import { RightNav } from "./JS/display/rightnav";
 
 class DrawingBoard {
   #mainArea = document.getElementById("main-area");
   #topNav = document.getElementById("top_navbar");
+  #rightNav = document.getElementById("right_navbar");
   #mainC = document.getElementById("main-canvas");
   #mainCtx = this.#mainC.getContext("2d");
   #viewportElm = document.getElementById("viewport");
   #rulers = null;
-  #topnav = null;
+  #exportFormat = "png";
 
   #stageSize = {
     "800,600": { w: 800, h: 600 },
@@ -39,7 +42,7 @@ class DrawingBoard {
   };
   #showRulers = true;
   #isPanning = false;
-  _tool = "pan";
+  #toolActive = "select";
 
   constructor() {
     this.#mainC.width = this.#viewportElm.clientWidth;
@@ -54,7 +57,7 @@ class DrawingBoard {
 
     this.#bindEvents();
 
-    this.#topnav = new TopNav(this.#topNav, (data) => {
+    new TopNav(this.#topNav, (data) => {
       const { action } = data;
 
       switch (action) {
@@ -64,8 +67,14 @@ class DrawingBoard {
           return this.#setZoom(data);
         case "setRuler":
           return this.#setRuler(data);
+        case "setTool":
+          return this.#setTool(data);
+        case "setFile":
+          return this.#setFile(data);
       }
     });
+
+    new RightNav(this.#rightNav, () => {});
 
     new ResizeObserver(() => {
       this.#rulers.syncSizes(this.#StageProperties);
@@ -74,6 +83,11 @@ class DrawingBoard {
 
     this.#rulers.syncSizes(this.#StageProperties);
     this.#fitToViewport();
+  }
+
+  #setTool(data) {
+    const { tool } = data;
+    this.#toolActive = tool;
   }
 
   #setRuler(data) {
@@ -99,6 +113,27 @@ class DrawingBoard {
       this._vp.applyZoom(z, this.#StageProperties.offset);
       this.#StageProperties.offset = this._vp.getOffset;
       this.#render();
+    }
+  }
+
+  #setFile(data) {
+    const { value } = data;
+
+    if (value === "format") this.#exportFormat = data.format;
+
+    if (value === "export") {
+      switch (this.#exportFormat) {
+        case "png":
+          return ExportManager.ExportPNG();
+        case "jpeg":
+          return ExportManager.ExportJPEG();
+        case "svg":
+          return ExportManager.ExportSVG();
+      }
+    }
+    if (value === "load") {
+    }
+    if (value === "save") {
     }
   }
 
@@ -152,7 +187,7 @@ class DrawingBoard {
   #onMouseDown(e) {
     if (e.button !== 0) return;
 
-    if (this._tool === "pan") {
+    if (this.#toolActive === "pan") {
       const offset = this._vp.getOffset;
       const mouseStart = new Vector({ x: e.clientX, y: e.clientY });
       this._panStart = { offset: new Vector({ ...offset }), mouseStart };

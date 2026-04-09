@@ -414,3 +414,5 @@ async function fetchWithProgress(url, options, onProgress) {
 
   return new TextDecoder().decode(fullBody);
 }
+
+export { Modal, AlertPopup, createDOMElement, fetchWithProgress };
