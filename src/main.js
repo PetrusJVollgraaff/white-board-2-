@@ -4,6 +4,7 @@ import ViewPort from "./JS/display/viewport";
 import { Vector } from "./JS/utils/vector";
 import { ExportManager } from "./JS/utils/export";
 import { RightNav } from "./JS/display/rightnav";
+import { SizePanel } from "./JS/panels/sizePanel";
 
 class DrawingBoard {
   #mainArea = document.getElementById("main-area");
@@ -15,23 +16,10 @@ class DrawingBoard {
   #rulers = null;
   #exportFormat = "png";
 
-  #stageSize = {
-    "800,600": { w: 800, h: 600 },
-    "1920,1080": { w: 1920, h: 1080 },
-    "2560,1440": { w: 2560, h: 1440 },
-
-    "3840,2160": { w: 3840, h: 2160 },
-    "2480,3508": { w: 2480, h: 3508 },
-    "3508,2480": { w: 3508, h: 2480 },
-
-    "2550,3300": { w: 2550, h: 3300 },
-    "1080,1080": { w: 1080, h: 1080 },
-  };
-
   #StageProperties = {
     offset: Vector.zero(),
     center: Vector.zero(),
-    size: this.#stageSize["800,600"],
+    size: SizePanel.Sizes["800x600"],
     ratio: 0,
     top: 0,
     left: 0,
@@ -97,7 +85,7 @@ class DrawingBoard {
 
   #setSize(data) {
     this.#StageProperties.size = data?.size
-      ? this.#stageSize[data?.size]
+      ? SizePanel.Sizes[data?.size]
       : data.custom;
     this.#fitToViewport();
   }

@@ -1,31 +1,58 @@
+import { createDOMElement } from "../display/model";
+
 class HistoryPanel {
   #callback = () => {};
   #elmP = null;
+  #elm = null;
+
+  #undoBtn = null;
+  #redoBtn = null;
+  #delBtn = null;
   constructor(elmP, callback) {
     this.#elmP = elmP;
     this.#callback = callback;
+    this.#elm = this.#elmP.querySelector("li#history_ctn");
 
     this.#init();
   }
 
   #init() {
-    this.undoBtn = this.#elmP.querySelector("#btn-undo");
-    this.redoBtn = this.#elmP.querySelector("#btn-redo");
-    this.delBtn = this.#elmP.querySelector("#btn-del");
-
+    this.#build();
     this.#eventListener();
   }
 
+  #build() {
+    this.#undoBtn = createDOMElement({
+      type: "button",
+      attributes: { title: "Undo (Ctrl+Z)" },
+      text: "↩ Undo",
+    });
+    this.#redoBtn = createDOMElement({
+      type: "button",
+      attributes: { title: "Redo (Ctrl+Y)" },
+      text: "↪ Redo",
+    });
+    this.#delBtn = createDOMElement({
+      type: "button",
+      attributes: { title: "Delete (Del)" },
+      text: "🗑",
+    });
+
+    this.#elm.appendChild(this.#undoBtn);
+    this.#elm.appendChild(this.#redoBtn);
+    this.#elm.appendChild(this.#delBtn);
+  }
+
   #eventListener() {
-    this.undoBtn.addEventListener("click", () => {
+    this.#undoBtn.addEventListener("click", () => {
       this.#callback({ action: "setHistory", value: "undo" });
     });
 
-    this.redoBtn.addEventListener("click", () => {
+    this.#redoBtn.addEventListener("click", () => {
       this.#callback({ action: "setHistory", value: "redo" });
     });
 
-    this.delBtn.addEventListener("click", () =>
+    this.#delBtn.addEventListener("click", () =>
       this.#callback({ action: "setHistory", value: "delete" }),
     );
   }

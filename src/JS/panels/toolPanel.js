@@ -1,6 +1,10 @@
+import { createDOMElement } from "../display/model";
+
 class ToolPanel {
   #callback = () => {};
   #elmP = null;
+  #elm = null;
+
   #Active = "select";
   #SelectBtn = null;
   #RectBtn = null;
@@ -9,57 +13,118 @@ class ToolPanel {
   #FreeHandBtn = null;
   #PanBtn = null;
 
+  #tools = {
+    select: {
+      type: "button",
+      attributes: { "data-tool": "select", title: "Select (V)" },
+      innerhtml:
+        '<svg viewBox="0 0 16 16"><path d="M3 1l4.5 13L9 9l5 2z"></path></svg>',
+    },
+    rect: {
+      type: "button",
+      attributes: { "data-tool": "rect", title: "Select (R)" },
+      innerhtml:
+        '<svg viewBox="0 0 16 16"><rect x="2" y="4" width="12" height="8" fill="none" stroke="currentColor" stroke-width="1.5"></rect></svg>',
+    },
+    ellipse: {
+      type: "button",
+      attributes: { "data-tool": "ellipse", title: "Ellipse (E)" },
+      innerhtml:
+        '<svg viewBox="0 0 16 16"><ellipse cx="8" cy="8" rx="6" ry="4" fill="none" stroke="currentColor" stroke-width="1.5"></ellipse></svg>',
+    },
+    line: {
+      type: "button",
+      attributes: { "data-tool": "line", title: "Line (L)" },
+      innerhtml:
+        '<svg viewBox="0 0 16 16"><line x1="2" y1="14" x2="14" y2="2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></line></svg>',
+    },
+    freehand: {
+      type: "button",
+      attributes: { "data-tool": "freehand", title: "Freehand (F)" },
+      innerhtml:
+        '<svg viewBox="0 0 16 16"><path d="M2 14 Q4 2 8 8 Q12 14 14 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg>',
+    },
+    pan: {
+      type: "button",
+      attributes: { "data-tool": "pan", title: "Pan (H / Space)" },
+      innerhtml:
+        '<svg viewBox="0 0 16 16"><text x="1" y="13" font-size="12" fill="currentColor">✋</text></svg>',
+    },
+  };
+
   constructor(elmP, callback) {
     this.#elmP = elmP;
     this.#callback = callback;
-
-    this.#SelectBtn = this.#elmP.querySelector('button[data-tool="select"]');
-    this.#RectBtn = this.#elmP.querySelector('button[data-tool="rect"]');
-    this.#EllipseBtn = this.#elmP.querySelector('button[data-tool="ellipse"]');
-    this.#LineBtn = this.#elmP.querySelector('button[data-tool="line"]');
-    this.#FreeHandBtn = this.#elmP.querySelector(
-      'button[data-tool="freehand"]',
-    );
-    this.#PanBtn = this.#elmP.querySelector('button[data-tool="pan"]');
+    this.#elm = this.#elmP.querySelector("li#tool_ctn");
 
     this.#init();
   }
 
-  #setSelected(val) {
+  #setSelected(Elm, val) {
     this.#elmP
       .querySelector('button[data-tool="' + this.#Active + '"]')
       .classList.remove("active");
 
     this.#Active = val;
-    this.#elmP
-      .querySelector('button[data-tool="' + val + '"]')
-      .classList.add("active");
+    Elm.classList.add("active");
 
     this.#callback({ action: "setTool", tool: this.#Active });
   }
 
   #init() {
+    this.#build();
     this.#eventListener();
   }
 
+  #build() {
+    for (const key in this.#tools) {
+      switch (key) {
+        case "select":
+          this.#SelectBtn = createDOMElement(this.#tools[key]);
+          this.#elm.appendChild(this.#SelectBtn);
+          break;
+        case "rect":
+          this.#RectBtn = createDOMElement(this.#tools[key]);
+          this.#elm.appendChild(this.#RectBtn);
+          break;
+        case "ellipse":
+          this.#EllipseBtn = createDOMElement(this.#tools[key]);
+          this.#elm.appendChild(this.#EllipseBtn);
+          break;
+        case "line":
+          this.#LineBtn = createDOMElement(this.#tools[key]);
+          this.#elm.appendChild(this.#LineBtn);
+          break;
+        case "freehand":
+          this.#FreeHandBtn = createDOMElement(this.#tools[key]);
+          this.#elm.appendChild(this.#FreeHandBtn);
+          break;
+        case "pan":
+          this.#PanBtn = createDOMElement(this.#tools[key]);
+          this.#elm.appendChild(this.#PanBtn);
+          break;
+      }
+    }
+  }
+
   #eventListener() {
-    this.#SelectBtn.addEventListener("click", () => {
-      this.#setSelected("select");
+    this.#SelectBtn.addEventListener("click", (evt) => {
+      this.#setSelected(this.#SelectBtn, "select");
     });
     this.#RectBtn.addEventListener("click", () => {
-      this.#setSelected("rect");
+      this.#setSelected(this.#RectBtn, "rect");
     });
     this.#EllipseBtn.addEventListener("click", () => {
-      this.#setSelected("ellipse");
+      this.#setSelected(this.#EllipseBtn, "ellipse");
     });
     this.#LineBtn.addEventListener("click", () => {
-      this.#setSelected("line");
+      this.#setSelected(this.#LineBtn, "line");
     });
     this.#FreeHandBtn.addEventListener("click", () => {
-      this.#setSelected("freehand");
+      this.#setSelected(this.#FreeHandBtn, "freehand");
     });
     this.#PanBtn.addEventListener("click", () => {
-      this.#setSelected("pan");
+      this.#setSelected(this.#PanBtn, "pan");
     });
   }
 }

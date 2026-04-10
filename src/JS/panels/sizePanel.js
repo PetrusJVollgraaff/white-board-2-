@@ -1,55 +1,110 @@
+import { createDOMElement } from "../display/model";
 import { ControlFlow } from "../utils/util";
 
 class SizePanel {
   static Sizes = {
-    "800,600": { w: 800, h: 600 },
-    "1920,1080": { w: 1920, h: 1080 },
-    "2560,1440": { w: 2560, h: 1440 },
+    "800x600": { w: 800, h: 600 },
+    "1920x1080": { w: 1920, h: 1080 },
+    "2560x1440": { w: 2560, h: 1440 },
 
-    "3840,2160": { w: 3840, h: 2160 },
-    "2480,3508": { w: 2480, h: 3508 },
-    "3508,2480": { w: 3508, h: 2480 },
+    "3840x2160": { w: 3840, h: 2160 },
+    "2480x3508": { w: 2480, h: 3508 },
+    "3508x2480": { w: 3508, h: 2480 },
 
-    "2550,3300": { w: 2550, h: 3300 },
-    "1080,1080": { w: 1080, h: 1080 },
+    "2550x3300": { w: 2550, h: 3300 },
+    "1080x1080": { w: 1080, h: 1080 },
+    custom: { title: "Custom…" },
   };
 
   #callback = () => {};
+  #active = "800x600";
   #elmP = null;
+  #elm = null;
+  #customWidthEl = null;
+  #customHeightEl = null;
+  #selSize = null;
   constructor(elmP, callback) {
     this.#elmP = elmP;
     this.#callback = callback;
+    this.#elm = this.#elmP.querySelector("li#size_ctn");
 
     this.#init();
   }
 
-  #init() {
-    this.selSize = this.#elmP.querySelector("#sel-size");
-    this.customWidthEl = this.#elmP.querySelector("#cw");
-    this.customHeightEl = this.#elmP.querySelector("#ch");
+  #setSize(size) {
+    if (this.#active == "custom" && size != "custom") {
+      this.#customWidthEl.remove();
+      this.#customHeightEl.remove();
+    } else if (this.#active != "custom" && size == "custom") {
+      const [w, h] = this.#active.split("x").map(Number);
+      this.#customWidthEl.value = w;
+      this.#customHeightEl.value = h;
 
+      this.#elm.appendChild(this.#customWidthEl);
+      this.#elm.appendChild(this.#customHeightEl);
+    }
+
+    this.#callback({
+      action: "setSize",
+      size: size != "custom" ? size : this.#active,
+    });
+    this.#active = size;
+  }
+
+  #init() {
+    this.#build();
     this.#eventListener();
   }
 
-  #eventListener() {
-    this.selSize.addEventListener("change", () => {
-      const { value: size } = this.selSize;
-
-      if (size === "custom") {
-        this.customWidthEl.style.display = this.customHeightEl.style.display =
-          "inline-block";
-      } else {
-        this.customWidthEl.style.display = this.customHeightEl.style.display =
-          "none";
-        const [w, h] = size.split(",").map(Number);
-        this.customWidthEl.value = w;
-        this.customHeightEl.value = h;
-
-        this.#callback({ action: "setSize", size });
-      }
+  #build() {
+    this.#customWidthEl = createDOMElement({
+      type: "input",
+      attributes: {
+        type: "number",
+        placeholder: "W",
+        min: "1",
+        max: "9999",
+        style: "width:52px",
+      },
     });
 
-    [this.customWidthEl, this.customHeightEl].forEach((elm, idx, arr) => {
+    this.#customHeightEl = createDOMElement({
+      type: "input",
+      attributes: {
+        type: "number",
+        placeholder: "H",
+        min: "1",
+        max: "9999",
+        style: "width:52px",
+      },
+    });
+
+    this.#selSize = createDOMElement({
+      type: "select",
+      attributes: { name: "sel-size" },
+    });
+
+    for (const opt in SizePanel.Sizes) {
+      var op = SizePanel.Sizes[opt];
+      this.#selSize.appendChild(
+        createDOMElement({
+          type: "option",
+          attributes: { value: opt },
+          text: op?.title ? op.title : opt,
+        }),
+      );
+    }
+
+    this.#elm.appendChild(this.#selSize);
+  }
+
+  #eventListener() {
+    this.#selSize.addEventListener("change", () => {
+      const { value } = this.#selSize;
+      this.#setSize(value);
+    });
+
+    [this.#customWidthEl, this.#customHeightEl].forEach((elm, idx, arr) => {
       const handler = ControlFlow.debounce((e) => {
         this.#callback({
           action: "setSize",

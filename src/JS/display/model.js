@@ -358,10 +358,13 @@ class AlertPopup {
  * @returns {HTMLElement} - The created DOM element.
  */
 function createDOMElement(
-  { type = "div", attributes = null, text = null } = { type: "div" },
+  { type = "div", attributes = null, text = null, innerhtml = null } = {
+    type: "div",
+  },
 ) {
   const element = document.createElement(type);
   if (text) element.innerText = text;
+  if (innerhtml) element.innerHTML = innerhtml;
 
   if (attributes) {
     Object.entries(attributes).forEach(([key, value]) => {

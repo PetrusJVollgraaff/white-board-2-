@@ -3,6 +3,17 @@ import { createDOMElement } from "../display/model";
 class FilePanel {
   #callback = () => {};
   #elmP = null;
+  #elm = null;
+
+  #saveBtn = null;
+  #loadBtn = null;
+  #exportBtn = null;
+  #formSlct = null;
+  #exportOptions = [
+    { name: "PNG", value: "png" },
+    { name: "JPEG", value: "jpeg" },
+    { name: "SVG", value: "svg" },
+  ];
 
   static loadFile(attr, callback) {
     const attributes = { ...{ type: "file" }, ...attr };
@@ -29,37 +40,63 @@ class FilePanel {
   constructor(elmP, callback) {
     this.#elmP = elmP;
     this.#callback = callback;
+    this.#elm = this.#elmP.querySelector("li#file_ctn");
 
     this.#init();
   }
 
   #init() {
-    this.saveBtn = this.#elmP.querySelector("#btn-save");
-    this.loadBtn = this.#elmP.querySelector("#btn-load");
-    this.exportBtn = this.#elmP.querySelector("#btn-export");
-
-    this.loadInput = this.#elmP.querySelector("#inp-load");
-    this.formatSelector = this.#elmP.querySelector("#sel-fmt");
-
+    this.#build();
     this.#eventListener();
   }
 
+  #build() {
+    this.#elm.appendChild(
+      createDOMElement({
+        type: "span",
+        attributes: { class: "tlbl" },
+        text: "File",
+      }),
+    );
+    this.#saveBtn = createDOMElement({ type: "button", text: "💾 Save" });
+    this.#loadBtn = createDOMElement({ type: "button", text: "📂 Load" });
+    this.#exportBtn = createDOMElement({ type: "button", text: "⬇ Export" });
+    this.#formSlct = createDOMElement({
+      type: "select",
+      attributes: { name: "sel-fmt" },
+    });
+    for (const opt of this.#exportOptions) {
+      this.#formSlct.appendChild(
+        createDOMElement({
+          type: "option",
+          attributes: { value: opt.value },
+          text: opt.name,
+        }),
+      );
+    }
+
+    this.#elm.appendChild(this.#saveBtn);
+    this.#elm.appendChild(this.#loadBtn);
+    this.#elm.appendChild(this.#exportBtn);
+    this.#elm.appendChild(this.#formSlct);
+  }
+
   #eventListener() {
-    this.saveBtn.addEventListener("click", () => {
+    this.#saveBtn.addEventListener("click", () => {
       this.#callback({ action: "setFile", value: "save" });
     });
 
-    this.loadBtn.addEventListener("click", () => {
+    this.#loadBtn.addEventListener("click", () => {
       FilePanel.loadFile({ accept: ".json" }, (data) => {
         this.#callback({ ...{ action: "setFile", value: "load" }, ...data });
       });
     });
 
-    this.exportBtn.addEventListener("click", () =>
+    this.#exportBtn.addEventListener("click", () =>
       this.#callback({ action: "setFile", value: "export" }),
     );
 
-    this.formatSelector.addEventListener("change", (evt) => {
+    this.#formSlct.addEventListener("change", (evt) => {
       const format = evt.target.value;
       this.#callback({ action: "setFile", value: "format", format });
     });

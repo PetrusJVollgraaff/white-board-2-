@@ -6,6 +6,7 @@
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="/src/CSS/style.css">
+  <link rel="stylesheet" href="/src/CSS/layers.css">
   <title>white-board</title>
 
 </head>
@@ -13,79 +14,14 @@
 <body>
   <nav id="top_navbar">
     <ul>
-      <li>
-        <select id="sel-size">
-          <option value="800,600">800×600</option>
-          <option value="1920,1080">1920×1080 HD</option>
-          <option value="2560,1440">2560×1440 2K</option>
-          <option value="3840,2160">3840×2160 4K</option>
-          <option value="2480,3508">A4 Portrait 300dpi</option>
-          <option value="3508,2480">A4 Landscape 300dpi</option>
-          <option value="2550,3300">US Letter 300dpi</option>
-          <option value="1080,1080">1080×1080 Square</option>
-          <option value="custom">Custom…</option>
-        </select>
-        <input id="cw" type="number" placeholder="W" min="1" max="9999" style="display:none;width:52px" />
-        <input id="ch" type="number" placeholder="H" min="1" max="9999" style="display:none;width:52px" />
+      <li id="size_ctn"></li>
+      <li id="zoom_ctn"></li>
+      <li id="ruler_ctn">
+
       </li>
-      <li>
-        <span class="tlbl">Zoom</span>
-        <button id="btn-zout" title="Zoom Out (−)">−</button>
-        <span id="zoom-level">100%</span>
-        <button id="btn-zin" title="Zoom In (+)">+</button>
-        <button id="btn-fit" title="Fit to screen">Fit</button>
-      </li>
-      <li>
-        <label class="tog">View Rulers<input type="checkbox" id="chk-rulers" checked /></label>
-      </li>
-      <li>
-        <span class="tlbl">Tool</span>
-        <button class="tbtn active" data-tool="select" title="Select (V)">
-          <svg viewBox="0 0 16 16">
-            <path d="M3 1l4.5 13L9 9l5 2z" />
-          </svg>
-        </button>
-        <button class="tbtn" data-tool="rect" title="Rectangle (R)">
-          <svg viewBox="0 0 16 16">
-            <rect x="2" y="4" width="12" height="8" fill="none" stroke="currentColor" stroke-width="1.5" />
-          </svg>
-        </button>
-        <button class="tbtn" data-tool="ellipse" title="Ellipse (E)">
-          <svg viewBox="0 0 16 16">
-            <ellipse cx="8" cy="8" rx="6" ry="4" fill="none" stroke="currentColor" stroke-width="1.5" />
-          </svg>
-        </button>
-        <button class="tbtn" data-tool="line" title="Line (L)">
-          <svg viewBox="0 0 16 16">
-            <line x1="2" y1="14" x2="14" y2="2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-          </svg>
-        </button>
-        <button class="tbtn" data-tool="freehand" title="Freehand (F)">
-          <svg viewBox="0 0 16 16">
-            <path d="M2 14 Q4 2 8 8 Q12 14 14 4" fill="none" stroke="currentColor" stroke-width="1.5"
-              stroke-linecap="round" />
-          </svg>
-        </button>
-        <button class="tbtn" data-tool="pan" title="Pan (H / Space)">
-          <svg viewBox="0 0 16 16"><text x="1" y="13" font-size="12" fill="currentColor">✋</text></svg>
-        </button>
-      </li>
-      <li>
-        <button id="btn-undo" title="Undo (Ctrl+Z)">↩ Undo</button>
-        <button id="btn-redo" title="Redo (Ctrl+Y)">↪ Redo</button>
-        <button id="btn-del" title="Delete (Del)">🗑</button>
-      </li>
-      <li>
-        <span class="tlbl">File</span>
-        <button id="btn-save">💾 Save</button>
-        <button id="btn-load">📂 Load</button>
-        <button id="btn-export">⬇ Export</button>
-        <select id="sel-fmt">
-          <option value="png">PNG</option>
-          <option value="jpeg">JPEG</option>
-          <option value="svg">SVG</option>
-        </select>
-      </li>
+      <li id="tool_ctn"></li>
+      <li id="history_ctn"></li>
+      <li id="file_ctn"></li>
     </ul>
   </nav>
   <main id="main-area">
@@ -100,43 +36,6 @@
     <button id="right_navbar_btn">
       ▷
     </button>
-    <div>
-      <!-- Header -->
-      <div id="lp-header">
-        <span id="lp-header-title">Layers</span>
-        <div class="lp-hbtns">
-          <button class="lp-hbtn" id="lp-add" title="New Layer (Ctrl+Shift+N)">+</button>
-          <button class="lp-hbtn" id="lp-dup" title="Duplicate Layer">⧉</button>
-          <button class="lp-hbtn" id="lp-up" title="Move Layer Up">↑</button>
-          <button class="lp-hbtn" id="lp-down" title="Move Layer Down">↓</button>
-          <button class="lp-hbtn danger" id="lp-del" title="Delete Layer">✕</button>
-        </div>
-      </div>
-
-      <!-- Layer List -->
-      <div id="layer-list"></div>
-
-      <!-- Opacity -->
-      <div id="lp-opacity-row">
-        <label>Opacity</label>
-        <input type="range" id="lp-opacity" min="0" max="100" value="100" />
-        <span id="lp-opacity-val">100%</span>
-      </div>
-
-      <!-- Actions -->
-      <div id="lp-actions">
-        <div id="lp-merge-hint">Click layers to select for merge</div>
-        <button class="lp-action-btn" id="btn-merge-down">⬇ Merge Down</button>
-        <button class="lp-action-btn" id="btn-merge-to">⊕ Merge Into…</button>
-        <button class="lp-action-btn" id="btn-unmerge">↩ Unmerge Layer</button>
-        <div class="lp-action-sep"></div>
-        <button class="lp-action-btn" id="btn-merge-mode">⊞ Multi-Select Merge</button>
-        <button class="lp-action-btn accent" id="btn-merge-sel" style="display:none">✔ Merge Selected (0)</button>
-        <button class="lp-action-btn" id="btn-cancel-merge" style="display:none">✕ Cancel</button>
-        <div class="lp-action-sep"></div>
-        <button class="lp-action-btn danger" id="btn-flatten">⊟ Flatten All Layers</button>
-      </div>
-    </div>
   </aside>
 
   <script type="module" src="/src/main.js"></script>

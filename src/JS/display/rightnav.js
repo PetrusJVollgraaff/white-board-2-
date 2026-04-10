@@ -3,6 +3,8 @@ import { LayerPanel } from "../panels/layerPanel";
 class RightNav {
   #callback = () => {};
   #elmP = null;
+  #hideBtn = null;
+  #isHidden = false;
   constructor(elmP, callback) {
     this.#elmP = elmP;
     this.#callback = callback;
@@ -12,7 +14,27 @@ class RightNav {
     this.#init();
   }
 
-  #init() {}
+  #init() {
+    this.#hideBtn = this.#elmP.querySelector("button#right_navbar_btn");
+    this.#eventListener();
+  }
+
+  #eventListener() {
+    this.#hideBtn.addEventListener("click", () => {
+      this.#isHidden = !this.#isHidden;
+      const action = this.#isHidden ? "add" : "remove";
+      this.#elmP.classList[action]("hide");
+      this.#hideBtn.disabled = true;
+    });
+
+    this.#elmP.addEventListener("transitionend", (evt) => {
+      if (evt.target != this.#elmP) return;
+
+      const arrow = this.#isHidden ? "◁" : "▷";
+      this.#hideBtn.innerHTML = arrow;
+      this.#hideBtn.disabled = false;
+    });
+  }
 }
 
 export { RightNav };
