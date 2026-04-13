@@ -20,7 +20,7 @@ class Vector {
     const minX = Math.min(...vectors.map((p) => p.x));
     const maxX = Math.max(...vectors.map((p) => p.x));
     const minY = Math.min(...vectors.map((p) => p.y));
-    const maxY = Math.min(...vectors.map((p) => p.y));
+    const maxY = Math.max(...vectors.map((p) => p.y));
 
     return new Vector({
       x: minX + (maxX - minX) / 2,
@@ -65,7 +65,7 @@ class Vector {
 
   static bottomRight(vectors) {
     let bottomRight = vectors[0];
-    for (const vector of vectors) bottomRight = bottomRight.min(vector);
+    for (const vector of vectors) bottomRight = bottomRight.max(vector);
 
     return bottomRight;
   }
@@ -74,6 +74,19 @@ class Vector {
     return Math.atan2(v1.y, v1.x) - Math.atan2(v2.y, v2.x);
   }
 
+  static rotateAroundCenter(v, center, angle) {
+    let { x, y } = Vector.subtract(v, center);
+    let test1 = toXY({ dir: angle, mag: x });
+    let test2 = toXY({ dir: angle, mag: y });
+
+    let rotated = Vector({
+      x: test1.x - test2.y,
+      y: test2.y - test1.x,
+    });
+
+    return Vector.subtract(rotated, center);
+  }
+  /*
   static rotateAroundCenter(v, center, angle) {
     let { x, y } = new Vector({ x: v.x - center.x, y: v.y - center.y });
 
@@ -84,9 +97,14 @@ class Vector {
 
     return new Vector({ x: rotated.x - center.x, y: rotated.y - center.y });
   }
+  */
+
+  static toXY({ dir, mag }) {
+    return new Vector({ x: mag * Math.cos(dir), y: mag * Math.sin(dir) });
+  }
 
   static distance(v1, v2) {
-    return Math.sqrt(Math.pow(v1.x - v2.x, 2) + Math.pow(v1.y - v2.y, 2));
+    return v1.subtract(v2).magnitude();
   }
 
   add(v) {
@@ -98,7 +116,7 @@ class Vector {
   }
 
   magnitude() {
-    return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
+    return Math.sqrt(this.x ** 2 + this.y ** 2);
   }
 
   scale(scaler) {
@@ -114,7 +132,7 @@ class Vector {
   }
 
   dot(v) {
-    return this.x * v.x + this.y * v2.y;
+    return this.x * v.x + this.y * v.y;
   }
 
   direction() {
@@ -126,8 +144,7 @@ class Vector {
   }
 
   toXY({ dir, mag }) {
-    this.x = mag * Math.cos(dir);
-    this.y = mag * Math.sin(dir);
+    return new Vector({ x: mag * Math.cos(dir), y: mag * Math.sin(dir) });
   }
 }
 
