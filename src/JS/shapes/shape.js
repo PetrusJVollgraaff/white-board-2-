@@ -1,7 +1,29 @@
 import { Vector } from "../utils/vector";
 
 class Shape {
-  constructor(options) {
+  static defaultOptions() {
+    return {
+      lineCap: "round",
+      lineJoin: "round",
+      fill: {
+        visible: true,
+        type: "solid",
+        color: "#FFFF00",
+        opacity: 1,
+      },
+
+      stroke: {
+        visible: true,
+        type: "solid",
+        style: "continues",
+        color: "#000000",
+        opacity: 1,
+        size: 2,
+      },
+    };
+  }
+
+  constructor(options = Shape.defaultOptions()) {
     this.id = null;
     this.center = Vector.zero();
     this.options = options;
@@ -75,6 +97,49 @@ class Shape {
     }
   }
 
+  createColors(ctx, options, ctxstyle) {
+    const { type, image, color, opacity, linear } = options;
+    const { width, height } = this.size;
+
+    if (type == "linear" || type == "axial") {
+      const radius = Math.min(height, width);
+      const { points, colors, angle } = linear;
+      ctx[ctxstyle] = LinearStyle(
+        ctx,
+        type,
+        points,
+        colors,
+        angle,
+        radius,
+        this.center,
+      );
+    } else if (type == "solid" || (type == "image" && image.file == "")) {
+      ctx[ctxstyle] = color; //+ decimalToHexOpacity(opacity);
+    }
+  }
+
+  applyStyles(ctx, path) {
+    ctx.save();
+    const { fill, stroke, lineCap, lineJoin } = this.options;
+
+    //Area options
+    this.createColors(ctx, fill, "fillStyle");
+
+    //Border options
+    this.createColors(ctx, stroke, "strokeStyle");
+
+    ctx.lineWidth = stroke.size;
+    ctx.lineCap = lineCap;
+    ctx.lineJoin = lineJoin;
+
+    if (fill.visible) {
+      ctx.fill(path);
+    }
+
+    ctx.stroke(path);
+    ctx.restore();
+  }
+
   getPoints() {
     throw new Error("getPoints method must be implemented");
   }
@@ -87,3 +152,29 @@ class Shape {
     throw new Error("draw method must be implemented");
   }
 }
+
+function LinearStyle(ctx, type, points, colors, angle, radius, center) {
+  const newpoints = points.map((p, i) => {
+    return p.rotateByCenterAndRadius(center, angle + i * 180, radius / 2);
+  });
+
+  const gradient = ctx.createLinearGradient(
+    newpoints[0].x,
+    newpoints[0].y,
+    newpoints[1].x,
+    newpoints[1].y,
+  );
+
+  if (type == "linear") {
+    gradient.addColorStop(0, colors[0]);
+    gradient.addColorStop(1, colors[1]);
+  } else {
+    gradient.addColorStop(0, colors[0]);
+    gradient.addColorStop(0.5, colors[1]);
+    gradient.addColorStop(1, colors[0]);
+  }
+
+  return gradient;
+}
+
+export { Shape };

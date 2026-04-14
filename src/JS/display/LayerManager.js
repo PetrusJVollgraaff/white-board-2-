@@ -1,66 +1,15 @@
+import { Layer } from "./Layer";
+
 class LayerManager {
   #layers = [];
   #activeLayer = null;
   #mergeMode = false;
   #mergeSelIds = new Set();
   #onChange = null;
-  constructor() {}
-
-  set ChangeCallback(fn) {
-    this.#onChange = fn;
-  }
-
-  get layers() {
-    return this.#layers;
-  }
-
-  get activeLayer() {
-    return this.#layers.find((l) => l.id === this.#activeLayer) ?? null;
-  }
-  get mergeMode() {
-    return this.#mergeMode;
-  }
-
-  get mergeSelIds() {
-    return this.#mergeSelIds;
-  }
-
-  get mergeSelCount() {
-    return this.#mergeSelIds.size;
-  }
-
-  #init() {
-    this.#layers.push(new Layer("Background"));
-    this.#activeLayer = this.#layers[0].id;
-  }
-
-  add(name) {
-    const layer = new Layer(name ?? `Layer ${this.#layers.length + 1}`);
-    const idx = this.#activeLayer;
-
-    this.#layers.splice(idx, 0, layer);
-    this.#activeLayer = layer.id;
-    return layer;
-  }
-
-  duplicate() {
-    const src = this.#activeLayer;
-    if (!src) return null;
-
-    const copy = src.clone();
-    copy.name = src.name + " copy";
-    const idx = this.activeLayer;
-    this.#layers.splice(idx, 0, copy);
-    this.#activeLayer = copy.id;
-    return copy;
-  }
-
-  delete() {
-    if (this.#layers.length <= 1) return false;
-    const idx = this.#activeLayer;
-    this.#layers.splice(idx, 1);
-    this.#activeLayer = this.#layers[Math.min(idx, this.#layers.length - 1)].id;
-    return true;
+  #main = null;
+  constructor({ main }) {
+    this.#main = main;
+    this.#init();
   }
 
   set Active(id) {
@@ -68,21 +17,72 @@ class LayerManager {
       this.#activeLayer = id;
     }
   }
+  get layers() {
+    return this.#layers;
+  }
 
-  moveUp() {}
+  get activeLayer() {
+    return this.#layers.find((l) => l.id === this.#activeLayer) ?? null;
+  }
 
-  moveDown() {}
+  draw(elm, size) {
+    this.#layers.forEach((l) => {
+      elm.append(l.draw(this.#activeLayer, size));
+    });
+  }
 
-  reorder() {}
+  #init() {
+    this.#layers.push(new Layer("Background"));
+    this.#activeLayer = this.#layers[0].getId;
+  }
 
-  setOpacity() {}
+  add(name) {
+    const layer = new Layer(name ?? `Layer ${this.#layers.length + 1}`);
+    const idx = this.#layers.findIndex((l) => l.getId == this.#activeLayer);
 
-  rename() {}
+    this.#layers.splice(idx, 0, layer);
+    this.#activeLayer = layer.getId;
+    return layer;
+  }
 
-  set visible(id) {}
+  duplicate() {
+    const src = this.#layers.find((l) => l.getId == this.#activeLayer);
+    if (!src) return null;
 
-  enterMerge() {}
-  exitMerge() {}
+    const copy = src.clone();
+    copy.name = src.name + " copy";
+    const idx = this.#layers.findIndex((l) => l.getId == this.#activeLayer);
+    this.#layers.splice(idx, 0, copy);
+    this.#activeLayer = copy.getId;
+    return copy;
+  }
 
-  toggleMerge() {}
+  delete() {
+    if (this.#layers.length <= 1) return false;
+    const idx = this.#layers.findIndex((l) => l.getId == this.#activeLayer);
+    this.#layers.splice(idx, 1);
+    this.#activeLayer =
+      this.#layers[Math.min(idx, this.#layers.length - 1)].getId;
+    return true;
+  }
+
+  moveUp() {
+    const idx = this.#layers.findIndex((l) => l.getId == this.#activeLayer);
+    if (idx <= 0) return;
+    this.#move(idx, idx - 1);
+  }
+
+  moveDown() {
+    const idx = this.#layers.findIndex((l) => l.getId == this.#activeLayer);
+    if (idx >= this.#layers.length - 1) return;
+    this.#move(idx, idx + 1);
+  }
+
+  #move(idx, idx2) {
+    [this.#layers[idx], this.#layers[idx2]] = [
+      this.#layers[idx2],
+      this.#layers[idx],
+    ];
+  }
 }
+export { LayerManager };

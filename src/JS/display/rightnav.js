@@ -2,20 +2,26 @@ import { LayerPanel } from "../panels/layerPanel";
 
 class RightNav {
   #callback = () => {};
-  #elmP = null;
+  #elm = null;
   #hideBtn = null;
+  #main = null;
   #isHidden = false;
-  constructor(elmP, callback) {
-    this.#elmP = elmP;
+  constructor({ elm, main, callback }) {
+    this.#elm = elm;
+    this.#main = main;
     this.#callback = callback;
 
-    new LayerPanel(this.#elmP, this.#callback);
+    new LayerPanel({
+      elmP: this.#elm,
+      main: this.#main,
+      callback: this.#callback,
+    });
 
     this.#init();
   }
 
   #init() {
-    this.#hideBtn = this.#elmP.querySelector("button#right_navbar_btn");
+    this.#hideBtn = this.#elm.querySelector("button#right_navbar_btn");
     this.#eventListener();
   }
 
@@ -23,12 +29,12 @@ class RightNav {
     this.#hideBtn.addEventListener("click", () => {
       this.#isHidden = !this.#isHidden;
       const action = this.#isHidden ? "add" : "remove";
-      this.#elmP.classList[action]("hide");
+      this.#elm.classList[action]("hide");
       this.#hideBtn.disabled = true;
     });
 
-    this.#elmP.addEventListener("transitionend", (evt) => {
-      if (evt.target != this.#elmP) return;
+    this.#elm.addEventListener("transitionend", (evt) => {
+      if (evt.target != this.#elm) return;
 
       const arrow = this.#isHidden ? "◁" : "▷";
       this.#hideBtn.innerHTML = arrow;

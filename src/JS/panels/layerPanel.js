@@ -3,9 +3,12 @@ import { createDOMElement } from "../display/model";
 class LayerPanel {
   #elmP = null;
   #elm = null;
+  #main = null;
+  #layerList;
   #callback = () => {};
-  constructor(elmP, callback) {
+  constructor({ elmP, main, callback }) {
     this.#elmP = elmP;
+    this.#main = main;
     this.#callback = callback;
 
     this.#init();
@@ -13,23 +16,8 @@ class LayerPanel {
 
   #init() {
     this.#build();
-    /*this.addBtn = this.#elmP.querySelector("#lp-add");
-    this.dupBtn = this.#elmP.querySelector("#lp-dup");
-    this.upBtn = this.#elmP.querySelector("#lp-up");
-    this.downBtn = this.#elmP.querySelector("#lp-down");
-    this.delBtn = this.#elmP.querySelector("#lp-del");
-
-    this.layerList = this.#elmP.querySelector("#layer-list");
-    this.OpInput = this.#elmP.querySelector("#lp-opacity");
-
-    this.mergedownBtn = this.#elmP.querySelector("#btn-merge-down");
-    this.mergetoBtn = this.#elmP.querySelector("#btn-merge-to");
-    this.unmerge = this.#elmP.querySelector("#btn-unmerge");
-    this.mergemodeBtn = this.#elmP.querySelector("#btn-merge-mode");
-    this.mergecancelBtn = this.#elmP.querySelector("#btn-cancel-merge");
-    this.flattenBtn = this.#elmP.querySelector("#btn-flatten");
-    */
     this.#eventListener();
+    this.#main.setLayers = this.#layerList;
   }
 
   #buildTop() {
@@ -82,7 +70,7 @@ class LayerPanel {
 
   #buildMiddle() {
     const optElm = createDOMElement({ attributes: { id: "lp-opacity-row" } });
-    this.layerList = createDOMElement({ attributes: { id: "layer-list" } });
+    this.#layerList = createDOMElement({ attributes: { id: "layer-list" } });
     this.OpInput = createDOMElement({
       type: "input",
       attributes: { type: "range", min: "0", max: "100", value: "100" },
@@ -98,7 +86,7 @@ class LayerPanel {
       }),
     );
 
-    this.#elm.appendChild(this.layerList);
+    this.#elm.appendChild(this.#layerList);
     this.#elm.appendChild(optElm);
   }
 
@@ -164,12 +152,14 @@ class LayerPanel {
     this.#buildBottom();
   }
 
+  #topActions(value) {
+    this.#callback({ action: "setLayer", from: "top", value });
+    this.#layerList.innerHTML = "";
+    this.#main.setLayers = this.#layerList;
+  }
+
   #eventListener() {
-    this.addBtn.addEventListener("click", () => {});
-    this.dupBtn.addEventListener("click", () => {});
-    this.upBtn.addEventListener("click", () => {});
-    this.downBtn.addEventListener("click", () => {});
-    this.delBtn.addEventListener("click", () => {});
+    this.#topEvents();
 
     this.OpInput.addEventListener("change", () => {});
 
@@ -179,6 +169,24 @@ class LayerPanel {
     this.mergemodeBtn.addEventListener("click", () => {});
     this.mergecancelBtn.addEventListener("click", () => {});
     this.flattenBtn.addEventListener("click", () => {});
+  }
+
+  #topEvents() {
+    this.addBtn.addEventListener("click", () => {
+      this.#topActions("add");
+    });
+    this.dupBtn.addEventListener("click", () => {
+      this.#topActions("duplicate");
+    });
+    this.upBtn.addEventListener("click", () => {
+      this.#topActions("moveUp");
+    });
+    this.downBtn.addEventListener("click", () => {
+      this.#topActions("moveDown");
+    });
+    this.delBtn.addEventListener("click", () => {
+      this.#topActions("delete");
+    });
   }
 }
 

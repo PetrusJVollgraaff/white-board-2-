@@ -5,6 +5,9 @@ import { Vector } from "./JS/utils/vector";
 import { ExportManager } from "./JS/utils/export";
 import { RightNav } from "./JS/display/rightnav";
 import { SizePanel } from "./JS/panels/sizePanel";
+import { LayerManager } from "./JS/display/LayerManager";
+import { SelectTool } from "./JS/mouseEvents/selectTool";
+import { PanTools } from "./JS/mouseEvents/panTool";
 
 class DrawingBoard {
   #mainArea = document.getElementById("main-area");
@@ -13,6 +16,7 @@ class DrawingBoard {
   #mainC = document.getElementById("main-canvas");
   #mainCtx = this.#mainC.getContext("2d");
   #viewportElm = document.getElementById("viewport");
+  #layerManager = new LayerManager({ main: this });
   #rulers = null;
   #exportFormat = "png";
 
@@ -30,7 +34,9 @@ class DrawingBoard {
   };
   #showRulers = true;
   #isPanning = false;
-  #toolActive = "select";
+  #toolActive = "pan";
+  #SelectEvents = null;
+  #CallbackEvents = null;
 
   constructor() {
     this.#mainC.width = this.#viewportElm.clientWidth;
@@ -45,24 +51,39 @@ class DrawingBoard {
 
     this.#bindEvents();
 
-    new TopNav(this.#topNav, (data) => {
-      const { action } = data;
+    new TopNav({
+      elm: this.#topNav,
+      main: this,
+      callback: (data) => {
+        const { action } = data;
 
-      switch (action) {
-        case "setSize":
-          return this.#setSize(data);
-        case "setZoom":
-          return this.#setZoom(data);
-        case "setRuler":
-          return this.#setRuler(data);
-        case "setTool":
-          return this.#setTool(data);
-        case "setFile":
-          return this.#setFile(data);
-      }
+        switch (action) {
+          case "setSize":
+            return this.#setSize(data);
+          case "setZoom":
+            return this.#setZoom(data);
+          case "setRuler":
+            return this.#setRuler(data);
+          case "setTool":
+            return this.#setTool(data);
+          case "setFile":
+            return this.#setFile(data);
+        }
+      },
     });
 
-    new RightNav(this.#rightNav, () => {});
+    new RightNav({
+      elm: this.#rightNav,
+      main: this,
+      callback: (data) => {
+        const { action } = data;
+
+        switch (action) {
+          case "setLayer":
+            return this.#setLayer(data);
+        }
+      },
+    });
 
     new ResizeObserver(() => {
       this.#rulers.syncSizes(this.#StageProperties);
@@ -73,9 +94,15 @@ class DrawingBoard {
     this.#fitToViewport();
   }
 
+  set setLayers(elm) {
+    this.#layerManager.draw(elm, this.#StageProperties.size);
+  }
+
   #setTool(data) {
     const { tool } = data;
     this.#toolActive = tool;
+    this.#SelectEvents.removeEventListeners(this.#viewportElm);
+    this.#setMousEvents();
   }
 
   #setRuler(data) {
@@ -122,6 +149,14 @@ class DrawingBoard {
     if (value === "load") {
     }
     if (value === "save") {
+    }
+  }
+
+  #setLayer(data) {
+    var { value, from } = data;
+    if (from == "top") {
+      this.#layerManager[value]();
+      return;
     }
   }
 
@@ -172,49 +207,56 @@ class DrawingBoard {
     this.#render();
   }
 
-  #onMouseDown(e) {
-    if (e.button !== 0) return;
-
-    if (this.#toolActive === "pan") {
-      const offset = this._vp.getOffset;
-      const mouseStart = new Vector({ x: e.clientX, y: e.clientY });
-      this._panStart = { offset: new Vector({ ...offset }), mouseStart };
-      this.#isPanning = true;
-      this.#viewportElm.classList.add("panning");
-
-      return;
-    }
-  }
-
-  #onMouseMove(e) {
-    if (this.#isPanning) {
-      const { offset, mouseStart } = this._panStart;
-      const mouseMove = new Vector({ x: e.clientX, y: e.clientY });
-      const newPos = Vector.add(offset, Vector.subtract(mouseMove, mouseStart));
-
-      this._vp.setOffset = newPos;
-      this.#StageProperties.offset = newPos;
-
-      this.#render();
-      return;
-    }
-  }
-
-  #onMouseUp() {
-    if (this.#isPanning) {
-      this.#viewportElm.classList.remove("panning");
-      this.#isPanning = false;
-      this.#render();
-      return;
-    }
-  }
-
   #bindEvents() {
     const vp = this.#viewportElm;
-    vp.addEventListener("mousedown", (e) => this.#onMouseDown(e));
+    /*vp.addEventListener("mousedown", (e) => this.#onMouseDown(e));
     window.addEventListener("mousemove", (e) => this.#onMouseMove(e));
-    window.addEventListener("mouseup", (e) => this.#onMouseUp(e));
+    window.addEventListener("mouseup", (e) => this.#onMouseUp(e));*/
+    this.#setMousEvents();
     vp.addEventListener("wheel", (e) => this.#onWheel(e), { passive: false });
+  }
+
+  #setMousEvents() {
+    const vp = this.#viewportElm;
+    if (this.#toolActive == "select") {
+      this.#SelectEvents = SelectTool;
+      this.#SelectEvents.configureEventListener(vp, (data) => {});
+      return;
+    }
+
+    if (this.#toolActive == "pan") {
+      this.#SelectEvents = PanTools;
+      this.#SelectEvents.configureEventListener(vp, this.#PanEvents.bind(this));
+    }
+  }
+
+  #PanEvents(evt) {
+    if (evt instanceof PointerEvent) {
+      const { type, clientX, clientY } = evt;
+      if (type == "pointerdown") {
+        const offset = this._vp.getOffset;
+        const mouseStart = new Vector({ x: clientX, y: clientY });
+        this._panStart = { offset: new Vector({ ...offset }), mouseStart };
+        this.#isPanning = true;
+        this.#viewportElm.classList.add("panning");
+      } else if (type == "pointermove") {
+        const { offset, mouseStart } = this._panStart;
+        const mouseMove = new Vector({ x: clientX, y: clientY });
+        const newPos = Vector.add(
+          offset,
+          Vector.subtract(mouseMove, mouseStart),
+        );
+
+        this._vp.setOffset = newPos;
+        this.#StageProperties.offset = newPos;
+
+        this.#render();
+      } else {
+        this.#viewportElm.classList.remove("panning");
+        this.#isPanning = false;
+        this.#render();
+      }
+    }
   }
 }
 

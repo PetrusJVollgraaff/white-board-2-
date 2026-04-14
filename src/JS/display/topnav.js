@@ -7,17 +7,19 @@ import { ZoomPanel } from "../panels/zoomPanel";
 
 class TopNav {
   #callback = () => {};
-  #elmP = null;
-  constructor(elmP, callback) {
-    this.#elmP = elmP;
+  #elm = null;
+  #main = null;
+  constructor({ elm, main, callback }) {
+    this.#elm = elm;
+    this.#main = main;
     this.#callback = callback;
 
-    new SizePanel(this.#elmP, this.#callback);
-    new ZoomPanel(this.#elmP, this.#callback);
-    new RulerPanel(this.#elmP, this.#callback);
-    new ToolPanel(this.#elmP, this.#callback);
-    new HistoryPanel(this.#elmP, this.#callback);
-    new FilePanel(this.#elmP, this.#callback);
+    new SizePanel(this.#elm, this.#callback);
+    new ZoomPanel(this.#elm, this.#callback);
+    new RulerPanel(this.#elm, this.#callback);
+    new ToolPanel(this.#elm, this.#callback);
+    new HistoryPanel(this.#elm, this.#callback);
+    new FilePanel(this.#elm, this.#callback);
 
     this.#init();
   }

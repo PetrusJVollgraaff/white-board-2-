@@ -1,16 +1,12 @@
 import { Vector } from "../utils/vector";
 
-class ViewPort extends EventTarget {
+class ViewPort {
   #offset = Vector.zero();
   #zoom = 1;
 
   static zoom_step = 1.12;
   static min_zoom = 0.04;
   static max_zoom = 40;
-
-  constructor(ratio) {
-    super();
-  }
 
   get getOffset() {
     return this.#offset;
@@ -26,6 +22,14 @@ class ViewPort extends EventTarget {
 
   get zoomLabel() {
     return Math.round(this.#zoom * 100) + "%";
+  }
+
+  toDoc(vx, vy) {
+    const { x: offsetX, y: offsetY } = this.#offset;
+    return new Vector({
+      x: (vx - offsetX) / this.#zoom,
+      y: (vy - offsetY) / this.#zoom,
+    });
   }
 
   applyZoom(z, vec = Vector.zero()) {
