@@ -18,6 +18,23 @@ class RectShape extends Shape {
     this.options = options;
   }
 
+  static load(data) {
+    const shape = new RectShape(data);
+
+    return shape;
+  }
+
+  serialize() {
+    const json = JSON.parse(
+      JSON.stringify({ ...{ shape: this.#shape }, ...this }),
+    );
+
+    json.options.fill.color = "#FF0000";
+    json.options.stroke.color = "#00FFFF";
+
+    return json;
+  }
+
   setCorner2(corner2) {
     this.corner2 = corner2;
   }

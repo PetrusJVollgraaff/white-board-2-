@@ -19,7 +19,6 @@ class DrawingBoard {
   #mainC = document.getElementById("main-canvas");
   #mainCtx = this.#mainC.getContext("2d");
   #viewportElm = document.getElementById("viewport");
-  #layerManager = new LayerManager({ main: this });
   #rulers = null;
   #exportFormat = "png";
 
@@ -36,14 +35,11 @@ class DrawingBoard {
     height: 0,
   };
   #showRulers = true;
-  #isPanning = false;
   #toolActive = "pan";
   #SelectEvents = null;
-  #CallbackEvents = null;
-  #Shapes = [];
   #currentShape = null;
   #startPoint = Vector.zero();
-
+  #layerManager = new LayerManager({ main: this });
   constructor() {
     this.#mainC.width = this.#viewportElm.clientWidth;
     this.#mainC.height = this.#viewportElm.clientHeight;
@@ -101,13 +97,17 @@ class DrawingBoard {
   }
 
   set setLayers(elm) {
-    this.#layerManager.draw(elm, this.#StageProperties.size);
+    this.#layerManager.render(elm);
     this.render();
   }
 
   get vpPt() {
     const { left, top } = this.#viewportElm.getBoundingClientRect();
     return (e) => new Vector({ x: e.clientX - left, y: e.clientY - top });
+  }
+
+  get getSize() {
+    return this.#StageProperties.size;
   }
 
   #appendShape() {
@@ -265,7 +265,6 @@ class DrawingBoard {
         const offset = this._vp.getOffset;
         const mouseStart = new Vector({ x: clientX, y: clientY });
         this._panStart = { offset: new Vector({ ...offset }), mouseStart };
-        this.#isPanning = true;
         this.#viewportElm.classList.add("panning");
       } else if (type == "pointermove") {
         const { offset, mouseStart } = this._panStart;
@@ -281,7 +280,6 @@ class DrawingBoard {
         this.render();
       } else {
         this.#viewportElm.classList.remove("panning");
-        this.#isPanning = false;
         this.render();
       }
     }
@@ -311,10 +309,9 @@ class DrawingBoard {
         this.render([this.#currentShape]);
       } else if (type == "pointerup") {
         if (this.#currentShape) {
-          this.#startPoint = Vector.zero();
           this.#appendShape();
+          this.#startPoint = Vector.zero();
           this.#currentShape = null;
-
           this.render();
         }
       }

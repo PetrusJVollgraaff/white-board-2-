@@ -24,13 +24,6 @@ class LayerPanel {
     const header = createDOMElement({ attributes: { id: "lp-header" } });
     const btnsCtn = createDOMElement({ attributes: { class: "lp-hbtns" } });
 
-    header.appendChild(
-      createDOMElement({
-        type: "span",
-        attributes: { id: "lp-header-title" },
-        text: "Layers",
-      }),
-    );
     header.appendChild(btnsCtn);
 
     this.addBtn = createDOMElement({

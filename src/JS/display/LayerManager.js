@@ -40,9 +40,9 @@ class LayerManager {
   }
 
   /** layer methods */
-  draw(elm, size) {
+  render(elm) {
     this.#layers.forEach((l) => {
-      elm.append(l.draw(this.#activeLayer, size));
+      elm.append(l.render(this.#activeLayer, this.#main.getSize));
     });
   }
 
@@ -57,9 +57,13 @@ class LayerManager {
   }
 
   add(givenname) {
-    const name =
-      givenname ?? this.#layerNameExist("Layer", this.#layers.length + 1);
-    const layer = new Layer({ name, callback: this.#layerCallback.bind(this) });
+    const size = this.#main.getSize;
+    const name = givenname ?? this.#layerNameExist("Layer", 1);
+    const layer = new Layer({
+      name,
+      size,
+      callback: this.#layerCallback.bind(this),
+    });
     const idx = 0; //this.#layers.findIndex((l) => l.getId == this.#activeLayer);
 
     this.#layers.splice(idx, 0, layer);
@@ -109,13 +113,23 @@ class LayerManager {
 
   /** shapes Methods  */
   addShape(shape) {
+    const size = this.#main.getSize;
     const idx = this.#layers.findIndex((l) => l.getId === this.#activeLayer);
-    if (idx > -1) this.#layers[idx].addShape = shape;
+    if (idx > -1) {
+      this.#layers[idx].addShape = shape;
+      this.#layers[idx].renderThumb(size.w, size.h);
+    }
   }
 
   drawShape(ctx, shape = []) {
+    const size = this.#main.getSize;
     const shapes = Object.values(
-      this.#layers.map((l) => l.getShapes).reverse(),
+      this.#layers
+        .map((l) => {
+          l.renderThumb(size.w, size.h);
+          return l.getShapes;
+        })
+        .reverse(),
     ).flat();
     [...shapes, ...shape].forEach((s) => {
       s.draw(ctx);

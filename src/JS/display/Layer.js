@@ -1,3 +1,5 @@
+import { RectShape } from "../shapes/patterns/rectangle";
+import { Vector } from "../utils/vector";
 import { createDOMElement } from "./model";
 
 class Layer {
@@ -9,18 +11,21 @@ class Layer {
   #mergeHistory = null;
   #elm = null;
   #viewElm = null;
+  #thumbElm = null;
   #selected = false;
   #callback;
+  #size = { w: 0, h: 0 };
 
-  constructor({ name, opts = null, callback = () => {} }) {
+  constructor({ name, size, opts = null, callback = () => {} }) {
     this.#name = name;
+    this.#size = size;
     this.#callback = callback;
 
     if (opts) {
       this.#visible = opts.visible ?? true;
       this.#opacity = opts.opacity ?? 100;
       this.#shapes = (opts.shapes ?? []).map((s) =>
-        s instanceof Shape ? s : Shape.fromJSON(s),
+        s instanceof RectShape ? s : RectShape.load(s),
       );
       // mergeHistory: array of layer snapshots that were merged to create this layer
       // Allows full unmerge back to original layers
@@ -35,6 +40,7 @@ class Layer {
   }
 
   #build() {
+    const { w, h } = this.#size;
     this.#elm = createDOMElement({
       attributes: {
         class: "layer-item",
@@ -50,6 +56,15 @@ class Layer {
       },
       text: this.#visible ? "👁" : "⊘",
     });
+
+    this.#thumbElm = createDOMElement({
+      type: "img",
+      attributes: {
+        class: "modal-pick-thumb",
+      },
+    });
+
+    this.renderThumb(w, h);
   }
 
   static _uid() {
@@ -62,14 +77,6 @@ class Layer {
 
   get getId() {
     return this.#id;
-  }
-
-  get isMerged() {
-    return Array.isArray(this.#mergeHistory) && this.#mergeHistory.length > 0;
-  }
-
-  get shapeCount() {
-    return this.#shapes.length;
   }
 
   get getShapes() {
@@ -86,9 +93,10 @@ class Layer {
     this.#elm.classList[active]("active");
   }
 
-  draw(selectedId, { w, h }) {
+  render(selectedId, { w, h }) {
     this.setActive = selectedId == this.#id;
     this.#elm.innerHTML = "";
+    this.renderThumb(w, h);
 
     this.#elm.appendChild(
       createDOMElement({
@@ -98,22 +106,7 @@ class Layer {
       }),
     );
     this.#elm.appendChild(this.#viewElm);
-
-    const newThumb = this.renderThumb(w, h);
-
-    this.thumb = createDOMElement({
-      type: "img",
-      attributes: {
-        class: "modal-pick-thumb",
-      },
-    });
-
-    newThumb.then((blob) => {
-      const url = URL.createObjectURL(blob);
-      this.thumb.src = url;
-    });
-
-    this.#elm.appendChild(this.thumb);
+    this.#elm.appendChild(this.#thumbElm);
 
     const info = createDOMElement({ attributes: { class: "layer-info" } });
     const meta = createDOMElement({ attributes: { class: "layer-meta" } });
@@ -151,32 +144,44 @@ class Layer {
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, 34, 26);
 
-    if (!this.#shapes.length) return offcanvas.convertToBlob();
+    let thumb = null;
+    if (!this.#shapes.length) {
+      thumb = offcanvas.convertToBlob();
+    } else {
+      const scale = Math.min(34 / docW, 26 / docH);
+      ctx.save();
+      ctx.scale(scale, scale);
+      ctx.globalAlpha = this.#opacity / 100;
+      for (const s of this.#shapes) s.draw(ctx, false);
+      ctx.restore();
 
-    const scale = Math.min(34 / docW, 26 / docH);
-    ctx.save();
-    ctx.scale(scale, scale);
-    ctx.globalAlpha = this.#opacity / 100;
-    for (const s of this.#shapes) s.draw(ctx, false);
-    ctx.restore();
+      thumb = offcanvas.convertToBlob();
+    }
 
-    return offcanvas.convertToBlob();
-  }
+    thumb.then((blob) => {
+      const url = URL.createObjectURL(blob);
 
-  clone() {
-    return new Layer(this.#name + " copy", {
-      visible: this.#visible,
-      opacity: this.#opacity,
-      shapes: this.#shapes.map((s) => s.clone()),
-      mergeHistory: this.#mergeHistory
-        ? JSON.parse(JSON.stringify(this.#mergeHistory))
-        : null,
+      this.#thumbElm.src = url;
     });
   }
 
-  toJSON() {}
-
-  static fromJSON(o) {}
+  clone() {
+    const shapes = this.#shapes.map((s) => s.serialize());
+    const mergeHistory = this.#mergeHistory
+      ? JSON.parse(JSON.stringify(this.#mergeHistory))
+      : null;
+    return new Layer({
+      name: this.#name + " copy",
+      size: this.#size,
+      callback: this.#callback,
+      opts: {
+        visible: this.#visible,
+        opacity: this.#opacity,
+        shapes,
+        mergeHistory,
+      },
+    });
+  }
 
   #eventListener() {
     this.#elm.addEventListener("click", (evt) => {
@@ -193,8 +198,6 @@ class Layer {
       this.#callback({ action: "view" });
     });
   }
-
-  render() {}
 }
 
 export { Layer };
