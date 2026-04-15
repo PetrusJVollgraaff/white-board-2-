@@ -12,9 +12,17 @@ class LayerManager {
     this.#init();
   }
 
-  set Active(id) {
-    if (this.#layers.some((l) => l.id == id)) {
+  #init() {
+    this.add("Background");
+    //this.#layers.push(new Layer({name:"Background"}));
+    this.#activeLayer = this.#layers[0].getId;
+  }
+
+  /**  Sets Gets */
+  #Active(id) {
+    if (this.#layers.some((l) => l.getId == id)) {
       this.#activeLayer = id;
+      this.#layers.forEach((l) => (l.setActive = this.#activeLayer == l.getId));
     }
   }
   get layers() {
@@ -25,20 +33,34 @@ class LayerManager {
     return this.#layers.find((l) => l.id === this.#activeLayer) ?? null;
   }
 
+  #layerCallback(data) {
+    const { action } = data;
+    if (action == "active") this.#Active(data.id);
+    this.#main.render();
+  }
+
+  /** layer methods */
   draw(elm, size) {
     this.#layers.forEach((l) => {
       elm.append(l.draw(this.#activeLayer, size));
     });
   }
 
-  #init() {
-    this.#layers.push(new Layer("Background"));
-    this.#activeLayer = this.#layers[0].getId;
+  #layerNameExist(name, num) {
+    let newName = `${name} ${num}`;
+    while (this.#layers.some((l) => l.getName == newName)) {
+      num += 1;
+      newName = `${name} ${num}`;
+    }
+
+    return newName;
   }
 
-  add(name) {
-    const layer = new Layer(name ?? `Layer ${this.#layers.length + 1}`);
-    const idx = this.#layers.findIndex((l) => l.getId == this.#activeLayer);
+  add(givenname) {
+    const name =
+      givenname ?? this.#layerNameExist("Layer", this.#layers.length + 1);
+    const layer = new Layer({ name, callback: this.#layerCallback.bind(this) });
+    const idx = 0; //this.#layers.findIndex((l) => l.getId == this.#activeLayer);
 
     this.#layers.splice(idx, 0, layer);
     this.#activeLayer = layer.getId;
@@ -83,6 +105,21 @@ class LayerManager {
       this.#layers[idx2],
       this.#layers[idx],
     ];
+  }
+
+  /** shapes Methods  */
+  addShape(shape) {
+    const idx = this.#layers.findIndex((l) => l.getId === this.#activeLayer);
+    if (idx > -1) this.#layers[idx].addShape = shape;
+  }
+
+  drawShape(ctx, shape = []) {
+    const shapes = Object.values(
+      this.#layers.map((l) => l.getShapes).reverse(),
+    ).flat();
+    [...shapes, ...shape].forEach((s) => {
+      s.draw(ctx);
+    });
   }
 }
 export { LayerManager };

@@ -8,6 +8,9 @@ import { SizePanel } from "./JS/panels/sizePanel";
 import { LayerManager } from "./JS/display/LayerManager";
 import { SelectTool } from "./JS/mouseEvents/selectTool";
 import { PanTools } from "./JS/mouseEvents/panTool";
+import { RectTool } from "./JS/mouseEvents/rectTool";
+import { RectShape } from "./JS/shapes/patterns/rectangle";
+import { BoundingBox } from "./JS/utils/boundingBox";
 
 class DrawingBoard {
   #mainArea = document.getElementById("main-area");
@@ -37,6 +40,9 @@ class DrawingBoard {
   #toolActive = "pan";
   #SelectEvents = null;
   #CallbackEvents = null;
+  #Shapes = [];
+  #currentShape = null;
+  #startPoint = Vector.zero();
 
   constructor() {
     this.#mainC.width = this.#viewportElm.clientWidth;
@@ -87,7 +93,7 @@ class DrawingBoard {
 
     new ResizeObserver(() => {
       this.#rulers.syncSizes(this.#StageProperties);
-      this.#render();
+      this.render();
     }).observe(this.#viewportElm);
 
     this.#rulers.syncSizes(this.#StageProperties);
@@ -96,6 +102,16 @@ class DrawingBoard {
 
   set setLayers(elm) {
     this.#layerManager.draw(elm, this.#StageProperties.size);
+    this.render();
+  }
+
+  get vpPt() {
+    const { left, top } = this.#viewportElm.getBoundingClientRect();
+    return (e) => new Vector({ x: e.clientX - left, y: e.clientY - top });
+  }
+
+  #appendShape() {
+    this.#layerManager.addShape(this.#currentShape);
   }
 
   #setTool(data) {
@@ -127,14 +143,17 @@ class DrawingBoard {
       var z = data.value == "in" ? zoom * zoomstep : zoom / zoomstep;
       this._vp.applyZoom(z, this.#StageProperties.offset);
       this.#StageProperties.offset = this._vp.getOffset;
-      this.#render();
+      this.render();
     }
   }
 
   #setFile(data) {
     const { value } = data;
 
-    if (value === "format") this.#exportFormat = data.format;
+    if (value === "format") {
+      this.#exportFormat = data.format;
+      return;
+    }
 
     if (value === "export") {
       switch (this.#exportFormat) {
@@ -147,8 +166,10 @@ class DrawingBoard {
       }
     }
     if (value === "load") {
+      return;
     }
     if (value === "save") {
+      return;
     }
   }
 
@@ -172,7 +193,7 @@ class DrawingBoard {
     });
   }
 
-  #render() {
+  render(shapes = []) {
     const zoom = this._vp.getZoom;
     const { offset, width, height, size } = this.#StageProperties;
     if (this.#showRulers) this.#rulers.draw(this._vp, this.#StageProperties);
@@ -183,28 +204,25 @@ class DrawingBoard {
     this.#mainCtx.fillRect(offset.x, offset.y, size.w * zoom, size.h * zoom);
     this.#mainCtx.scale(zoom, zoom);
     this.#mainCtx.translate(offset.x / zoom, offset.y / zoom);
-    this.#mainCtx.restore();
 
     document.getElementById("zoom-level").textContent = this._vp.zoomLabel;
+
+    this.#layerManager.drawShape(this.#mainCtx, shapes);
+    this.#mainCtx.restore();
   }
 
   #fitToViewport() {
     this._vp.fitDoc(this.#StageProperties);
     this.#StageProperties.offset = this._vp.getOffset;
 
-    this.#render();
-  }
-
-  #vpPt(e) {
-    const { left, top } = this.#viewportElm.getBoundingClientRect();
-    return new Vector({ x: e.clientX - left, y: e.clientY - top });
+    this.render();
   }
 
   #onWheel(e) {
     e.preventDefault();
-    this._vp.handleZoom(e.deltaY, this.#vpPt(e));
+    this._vp.handleZoom(e.deltaY, this.vpPt(e));
     this.#StageProperties.offset = this._vp.getOffset;
-    this.#render();
+    this.render();
   }
 
   #bindEvents() {
@@ -227,6 +245,16 @@ class DrawingBoard {
     if (this.#toolActive == "pan") {
       this.#SelectEvents = PanTools;
       this.#SelectEvents.configureEventListener(vp, this.#PanEvents.bind(this));
+      return;
+    }
+
+    if (this.#toolActive == "rect") {
+      this.#SelectEvents = RectTool;
+      this.#SelectEvents.configureEventListener(
+        vp,
+        this.#RectEvents.bind(this),
+      );
+      return;
     }
   }
 
@@ -250,13 +278,54 @@ class DrawingBoard {
         this._vp.setOffset = newPos;
         this.#StageProperties.offset = newPos;
 
-        this.#render();
+        this.render();
       } else {
         this.#viewportElm.classList.remove("panning");
         this.#isPanning = false;
-        this.#render();
+        this.render();
       }
     }
+  }
+
+  #RectEvents(evt) {
+    var startPoint = null;
+    if (evt instanceof PointerEvent) {
+      const { type } = evt;
+      const vp = this.vpPt(evt);
+      const doc = this._vp.toDoc(vp.x, vp.y);
+
+      if (type == "pointerdown") {
+        this.#startPoint = doc;
+      } else if (type == "pointermove") {
+        const { center, size } = DrawingBoard.getCenterAndSize(
+          this.#startPoint,
+          doc,
+        );
+        if (this.#currentShape) {
+          this.#currentShape.setCenter = { center };
+          this.#currentShape.setSize = size;
+        } else {
+          this.#currentShape = new RectShape({ center, size });
+        }
+
+        this.render([this.#currentShape]);
+      } else if (type == "pointerup") {
+        if (this.#currentShape) {
+          this.#startPoint = Vector.zero();
+          this.#appendShape();
+          this.#currentShape = null;
+
+          this.render();
+        }
+      }
+    }
+  }
+
+  static getCenterAndSize(corner1, corner2) {
+    const points = [corner1, corner2];
+    const center = Vector.mid(points);
+    const size = BoundingBox.fromPoints(points);
+    return { center, size };
   }
 }
 

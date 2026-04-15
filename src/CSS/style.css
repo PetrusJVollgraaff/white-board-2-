@@ -83,6 +83,11 @@ body {
   gap: 5px;
 }
 
+#tool_ctn .active {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+}
+
 /* right side Navbar */
 #right_navbar {
   width: var(--panel-w);

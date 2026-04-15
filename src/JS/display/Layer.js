@@ -8,10 +8,13 @@ class Layer {
   #shapes = [];
   #mergeHistory = null;
   #elm = null;
-  #selected;
+  #viewElm = null;
+  #selected = false;
+  #callback;
 
-  constructor(name, opts = null) {
+  constructor({ name, opts = null, callback = () => {} }) {
     this.#name = name;
+    this.#callback = callback;
 
     if (opts) {
       this.#visible = opts.visible ?? true;
@@ -23,10 +26,38 @@ class Layer {
       // Allows full unmerge back to original layers
       this.#mergeHistory = opts.mergeHistory ?? null; // null = not merged
     }
+    this.#init();
+  }
+
+  #init() {
+    this.#build();
+    this.#eventListener();
+  }
+
+  #build() {
+    this.#elm = createDOMElement({
+      attributes: {
+        class: "layer-item",
+        "data-id": this.#id,
+      },
+    });
+
+    this.#viewElm = createDOMElement({
+      type: "span",
+      attributes: {
+        class: "layer-vis",
+        title: this.#visible ? "Click to hide" : "Click to show",
+      },
+      text: this.#visible ? "👁" : "⊘",
+    });
   }
 
   static _uid() {
     return "L" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+  }
+
+  get getName() {
+    return this.#name;
   }
 
   get getId() {
@@ -41,15 +72,23 @@ class Layer {
     return this.#shapes.length;
   }
 
-  draw(selectedId, { w, h }) {
-    const active = selectedId == this.#id;
+  get getShapes() {
+    return this.#visible ? this.#shapes : [];
+  }
 
-    this.#elm = createDOMElement({
-      attributes: {
-        class: "layer-item" + (active ? " active" : ""),
-        "data-id": this.#id,
-      },
-    });
+  set addShape(shape) {
+    this.#shapes.push(shape);
+  }
+
+  set setActive(val) {
+    this.#selected = val;
+    const active = this.#selected ? "add" : "remove";
+    this.#elm.classList[active]("active");
+  }
+
+  draw(selectedId, { w, h }) {
+    this.setActive = selectedId == this.#id;
+    this.#elm.innerHTML = "";
 
     this.#elm.appendChild(
       createDOMElement({
@@ -58,16 +97,7 @@ class Layer {
         text: "⠿",
       }),
     );
-    this.#elm.appendChild(
-      createDOMElement({
-        type: "span",
-        attributes: {
-          class: "layer-vis",
-          title: this.#visible ? "Click to hide" : "Click to show",
-        },
-        text: this.#visible ? "👁" : "🙈",
-      }),
-    );
+    this.#elm.appendChild(this.#viewElm);
 
     const newThumb = this.renderThumb(w, h);
 
@@ -147,6 +177,22 @@ class Layer {
   toJSON() {}
 
   static fromJSON(o) {}
+
+  #eventListener() {
+    this.#elm.addEventListener("click", (evt) => {
+      if (this.#selected) return;
+      this.#callback({ action: "active", id: this.#id });
+    });
+
+    this.#viewElm.addEventListener("click", (evt) => {
+      evt.preventDefault();
+      evt.stopPropagation();
+      this.#visible = !this.#visible;
+      this.#viewElm.innerHTML = this.#visible ? "👁" : "⊘";
+
+      this.#callback({ action: "view" });
+    });
+  }
 
   render() {}
 }

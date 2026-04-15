@@ -1,13 +1,16 @@
-class PanTools {
+import { Vector } from "../utils/vector";
+
+class RectTool {
   static #Event = null;
 
   static addPointerDownListener(evt) {
     var _ = this;
     const { target } = evt;
     if (evt.button == 1) return;
-
+    evt["startPoint"] = new Vector({ x: evt.clientX, y: evt.clientY });
     _(evt);
     const moveCallback = function (evt) {
+      evt["movePoint"] = new Vector({ x: evt.clientX, y: evt.clientY });
       _(evt);
     };
     const upCallback = function (evt) {
@@ -30,4 +33,5 @@ class PanTools {
     this.#Event = null;
   }
 }
-export { PanTools };
+
+export { RectTool };
