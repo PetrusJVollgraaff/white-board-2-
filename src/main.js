@@ -97,6 +97,10 @@ class DrawingBoard {
     this.#fitToViewport();
   }
 
+  set setOffset(value) {
+    this.#StageProperties.offset = value;
+  }
+
   set setLayers(elm) {
     this.#layerManager.render(elm);
     this.render();
@@ -109,6 +113,12 @@ class DrawingBoard {
 
   get getSize() {
     return this.#StageProperties.size;
+  }
+
+  get getShape() {
+    const shapes = this.#layerManager.activeLayerShapes;
+    return (doc) =>
+      shapes ? shapes.find((s) => s.isSelected(this.#mainCtx, doc)) : null;
   }
 
   #appendShape() {
@@ -143,7 +153,7 @@ class DrawingBoard {
 
       var z = data.value == "in" ? zoom * zoomstep : zoom / zoomstep;
       this._vp.applyZoom(z, this.#StageProperties.offset);
-      this.#StageProperties.offset = this._vp.getOffset;
+      this.setOffset = this._vp.getOffset;
       this.render();
     }
   }
@@ -214,7 +224,7 @@ class DrawingBoard {
 
   #fitToViewport() {
     this._vp.fitDoc(this.#StageProperties);
-    this.#StageProperties.offset = this._vp.getOffset;
+    this.setOffset = this._vp.getOffset;
 
     this.render();
   }
@@ -222,7 +232,7 @@ class DrawingBoard {
   #onWheel(e) {
     e.preventDefault();
     this._vp.handleZoom(e.deltaY, this.vpPt(e));
-    this.#StageProperties.offset = this._vp.getOffset;
+    this.setOffset = this._vp.getOffset;
     this.render();
   }
 
@@ -239,19 +249,13 @@ class DrawingBoard {
     const vp = this.#viewportElm;
     if (this.#toolActive == "select") {
       this.#SelectedEvent = SelectTool;
-      this.#SelectedEvent.configureEventListener(
-        vp,
-        this.#SelectEvents.bind(this),
-      );
+      this.#SelectedEvent.configureEventListener(vp, this);
       return;
     }
 
     if (this.#toolActive == "pan") {
       this.#SelectedEvent = PanTools;
-      this.#SelectedEvent.configureEventListener(
-        vp,
-        this.#PanEvents.bind(this),
-      );
+      this.#SelectedEvent.configureEventListener(vp, this);
       return;
     }
 
@@ -262,33 +266,6 @@ class DrawingBoard {
         this.#RectEvents.bind(this),
       );
       return;
-    }
-  }
-
-  #PanEvents(evt) {
-    if (evt instanceof PointerEvent) {
-      const { type, clientX, clientY } = evt;
-      if (type == "pointerdown") {
-        const offset = this._vp.getOffset;
-        const mouseStart = new Vector({ x: clientX, y: clientY });
-        this._panStart = { offset: new Vector({ ...offset }), mouseStart };
-        this.#viewportElm.classList.add("panning");
-      } else if (type == "pointermove") {
-        const { offset, mouseStart } = this._panStart;
-        const mouseMove = new Vector({ x: clientX, y: clientY });
-        const newPos = Vector.add(
-          offset,
-          Vector.subtract(mouseMove, mouseStart),
-        );
-
-        this._vp.setOffset = newPos;
-        this.#StageProperties.offset = newPos;
-
-        this.render();
-      } else {
-        this.#viewportElm.classList.remove("panning");
-        this.render();
-      }
     }
   }
 
@@ -330,59 +307,6 @@ class DrawingBoard {
     const center = Vector.mid(points);
     const size = BoundingBox.fromPoints(points);
     return { center, size };
-  }
-
-  #SelectEvents(evt) {
-    var startPoint = null;
-    if (evt instanceof PointerEvent) {
-      const { type, button } = evt;
-      const vp = this.vpPt(evt);
-      const doc = this._vp.toDoc(vp.x, vp.y);
-
-      if (button < 1) {
-        if (type == "pointerdown") {
-          const shapes = this.#layerManager.activeLayerShapes;
-
-          if (shapes) {
-            const shape = shapes.find((s) => s.isSelected(this.#mainCtx, doc));
-            this.isClickingSelectedShape = shape && shape.selected;
-
-            if (!shape) return;
-
-            if (!this.isClickingSelectedShape) {
-              this.#currentShape = shape;
-              this.#startPoint = doc;
-              this.OldCenter = this.#currentShape.getCenter;
-              this.#currentShape.select();
-              this.rightNav.setSize = this.#currentShape.getSize;
-              this.rightNav.setColor = this.#currentShape.getColor;
-            }
-            this.#isDraggin = false;
-          }
-        } else if (type == "pointermove") {
-          if (!this.#currentShape) return;
-          const diff = Vector.subtract(doc, this.#startPoint);
-
-          this.#isDraggin = true;
-          this.#currentShape.setCenter = {
-            center: Vector.add(this.OldCenter, diff),
-          };
-
-          this.render();
-        } else if (type == "pointerup") {
-          if (!this.#currentShape) return;
-          if (this.isClickingSelectedShape && !this.#isDraggin) {
-          }
-
-          if (this.#isDraggin) {
-            this.rightNav.setSize = this.#currentShape.getSize;
-            this.#currentShape.unselect();
-          }
-          if (this.#currentShape) this.#currentShape = null;
-          this.render();
-        }
-      }
-    }
   }
 }
 
