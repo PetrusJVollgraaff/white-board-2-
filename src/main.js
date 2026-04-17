@@ -4,13 +4,13 @@ import ViewPort from "./JS/display/viewport";
 import { Vector } from "./JS/utils/vector";
 import { ExportManager } from "./JS/utils/export";
 import { RightNav } from "./JS/display/rightnav";
-import { SizePanel } from "./JS/panels/sizePanel";
 import { LayerManager } from "./JS/display/LayerManager";
 import { SelectTool } from "./JS/mouseEvents/selectTool";
 import { PanTools } from "./JS/mouseEvents/panTool";
 import { RectTool } from "./JS/mouseEvents/rectTool";
 import { RectShape } from "./JS/shapes/patterns/rectangle";
 import { BoundingBox } from "./JS/utils/boundingBox";
+import { ViewportSizePanel } from "./JS/panels/ViewportSizePanel";
 
 class DrawingBoard {
   #mainArea = document.getElementById("main-area");
@@ -25,7 +25,7 @@ class DrawingBoard {
   #StageProperties = {
     offset: Vector.zero(),
     center: Vector.zero(),
-    size: SizePanel.Sizes["800x600"],
+    size: ViewportSizePanel.Sizes["800x600"],
     ratio: 0,
     top: 0,
     left: 0,

@@ -1,7 +1,7 @@
 import { FilePanel } from "../panels/filePanel";
 import { HistoryPanel } from "../panels/historyPanel";
 import { RulerPanel } from "../panels/rulerPanel";
-import { SizePanel } from "../panels/sizePanel";
+import { ViewportSizePanel } from "../panels/ViewportSizePanel";
 import { ToolPanel } from "../panels/toolPanel";
 import { ZoomPanel } from "../panels/zoomPanel";
 
@@ -14,7 +14,7 @@ class TopNav {
     this.#main = main;
     this.#callback = callback;
 
-    new SizePanel(this.#elm, this.#callback);
+    new ViewportSizePanel(this.#elm, this.#callback);
     new ZoomPanel(this.#elm, this.#callback);
     new RulerPanel(this.#elm, this.#callback);
     new ToolPanel(this.#elm, this.#callback);

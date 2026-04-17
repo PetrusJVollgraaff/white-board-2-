@@ -1,5 +1,7 @@
 import { ColorPanel } from "../panels/colorPanel";
+import { GraphicPanel } from "../panels/graphicPanel";
 import { LayerPanel } from "../panels/layerPanel";
+import { SizePanel } from "../panels/sizePanel";
 import { createDOMElement } from "./model";
 
 class RightNav {
@@ -10,7 +12,9 @@ class RightNav {
   #isHidden = false;
   #tabs = {
     colors: { title: "colors", elm: null, btn: null },
+    size: { title: "size & position", elm: null, btn: null },
     layers: { title: "layers", elm: null, btn: null },
+    graphic: { title: "graphic", elm: null, btn: null },
   };
   constructor({ elm, main, callback }) {
     this.#elm = elm;
@@ -60,8 +64,20 @@ class RightNav {
       callback: this.#callback,
     });
 
+    new SizePanel({
+      elmP: this.#tabs.size.elm.querySelector(".inner-tab"),
+      main: this.#main,
+      callback: this.#callback,
+    });
+
     new ColorPanel({
       elmP: this.#tabs.colors.elm.querySelector(".inner-tab"),
+      main: this.#main,
+      callback: this.#callback,
+    });
+
+    new GraphicPanel({
+      elmP: this.#tabs.graphic.elm.querySelector(".inner-tab"),
       main: this.#main,
       callback: this.#callback,
     });

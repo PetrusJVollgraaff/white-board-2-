@@ -1,29 +1,23 @@
-div#color_ctn {
+div#size_ctn {
   padding: 7px 8px;
   gap: 5px;
   display: flex;
   flex-direction: column;
 }
 
-div#color_ctn > div {
+div#size_ctn > div {
   display: flex;
-  flex-direction: column;
   gap: 5px;
   padding: 7px 8px;
   border: 1px solid var(--border);
   border-radius: 5px;
 }
 
-div#color_ctn > div > span {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+div#size_ctn > div.arrange_ctn > button {
+  flex: 1;
 }
 
-div#color_ctn > div > label,
-div#color_ctn > div > div {
+div#size_ctn > label {
   display: flex;
   justify-content: space-between;
   align-items: center;

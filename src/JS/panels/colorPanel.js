@@ -7,58 +7,81 @@ class ColorPanel {
   #areaType = ["solid", "linear", "axial", "radial"];
   #lineType = ["solid", "linear", "axial"];
   #lineStyle = ["continues", "dashed", "ultrafinedash", "finedash"];
-  #Option = {
-    area: {
-      type: {
-        elm: null,
-        event: "change",
-        option: { type: "select" },
-      },
-      color: {
-        elm: null,
-        event: "input",
-        option: { type: "input", attributes: { type: "color" } },
-      },
-      opacity: {
-        elm: null,
-        event: "input",
-        option: {
-          type: "input",
-          attributes: { type: "range", min: 0, max: 100 },
-        },
+
+  #AreaOptions = {
+    type: {
+      elm: null,
+      event: "change",
+      value: "solid",
+      option: { type: "select" },
+      options: this.#areaType,
+    },
+    color: {
+      elm: null,
+      event: "input",
+      value: "#000000",
+      option: { type: "input", attributes: { type: "color" } },
+    },
+    picker: {
+      elm: null,
+      event: "button",
+      for: "color",
+      option: { type: "button", attributes: { type: "color" } },
+    },
+    opacity: {
+      elm: null,
+      event: "input",
+      value: 0,
+      option: {
+        type: "input",
+        attributes: { type: "range", min: 0, max: 100 },
       },
     },
-    line: {
-      type: {
-        elm: null,
-        event: "change",
-        option: { type: "select" },
+  };
+
+  #LineOptions = {
+    type: {
+      elm: null,
+      event: "change",
+      value: "solid",
+      option: { type: "select" },
+      options: this.#lineType,
+    },
+    style: {
+      elm: null,
+      event: "change",
+      value: "continues",
+      option: { type: "select" },
+      options: this.#lineStyle,
+    },
+    size: {
+      elm: null,
+      event: "input",
+      value: 1,
+      option: {
+        type: "input",
+        attributes: { type: "range", min: 0, max: 100 },
       },
-      width: {
-        elm: null,
-        event: "input",
-        option: {
-          type: "input",
-          attributes: { type: "range", min: 0, max: 100 },
-        },
-      },
-      color: {
-        elm: null,
-        event: "input",
-        option: { type: "input", attributes: { type: "color" } },
-      },
-      opacity: {
-        elm: null,
-        event: "input",
-        option: {
-          type: "input",
-          attributes: { type: "range", min: 0, max: 100 },
-        },
-      },
-      style: {
-        elm: null,
-        event: "change",
-        option: { type: "select" },
+    },
+    color: {
+      elm: null,
+      value: "#FFFFFF",
+      event: "input",
+      option: { type: "input", attributes: { type: "color" } },
+    },
+    picker: {
+      elm: null,
+      event: "button",
+      for: "color",
+      option: { type: "button", attributes: { type: "color" } },
+    },
+    opacity: {
+      elm: null,
+      event: "input",
+      value: 0,
+      option: {
+        type: "input",
+        attributes: { type: "range", min: 0, max: 100 },
       },
     },
   };
@@ -71,6 +94,29 @@ class ColorPanel {
     this.#init();
   }
 
+  set setValues(data) {
+    this.#setArea(data);
+    this.#setBorder(data);
+  }
+
+  #setArea({ fill }) {
+    const { type, color, opacity } = this.#AreaOptions;
+
+    type.elm.value = fill.type;
+    color.elm.value = fill.color;
+    opacity.elm.value = fill.opacity;
+  }
+
+  #setBorder({ stroke }) {
+    const { type, color, opacity, size, style } = this.#LineOptions;
+
+    type.elm.value = stroke.type;
+    color.elm.value = stroke.color;
+    opacity.elm.value = stroke.opacity;
+    size.elm.value = stroke.size;
+    style.elm.value = stroke.style;
+  }
+
   #init() {
     this.#build();
     this.#eventListener();
@@ -79,37 +125,61 @@ class ColorPanel {
   #build() {
     const maindiv = createDOMElement({ attributes: { id: "color_ctn" } });
     this.#elmP.appendChild(maindiv);
-    Object.entries(this.#Option).forEach((item, idx) => {
-      const div = createDOMElement({ attributes: { "data-t": item[0] } });
-      div.appendChild(createDOMElement({ type: "span", text: item[0] }));
-
-      Object.entries(item[1]).forEach((key, idx) => {
-        const label = createDOMElement({ type: "label" });
-        label.appendChild(createDOMElement({ type: "span", text: key[0] }));
-        if (key[1].option.type == "select") {
-          key[1].elm = this.#buildSelect(item[0], key);
-        } else {
-          key[1].elm = createDOMElement(key[1].option);
-        }
-
-        label.appendChild(key[1].elm);
-        div.appendChild(label);
-      });
-
-      maindiv.append(div);
-    });
+    this.#buildArea(maindiv);
+    this.#buildBorder(maindiv);
   }
 
-  #buildSelect(main, key) {
-    const elm = createDOMElement(key[1].option);
-    const options =
-      main == "area"
-        ? this.#areaType
-        : key[0] == "type"
-          ? this.#lineType
-          : this.#lineStyle;
+  #buildArea(maindiv) {
+    const div = createDOMElement({ attributes: { "data-t": "area" } });
+    div.appendChild(createDOMElement({ type: "span", text: "area" }));
+    Object.entries(this.#AreaOptions).forEach((item, idx) => {
+      const label = createDOMElement({
+        type: item[0] == "color" ? "div" : "label",
+      });
+      label.appendChild(createDOMElement({ type: "span", text: item[0] }));
+      item[1].elm =
+        item[1].option.type == "select"
+          ? this.#buildSelect(item)
+          : createDOMElement(item[1].option);
 
-    options.forEach((item) => {
+      if (item[0] == "picker") {
+        this.#AreaOptions[item[1].for].elm.after(item[1].elm);
+      } else {
+        label.appendChild(item[1].elm);
+        div.appendChild(label);
+      }
+    });
+
+    maindiv.append(div);
+  }
+
+  #buildBorder(maindiv) {
+    const div = createDOMElement({ attributes: { "data-t": "border" } });
+    div.appendChild(createDOMElement({ type: "span", text: "border" }));
+    Object.entries(this.#LineOptions).forEach((item, idx) => {
+      const label = createDOMElement({
+        type: item[0] == "color" ? "div" : "label",
+      });
+      label.appendChild(createDOMElement({ type: "span", text: item[0] }));
+      item[1].elm =
+        item[1].option.type == "select"
+          ? this.#buildSelect(item)
+          : createDOMElement(item[1].option);
+
+      if (item[0] == "picker") {
+        this.#LineOptions[item[1].for].elm.after(item[1].elm);
+      } else {
+        label.appendChild(item[1].elm);
+        div.appendChild(label);
+      }
+    });
+
+    maindiv.append(div);
+  }
+
+  #buildSelect(key) {
+    const elm = createDOMElement(key[1].option);
+    key[1].options.forEach((item) => {
       elm.appendChild(
         createDOMElement({
           type: "option",
@@ -128,9 +198,9 @@ class ColorPanel {
   }
 
   #areaEvents() {
-    Object.entries(this.#Option.area).forEach((item, idx) => {
+    Object.entries(this.#AreaOptions).forEach((item, idx) => {
       const { elm, event } = item[1];
-      console.log(item[0], event);
+
       elm.addEventListener(event, (evt) => {
         console.log(evt.target.value);
       });
@@ -138,8 +208,9 @@ class ColorPanel {
   }
 
   #lineEvents() {
-    Object.entries(this.#Option.line).forEach((item, idx) => {
+    Object.entries(this.#LineOptions).forEach((item, idx) => {
       const { elm, event } = item[1];
+
       elm.addEventListener(event, (evt) => {
         console.log(evt.target.value);
       });

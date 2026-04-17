@@ -1,121 +1,144 @@
 import { createDOMElement } from "../display/model";
-import { ControlFlow } from "../utils/util";
+import { Vector } from "../utils/vector";
 
 class SizePanel {
-  static Sizes = {
-    "800x600": { w: 800, h: 600 },
-    "1920x1080": { w: 1920, h: 1080 },
-    "2560x1440": { w: 2560, h: 1440 },
-
-    "3840x2160": { w: 3840, h: 2160 },
-    "2480x3508": { w: 2480, h: 3508 },
-    "3508x2480": { w: 3508, h: 2480 },
-
-    "2550x3300": { w: 2550, h: 3300 },
-    "1080x1080": { w: 1080, h: 1080 },
-    custom: { title: "Custom…" },
+  #elmP = null;
+  #elms = {
+    x: {
+      elm: null,
+      event: "input",
+      option: { type: "input", attributes: { type: "number" } },
+    },
+    y: {
+      elm: null,
+      event: "input",
+      option: { type: "input", attributes: { type: "number" } },
+    },
+    width: {
+      elm: null,
+      event: "input",
+      option: { type: "input", attributes: { type: "number", min: 1 } },
+    },
+    height: {
+      elm: null,
+      event: "input",
+      option: { type: "input", attributes: { type: "number", min: 1 } },
+    },
+    rotation: {
+      elm: null,
+      event: "input",
+      option: {
+        type: "input",
+        attributes: { type: "number", min: 0, max: 360 },
+      },
+    },
+    constrain: {
+      elm: null,
+      event: "change",
+      option: { type: "input", attributes: { type: "checkbox" } },
+    },
   };
 
+  #arrangebtn = {
+    back: {
+      elm: null,
+      event: "click",
+      option: { type: "button", attributes: { title: "back" }, text: "back" },
+    },
+    front: {
+      elm: null,
+      event: "click",
+      option: { type: "button", attributes: { title: "front" }, text: "front" },
+    },
+    backward: {
+      elm: null,
+      event: "click",
+      option: {
+        type: "button",
+        attributes: { title: "backward" },
+        text: "Bwd",
+      },
+    },
+    forward: {
+      elm: null,
+      event: "click",
+      option: { type: "button", attributes: { title: "forward" }, text: "Fwd" },
+    },
+  };
+  #main = null;
   #callback = () => {};
-  #active = "800x600";
-  #elmP = null;
-  #elm = null;
-  #customWidthEl = null;
-  #customHeightEl = null;
-  #selSize = null;
-  constructor(elmP, callback) {
+  constructor({ elmP, main, callback }) {
     this.#elmP = elmP;
+    this.#main = main;
     this.#callback = callback;
-    this.#elm = this.#elmP.querySelector("li#size_ctn");
 
     this.#init();
   }
 
-  #setSize(size) {
-    if (this.#active == "custom" && size != "custom") {
-      this.#customWidthEl.remove();
-      this.#customHeightEl.remove();
-    } else if (this.#active != "custom" && size == "custom") {
-      const [w, h] = this.#active.split("x").map(Number);
-      this.#customWidthEl.value = w;
-      this.#customHeightEl.value = h;
+  set setValues({
+    center = Vector.zero(),
+    size = { width: 0, height: 0 },
+    angle = 0,
+  }) {
+    const { x, y, width, height, rotation } = this.#elms;
 
-      this.#elm.appendChild(this.#customWidthEl);
-      this.#elm.appendChild(this.#customHeightEl);
-    }
+    x.elm.value = center.x;
+    y.elm.value = center.y;
 
-    this.#callback({
-      action: "setSize",
-      size: size != "custom" ? size : this.#active,
-    });
-    this.#active = size;
+    width.elm.value = size.width;
+    heigth.elm.value = size.height;
+
+    rotation.elm.value = angle;
   }
 
   #init() {
-    this.#build();
-    this.#eventListener();
+    this.maindiv = createDOMElement({ attributes: { id: "size_ctn" } });
+    this.#sizeBuild();
+    this.#arrangeBuild();
+    this.#sizeEventListener();
+    this.#arrangeEventListener();
   }
 
-  #build() {
-    this.#customWidthEl = createDOMElement({
-      type: "input",
-      attributes: {
-        type: "number",
-        placeholder: "W",
-        min: "1",
-        max: "9999",
-        style: "width:52px",
-      },
+  #sizeBuild() {
+    Object.entries(this.#elms).forEach((item, idx) => {
+      const label = createDOMElement({ type: "label" });
+      label.appendChild(createDOMElement({ type: "span", text: item[0] }));
+      item[1].elm = createDOMElement(item[1].option);
+      label.appendChild(item[1].elm);
+
+      this.maindiv.appendChild(label);
     });
 
-    this.#customHeightEl = createDOMElement({
-      type: "input",
-      attributes: {
-        type: "number",
-        placeholder: "H",
-        min: "1",
-        max: "9999",
-        style: "width:52px",
-      },
-    });
-
-    this.#selSize = createDOMElement({
-      type: "select",
-      attributes: { name: "sel-size" },
-    });
-
-    for (const opt in SizePanel.Sizes) {
-      var op = SizePanel.Sizes[opt];
-      this.#selSize.appendChild(
-        createDOMElement({
-          type: "option",
-          attributes: { value: opt },
-          text: op?.title ? op.title : opt,
-        }),
-      );
-    }
-
-    this.#elm.appendChild(this.#selSize);
+    this.#elmP.append(this.maindiv);
   }
 
-  #eventListener() {
-    this.#selSize.addEventListener("change", () => {
-      const { value } = this.#selSize;
-      this.#setSize(value);
+  #sizeEventListener() {
+    Object.entries(this.#elms).forEach((item, idx) => {
+      const { elm, event } = item[1];
+
+      elm.addEventListener(event, (evt) => {
+        console.log(evt.target.value);
+      });
+    });
+  }
+
+  #arrangeBuild() {
+    const div = createDOMElement({ attributes: { class: "arrange_ctn" } });
+    Object.entries(this.#arrangebtn).forEach((item, idx) => {
+      item[1].elm = createDOMElement(item[1].option);
+      div.appendChild(item[1].elm);
     });
 
-    [this.#customWidthEl, this.#customHeightEl].forEach((elm, idx, arr) => {
-      const handler = ControlFlow.debounce((e) => {
-        this.#callback({
-          action: "setSize",
-          custom: {
-            w: Number(arr[0].value),
-            h: Number(arr[1].value),
-          },
-        });
-      }, 1000);
+    this.maindiv.append(div);
+  }
 
-      elm.addEventListener("input", handler);
+  #arrangeEventListener() {
+    Object.entries(this.#arrangebtn).forEach((item, idx) => {
+      const { elm, event } = item[1];
+
+      elm.addEventListener(event, (evt) => {
+        console.log(evt.target.value);
+      });
     });
   }
 }
