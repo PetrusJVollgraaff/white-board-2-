@@ -23,6 +23,14 @@ class RightNav {
     this.#init();
   }
 
+  set setSize(data) {
+    this.SizePanel.setValues = data;
+  }
+
+  set setColor(data) {
+    this.ColorPanel.setValues = data;
+  }
+
   #init() {
     this.#hideBtn = this.#elm.querySelector("button#right_navbar_btn");
     this.#tabs.layers.elm = this.#elm.querySelector(".tab");
@@ -64,13 +72,13 @@ class RightNav {
       callback: this.#callback,
     });
 
-    new SizePanel({
+    this.SizePanel = new SizePanel({
       elmP: this.#tabs.size.elm.querySelector(".inner-tab"),
       main: this.#main,
       callback: this.#callback,
     });
 
-    new ColorPanel({
+    this.ColorPanel = new ColorPanel({
       elmP: this.#tabs.colors.elm.querySelector(".inner-tab"),
       main: this.#main,
       callback: this.#callback,

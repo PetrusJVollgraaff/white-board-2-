@@ -9,7 +9,7 @@ class Shape {
         visible: true,
         type: "solid",
         color: "#FFFF00",
-        opacity: 1,
+        opacity: 100,
       },
 
       stroke: {
@@ -17,7 +17,7 @@ class Shape {
         type: "solid",
         style: "continues",
         color: "#000000",
-        opacity: 1,
+        opacity: 100,
         size: 2,
       },
     };
@@ -40,6 +40,30 @@ class Shape {
 
   serialize() {
     throw new Error("serialize method must be implemented");
+  }
+
+  get getCenter() {
+    return this.center;
+  }
+
+  get getSize() {
+    return {
+      center: this.center,
+      size: this.size,
+      angle: this.rotation,
+    };
+  }
+
+  get getColor() {
+    return this.options;
+  }
+
+  select(save = true) {
+    this.selected = true;
+  }
+
+  unselect(save = true) {
+    this.selected = false;
   }
 
   set setCenter({ center = Vector.zero(), save = true }) {

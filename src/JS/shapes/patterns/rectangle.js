@@ -13,14 +13,13 @@ class RectShape extends Shape {
   }) {
     super(options);
 
-    this.center = center;
+    this.center = center instanceof Vector ? center : new Vector(center);
     this.size = size;
     this.options = options;
   }
 
   static load(data) {
     const shape = new RectShape(data);
-
     return shape;
   }
 
@@ -33,6 +32,21 @@ class RectShape extends Shape {
     json.options.stroke.color = "#00FFFF";
 
     return json;
+  }
+
+  isSelected(ctx, mousePos) {
+    const { fill, stroke } = this.options;
+    let selected = false;
+
+    //viewport.selectedLayer.rotateCanvas(this.center, this.rotation);
+
+    var isfill = fill.visible
+      ? ctx.isPointInPath(this.path, mousePos.x, mousePos.y)
+      : false;
+    selected = isfill || ctx.isPointInStroke(this.path, mousePos.x, mousePos.y);
+
+    //viewport.selectedLayer.rotateCanvas(this.center, -this.rotation);
+    return selected;
   }
 
   setCorner2(corner2) {

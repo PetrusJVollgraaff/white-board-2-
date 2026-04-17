@@ -30,7 +30,13 @@ class LayerManager {
   }
 
   get activeLayer() {
-    return this.#layers.find((l) => l.id === this.#activeLayer) ?? null;
+    return this.#layers.find((l) => l.getId === this.#activeLayer) ?? null;
+  }
+
+  get activeLayerShapes() {
+    const idx = this.#layers.findIndex((l) => l.getId === this.#activeLayer);
+    console.log(idx);
+    return idx > -1 ? this.#layers[idx].getShapes : null;
   }
 
   #layerCallback(data) {

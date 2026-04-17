@@ -86,7 +86,7 @@ class SizePanel {
     y.elm.value = center.y;
 
     width.elm.value = size.width;
-    heigth.elm.value = size.height;
+    height.elm.value = size.height;
 
     rotation.elm.value = angle;
   }

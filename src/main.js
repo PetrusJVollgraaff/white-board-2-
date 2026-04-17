@@ -14,8 +14,8 @@ import { ViewportSizePanel } from "./JS/panels/ViewportSizePanel";
 
 class DrawingBoard {
   #mainArea = document.getElementById("main-area");
-  #topNav = document.getElementById("top_navbar");
-  #rightNav = document.getElementById("right_navbar");
+  #topNavElm = document.getElementById("top_navbar");
+  #rightNavElm = document.getElementById("right_navbar");
   #mainC = document.getElementById("main-canvas");
   #mainCtx = this.#mainC.getContext("2d");
   #viewportElm = document.getElementById("viewport");
@@ -36,8 +36,9 @@ class DrawingBoard {
   };
   #showRulers = true;
   #toolActive = "pan";
-  #SelectEvents = null;
+  #SelectedEvent = null;
   #currentShape = null;
+  #isDraggin = false;
   #startPoint = Vector.zero();
   #layerManager = new LayerManager({ main: this });
   constructor() {
@@ -54,7 +55,7 @@ class DrawingBoard {
     this.#bindEvents();
 
     new TopNav({
-      elm: this.#topNav,
+      elm: this.#topNavElm,
       main: this,
       callback: (data) => {
         const { action } = data;
@@ -74,8 +75,8 @@ class DrawingBoard {
       },
     });
 
-    new RightNav({
-      elm: this.#rightNav,
+    this.rightNav = new RightNav({
+      elm: this.#rightNavElm,
       main: this,
       callback: (data) => {
         const { action } = data;
@@ -117,7 +118,7 @@ class DrawingBoard {
   #setTool(data) {
     const { tool } = data;
     this.#toolActive = tool;
-    this.#SelectEvents.removeEventListeners(this.#viewportElm);
+    this.#SelectedEvent.removeEventListeners(this.#viewportElm);
     this.#setMousEvents();
   }
 
@@ -237,20 +238,26 @@ class DrawingBoard {
   #setMousEvents() {
     const vp = this.#viewportElm;
     if (this.#toolActive == "select") {
-      this.#SelectEvents = SelectTool;
-      this.#SelectEvents.configureEventListener(vp, (data) => {});
+      this.#SelectedEvent = SelectTool;
+      this.#SelectedEvent.configureEventListener(
+        vp,
+        this.#SelectEvents.bind(this),
+      );
       return;
     }
 
     if (this.#toolActive == "pan") {
-      this.#SelectEvents = PanTools;
-      this.#SelectEvents.configureEventListener(vp, this.#PanEvents.bind(this));
+      this.#SelectedEvent = PanTools;
+      this.#SelectedEvent.configureEventListener(
+        vp,
+        this.#PanEvents.bind(this),
+      );
       return;
     }
 
     if (this.#toolActive == "rect") {
-      this.#SelectEvents = RectTool;
-      this.#SelectEvents.configureEventListener(
+      this.#SelectedEvent = RectTool;
+      this.#SelectedEvent.configureEventListener(
         vp,
         this.#RectEvents.bind(this),
       );
@@ -323,6 +330,59 @@ class DrawingBoard {
     const center = Vector.mid(points);
     const size = BoundingBox.fromPoints(points);
     return { center, size };
+  }
+
+  #SelectEvents(evt) {
+    var startPoint = null;
+    if (evt instanceof PointerEvent) {
+      const { type, button } = evt;
+      const vp = this.vpPt(evt);
+      const doc = this._vp.toDoc(vp.x, vp.y);
+
+      if (button < 1) {
+        if (type == "pointerdown") {
+          const shapes = this.#layerManager.activeLayerShapes;
+
+          if (shapes) {
+            const shape = shapes.find((s) => s.isSelected(this.#mainCtx, doc));
+            this.isClickingSelectedShape = shape && shape.selected;
+
+            if (!shape) return;
+
+            if (!this.isClickingSelectedShape) {
+              this.#currentShape = shape;
+              this.#startPoint = doc;
+              this.OldCenter = this.#currentShape.getCenter;
+              this.#currentShape.select();
+              this.rightNav.setSize = this.#currentShape.getSize;
+              this.rightNav.setColor = this.#currentShape.getColor;
+            }
+            this.#isDraggin = false;
+          }
+        } else if (type == "pointermove") {
+          if (!this.#currentShape) return;
+          const diff = Vector.subtract(doc, this.#startPoint);
+
+          this.#isDraggin = true;
+          this.#currentShape.setCenter = {
+            center: Vector.add(this.OldCenter, diff),
+          };
+
+          this.render();
+        } else if (type == "pointerup") {
+          if (!this.#currentShape) return;
+          if (this.isClickingSelectedShape && !this.#isDraggin) {
+          }
+
+          if (this.#isDraggin) {
+            this.rightNav.setSize = this.#currentShape.getSize;
+            this.#currentShape.unselect();
+          }
+          if (this.#currentShape) this.#currentShape = null;
+          this.render();
+        }
+      }
+    }
   }
 }
 
