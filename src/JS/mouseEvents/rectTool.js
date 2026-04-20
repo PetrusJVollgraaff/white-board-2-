@@ -1,3 +1,5 @@
+import { RectShape } from "../shapes/patterns/rectangle";
+import { Shape } from "../shapes/shape";
 import { Vector } from "../utils/vector";
 
 class RectTool {
@@ -5,26 +7,51 @@ class RectTool {
 
   static addPointerDownListener(evt) {
     var _ = this;
-    const { target } = evt;
-    if (evt.button == 1) return;
-    evt["startPoint"] = new Vector({ x: evt.clientX, y: evt.clientY });
-    _(evt);
-    const moveCallback = function (evt) {
-      evt["movePoint"] = new Vector({ x: evt.clientX, y: evt.clientY });
-      _(evt);
-    };
-    const upCallback = function (evt) {
-      _(evt);
-      target.removeEventListener("pointermove", moveCallback);
-      target.removeEventListener("pointerup", upCallback);
-    };
 
-    target.addEventListener("pointermove", moveCallback);
-    target.addEventListener("pointerup", upCallback);
+    const { target } = evt;
+    if (evt.button == 0) {
+      const vp = _.vpPt(evt);
+      const startPosition = _._vp.toDoc(vp.x, vp.y);
+      let shape = null;
+
+      const moveCallback = function (evt) {
+        const vp = _.vpPt(evt);
+        const mousePosition = _._vp.toDoc(vp.x, vp.y);
+        const { center, size } = Shape.getCenterAndSize(
+          startPosition,
+          mousePosition,
+        );
+
+        if (shape) {
+          shape.setCenter = { center };
+          shape.setSize = size;
+        } else {
+          shape = new RectShape({
+            center,
+            size,
+            callback: _.ShapeCallback.bind(_),
+          });
+        }
+
+        _.render([shape]);
+      };
+
+      const upCallback = function (evt) {
+        target.removeEventListener("pointermove", moveCallback);
+        target.removeEventListener("pointerup", upCallback);
+        _.appendShape(shape);
+        //if (shape?.size.width > 0 && shape?.size.height > 0) {}
+      };
+
+      _.render();
+
+      target.addEventListener("pointermove", moveCallback);
+      target.addEventListener("pointerup", upCallback);
+    }
   }
 
-  static configureEventListener(viewport, callback) {
-    this.#Event = this.addPointerDownListener.bind(callback);
+  static configureEventListener(viewport, main) {
+    this.#Event = this.addPointerDownListener.bind(main);
     viewport.addEventListener("pointerdown", this.#Event);
   }
 

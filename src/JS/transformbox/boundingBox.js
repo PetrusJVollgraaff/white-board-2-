@@ -1,4 +1,4 @@
-import { Vector } from "./vector";
+import { Vector } from "../utils/vector";
 
 class BoundingBox {
   constructor(topLeft, bottomRight) {

@@ -1,3 +1,5 @@
+import { BoundingBox } from "../transformbox/boundingBox";
+import { ShapeSelection } from "../transformbox/selections";
 import { Vector } from "../utils/vector";
 
 class Shape {
@@ -23,12 +25,13 @@ class Shape {
     };
   }
 
-  constructor(options = Shape.defaultOptions()) {
+  constructor({ callback, options = Shape.defaultOptions() }) {
     this.id = null;
     this.center = Vector.zero();
     this.options = options;
     this.rotation = 0;
     this.selected = false;
+    this.callback = callback;
   }
 
   static getHitRGB(id) {
@@ -36,6 +39,13 @@ class Shape {
     const green = (id & 0x00ff00) >> 8;
     const blue = id & 0x0000ff;
     return `rgb(${red},${green},${blue})`;
+  }
+
+  static getCenterAndSize(corner1, corner2) {
+    const points = [corner1, corner2];
+    const center = Vector.mid(points);
+    const size = BoundingBox.fromPoints(points);
+    return { center, size };
   }
 
   serialize() {
@@ -58,16 +68,49 @@ class Shape {
     return this.options;
   }
 
+  get getPoints() {
+    const { width, height } = this.size;
+    const halfW = width / 2;
+    const halfH = height / 2;
+    return [
+      new Vector({ x: -halfW, y: -halfH }),
+      new Vector({ x: -halfW, y: halfH }),
+      new Vector({ x: halfW, y: halfH }),
+      new Vector({ x: halfW, y: -halfH }),
+    ];
+  }
+
   select(save = true) {
     this.selected = true;
+    this.selections = new ShapeSelection(this);
+    this.callback({
+      event: {
+        name: "shapeSelected",
+        detail: { shape: this, save },
+      },
+    });
   }
 
   unselect(save = true) {
     this.selected = false;
+    this.selections = null;
+    this.callback({
+      event: {
+        name: "shapeUnselected",
+        detail: { shape: this, save },
+      },
+    });
   }
 
   set setCenter({ center = Vector.zero(), save = true }) {
     this.center = center;
+    this.selections?.updatePosition();
+    this.callback({
+      event: {
+        name: "positionChanged",
+        detail: { shape: this, save },
+      },
+    });
   }
 
   set setWidth(width) {
@@ -81,10 +124,25 @@ class Shape {
   set setSize({ width, height, save = true }) {
     this.setWidth = width;
     this.setHeight = height;
+    this.selections?.updateSize();
+    this.callback({
+      event: {
+        name: "sizeChanged",
+        detail: { shape: this, save },
+      },
+    });
   }
 
   set setRotation({ angle, save = true }) {
     this.rotation = angle;
+    this.selections?.updateRotation();
+
+    this.callback({
+      event: {
+        name: "rotationChanged",
+        detail: { shape: this, save },
+      },
+    });
   }
 
   set setOptions({ options, save = true }) {
@@ -162,10 +220,6 @@ class Shape {
 
     ctx.stroke(path);
     ctx.restore();
-  }
-
-  getPoints() {
-    throw new Error("getPoints method must be implemented");
   }
 
   setPoints() {

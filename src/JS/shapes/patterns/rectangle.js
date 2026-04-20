@@ -10,8 +10,9 @@ class RectShape extends Shape {
     center = Vector.zero(),
     size = { width: 0, height: 0 },
     options = Shape.defaultOptions(),
+    callback,
   }) {
-    super(options);
+    super({ options, callback });
 
     this.center = center instanceof Vector ? center : new Vector(center);
     this.size = size;
@@ -32,6 +33,14 @@ class RectShape extends Shape {
     json.options.stroke.color = "#00FFFF";
 
     return json;
+  }
+
+  isHandleSelected(ctx, mousePos) {
+    let selected = false;
+    if (this.selected && this?.selections)
+      selected = this.selections?.isSelected(ctx, mousePos);
+
+    return selected;
   }
 
   isSelected(ctx, mousePos) {

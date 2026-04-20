@@ -8,10 +8,17 @@ class SelectTool {
 
     const { target } = evt;
     if (evt.button == 0) {
+      const { ctrlKey, shiftKey } = evt;
       const vp = _.vpPt(evt);
       const startPosition = _._vp.toDoc(vp.x, vp.y);
       const shape = _.getShape(startPosition);
+      const selections = _.getSelections(startPosition);
+
       const isClickingSelectedShape = shape && shape.selected;
+
+      if (!isClickingSelectedShape) {
+        if (!ctrlKey && !shiftKey) _.setItemsUnselect = false;
+      }
 
       if (!shape) return;
 
@@ -29,11 +36,11 @@ class SelectTool {
       const moveCallback = function (evt) {
         const vp = _.vpPt(evt);
         const mousePosition = _._vp.toDoc(vp.x, vp.y);
-        const diff = Vector.subtract(mousePosition, startPosition);
+        mouseDelta = Vector.subtract(mousePosition, startPosition);
 
         isDragging = true;
         shape.setCenter = {
-          center: Vector.add(OldCenter, diff),
+          center: Vector.add(OldCenter, mouseDelta),
         };
 
         _.render();
@@ -42,9 +49,20 @@ class SelectTool {
         target.removeEventListener("pointermove", moveCallback);
         target.removeEventListener("pointerup", upCallback);
 
-        if (isDragging) {
-          _.rightNav.setSize = shape.getSize;
+        if (isClickingSelectedShape && !isDragging) {
           shape.unselect();
+        }
+
+        if (mouseDelta) {
+          if (
+            isDragging &&
+            _._vp.getAdjustedScale(mouseDelta).magnitude() > 0
+          ) {
+            _.rightNav.setSize = shape.getSize;
+            shape.setCenter = {
+              center: Vector.add(OldCenter, mouseDelta),
+            };
+          }
         }
 
         _.render();

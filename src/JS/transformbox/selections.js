@@ -1,0 +1,201 @@
+import { Vector } from "../utils/vector";
+import { BoundingBox } from "./boundingBox";
+
+class Selection {
+  static nextId = 0;
+  hasHandle(id) {
+    return this.hasHandle.find((h) => h.id == id);
+  }
+
+  isSelected(ctx, mouse) {
+    return this.handles.find((h) => h.isSelected(ctx, mouse, this));
+  }
+}
+
+class SelectionHandle {
+  static size = 10;
+  static TYPES = {
+    TOP: "top",
+    RIGHT: "right",
+    BOTTOM: "bottom",
+    LEFT: "left",
+    TOP_LEFT: "topLeft",
+    TOP_RIGHT: "topRight",
+    BOTTOM_LEFT: "bottomLeft",
+    BOTTOM_RIGHT: "bottomRight",
+    ROTATE: "rotate",
+  };
+
+  static EXTRA = {
+    HANDLE_1: "handle_1",
+    HANDLE_2: "handle_2",
+    HANDLE_3: "handle_3",
+    HANDLE_4: "handle_4",
+  };
+
+  constructor(center, type) {
+    this.center = center;
+    this.type = type;
+    this.path = new Path2D();
+  }
+
+  isSelected(ctx, mouse, { center, rotation }) {
+    let selected = false;
+    selected = ctx.isPointInPath(this.path, mouse.x, mouse.y);
+    return selected;
+  }
+
+  draw(ctx, hitRegion = false) {
+    const zoom = 1; //viewport.zoom
+    const size = SelectionHandle.size / zoom;
+    this.path = new Path2D();
+
+    ctx.fillStyle = "black";
+    //Object.values(Handle.TYPES).includes(this.type)? "black": "red";
+    ctx.strokeStyle = "black";
+    //Object.values(Handle.TYPES).includes(this.type)? "white": "black";
+    ctx.lineWidth = 2 * zoom;
+
+    //if (Object.values(Handle.TYPES).includes(this.type)) {
+    this.path.rect(
+      this.center.x - size / 2,
+      this.center.y - size / 2,
+      size,
+      size,
+    );
+    /*} else {
+      this.path.arc(
+        this.center.x,
+        this.center.y,
+        Math.abs(size / 2),
+        0,
+        2 * Math.PI
+      );
+    }*/
+
+    ctx.fill(this.path);
+  }
+}
+
+class ShapeSelection extends Selection {
+  #shape = null;
+  center = Vector.zero();
+  rotation = 0;
+  constructor(shape) {
+    super();
+    this.#shape = shape;
+    this.center = shape.getCenter;
+    this.rotation = 0;
+
+    this.#generate();
+    shape.selections = this;
+  }
+
+  updatePosition() {
+    this.center = this.#shape.getCenter;
+    this.#update();
+  }
+
+  updateSize() {
+    this.#update();
+  }
+
+  updateRotation() {
+    this.rotation = this.#shape?.rotation
+      ? this.shape.rotation
+      : this.shape.angle;
+    this.#update();
+  }
+
+  #generate() {
+    const { TYPES, size } = SelectionHandle;
+    const points = this.#shape.getPoints;
+    this.box = BoundingBox.fromPoints(points.map((p) => p.add(this.center)));
+
+    const { topLeft, topRight, bottomLeft, bottomRight } = this.box;
+    const rotationPoint = Vector.mid([topLeft, topRight]).subtract(
+      new Vector({ x: 0, y: 2 * size }),
+    );
+
+    this.handles = [
+      new SelectionHandle(topLeft, TYPES.TOP_LEFT),
+      new SelectionHandle(topRight, TYPES.TOP_RIGHT),
+      new SelectionHandle(bottomLeft, TYPES.BOTTOM_LEFT),
+      new SelectionHandle(bottomRight, TYPES.BOTTOM_RIGHT),
+      new SelectionHandle(Vector.mid([topLeft, topRight]), TYPES.TOP),
+      new SelectionHandle(Vector.mid([bottomLeft, bottomRight]), TYPES.BOTTOM),
+      new SelectionHandle(Vector.mid([topLeft, bottomLeft]), TYPES.LEFT),
+      new SelectionHandle(Vector.mid([topRight, bottomRight]), TYPES.RIGHT),
+      new SelectionHandle(rotationPoint, TYPES.ROTATE),
+    ];
+  }
+
+  #update() {
+    const { size } = SelectionHandle;
+    const points = this.#shape.getPoints;
+    this.box = BoundingBox.fromPoints(points.map((p) => p.add(this.center)));
+
+    const { topLeft, topRight, bottomLeft, bottomRight } = this.box;
+    const rotationPoint = Vector.mid([topLeft, topRight]).subtract(
+      new Vector({ x: 0, y: 2 * size }),
+    );
+
+    this.handles[0].center = topLeft;
+    this.handles[1].center = topRight;
+    this.handles[2].center = bottomLeft;
+    this.handles[3].center = bottomRight;
+    this.handles[4].center = Vector.mid([topLeft, topRight]);
+    this.handles[5].center = Vector.mid([bottomLeft, bottomRight]);
+    this.handles[6].center = Vector.mid([topLeft, bottomLeft]);
+    this.handles[7].center = Vector.mid([topRight, bottomRight]);
+    this.handles[8].center = rotationPoint;
+  }
+
+  draw(ctx, hitRegion = false) {
+    ctx.save();
+    ctx.beginPath();
+    const zoom = 1; //viewport.zoom
+
+    if (!hitRegion) {
+      ctx.rect(
+        this.box.topLeft.x,
+        this.box.topLeft.y,
+        this.box.width,
+        this.box.height,
+      );
+      ctx.strokeStyle = "white";
+      ctx.lineWidth = 2 / zoom;
+      ctx.stroke();
+      ctx.strokeStyle = "black";
+      ctx.lineWidth /= 2;
+      ctx.stroke();
+
+      const centerRadius = (0.5 * SelectionHandle.size) / zoom;
+      const centerLength = 2 * Math.PI * centerRadius;
+      const dashCount = 3;
+      const dashLength = (0.25 * centerLength) / dashCount;
+      const spaceLength = (0.75 * centerLength) / dashCount;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.lineWidth = 3 / zoom;
+      ctx.setLineDash([dashLength, spaceLength]);
+      ctx.arc(this.center.x, this.center.y, centerRadius, 0, 2 * Math.PI);
+      ctx.lineCap = "round";
+      ctx.strokeStyle = "white";
+      ctx.stroke();
+      ctx.lineWidth /= 2;
+      ctx.strokeStyle = "black";
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    for (const handle of this.handles) {
+      handle.draw(ctx, hitRegion);
+    }
+
+    ctx.restore();
+  }
+}
+
+export { ShapeSelection, SelectionHandle, Selection };

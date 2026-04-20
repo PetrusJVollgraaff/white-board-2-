@@ -9,10 +9,11 @@ import { SelectTool } from "./JS/mouseEvents/selectTool";
 import { PanTools } from "./JS/mouseEvents/panTool";
 import { RectTool } from "./JS/mouseEvents/rectTool";
 import { RectShape } from "./JS/shapes/patterns/rectangle";
-import { BoundingBox } from "./JS/utils/boundingBox";
+import { BoundingBox } from "./JS/transformbox/boundingBox";
 import { ViewportSizePanel } from "./JS/panels/ViewportSizePanel";
+import { ShapeSelection } from "./JS/transformbox/selections";
 
-class DrawingBoard {
+class DrawingBoard extends EventTarget {
   #mainArea = document.getElementById("main-area");
   #topNavElm = document.getElementById("top_navbar");
   #rightNavElm = document.getElementById("right_navbar");
@@ -21,7 +22,7 @@ class DrawingBoard {
   #viewportElm = document.getElementById("viewport");
   #rulers = null;
   #exportFormat = "png";
-
+  #selectedItems = [];
   #StageProperties = {
     offset: Vector.zero(),
     center: Vector.zero(),
@@ -40,8 +41,10 @@ class DrawingBoard {
   #currentShape = null;
   #isDraggin = false;
   #startPoint = Vector.zero();
+
   #layerManager = new LayerManager({ main: this });
   constructor() {
+    super();
     this.#mainC.width = this.#viewportElm.clientWidth;
     this.#mainC.height = this.#viewportElm.clientHeight;
     this.#setStageProperties();
@@ -121,8 +124,26 @@ class DrawingBoard {
       shapes ? shapes.find((s) => s.isSelected(this.#mainCtx, doc)) : null;
   }
 
-  #appendShape() {
-    this.#layerManager.addShape(this.#currentShape);
+  get getSelectedShapes() {
+    const shapes = this.#layerManager.activeLayerShapes;
+    return shapes ? shapes.filter((s) => s.selected) : null;
+  }
+
+  set setItemsUnselect(value) {
+    const shapes = this.#layerManager.activeLayerShapes;
+    if (shapes) shapes.forEach((s) => s.unselect());
+  }
+
+  get getSelections() {
+    console.log();
+    return (doc) =>
+      this.#selectedItems.length > 0
+        ? this.#selectedItems.find((s) => s.isSelected(this.#mainCtx, doc))
+        : null;
+  }
+
+  appendShape(shape) {
+    this.#layerManager.addShape(shape);
   }
 
   #setTool(data) {
@@ -219,6 +240,7 @@ class DrawingBoard {
     document.getElementById("zoom-level").textContent = this._vp.zoomLabel;
 
     this.#layerManager.drawShape(this.#mainCtx, shapes);
+    this.#selectedItems.forEach((s) => s.draw(this.#mainCtx));
     this.#mainCtx.restore();
   }
 
@@ -236,13 +258,39 @@ class DrawingBoard {
     this.render();
   }
 
+  applySelections() {
+    const shapes = this.getSelectedShapes;
+    this.#selectedItems = shapes.map((s) => new ShapeSelection(s));
+  }
+
+  #handleChanges({ detail }) {
+    this.render();
+    //if (detail.save) {
+    //  HistoryTools.record(this.layers);
+    //}
+  }
+
   #bindEvents() {
     const vp = this.#viewportElm;
-    /*vp.addEventListener("mousedown", (e) => this.#onMouseDown(e));
-    window.addEventListener("mousemove", (e) => this.#onMouseMove(e));
-    window.addEventListener("mouseup", (e) => this.#onMouseUp(e));*/
     this.#setMousEvents();
     vp.addEventListener("wheel", (e) => this.#onWheel(e), { passive: false });
+
+    this.#customEvents();
+  }
+
+  #customEvents() {
+    this.addEventListener("positionChanged", this.#handleChanges.bind(this));
+    this.addEventListener("sizeChanged", this.#handleChanges.bind(this));
+    this.addEventListener("rotationChanged", this.#handleChanges.bind(this));
+    this.addEventListener("shapeSelected", (event) => {
+      this.applySelections();
+      this.#handleChanges(event);
+    });
+
+    this.addEventListener("shapeUnselected", (event) => {
+      this.applySelections();
+      this.#handleChanges(event);
+    });
   }
 
   #setMousEvents() {
@@ -254,59 +302,25 @@ class DrawingBoard {
     }
 
     if (this.#toolActive == "pan") {
+      this.setItemsUnselect = false;
       this.#SelectedEvent = PanTools;
       this.#SelectedEvent.configureEventListener(vp, this);
       return;
     }
 
     if (this.#toolActive == "rect") {
+      this.setItemsUnselect = false;
       this.#SelectedEvent = RectTool;
-      this.#SelectedEvent.configureEventListener(
-        vp,
-        this.#RectEvents.bind(this),
-      );
+      this.#SelectedEvent.configureEventListener(vp, this);
       return;
     }
   }
 
-  #RectEvents(evt) {
-    var startPoint = null;
-    if (evt instanceof PointerEvent) {
-      const { type } = evt;
-      const vp = this.vpPt(evt);
-      const doc = this._vp.toDoc(vp.x, vp.y);
-
-      if (type == "pointerdown") {
-        this.#startPoint = doc;
-      } else if (type == "pointermove") {
-        const { center, size } = DrawingBoard.getCenterAndSize(
-          this.#startPoint,
-          doc,
-        );
-        if (this.#currentShape) {
-          this.#currentShape.setCenter = { center };
-          this.#currentShape.setSize = size;
-        } else {
-          this.#currentShape = new RectShape({ center, size });
-        }
-
-        this.render([this.#currentShape]);
-      } else if (type == "pointerup") {
-        if (this.#currentShape) {
-          this.#appendShape();
-          this.#startPoint = Vector.zero();
-          this.#currentShape = null;
-          this.render();
-        }
-      }
+  ShapeCallback(data) {
+    if (data?.event) {
+      const { name, detail } = data?.event;
+      this.dispatchEvent(new CustomEvent(name, { detail }));
     }
-  }
-
-  static getCenterAndSize(corner1, corner2) {
-    const points = [corner1, corner2];
-    const center = Vector.mid(points);
-    const size = BoundingBox.fromPoints(points);
-    return { center, size };
   }
 }
 

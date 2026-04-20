@@ -24,6 +24,10 @@ class ViewPort {
     return Math.round(this.#zoom * 100) + "%";
   }
 
+  get getAdjustedScale() {
+    return (vector = Vector.zero()) => vector.scale(1 / this.#zoom);
+  }
+
   toDoc(vx, vy) {
     const { x: offsetX, y: offsetY } = this.#offset;
     return new Vector({
