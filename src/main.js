@@ -77,6 +77,8 @@ class DrawingBoard extends EventTarget {
             return this.#setTool(data);
           case "setFile":
             return this.#setFile(data);
+          case "setHistory":
+            return this.#setHistory(data);
         }
       },
     });
@@ -154,12 +156,7 @@ class DrawingBoard extends EventTarget {
   get getSelections() {
     return (doc) =>
       this.#selectedItems.length > 0
-        ? this.#selectedItems.find((s) => {
-            console.log(s.isSelected(this.#mainCtx, doc));
-            if (s.isSelected(this.#mainCtx, doc)) {
-              return s;
-            }
-          })
+        ? this.#selectedItems.find((s) => s.isSelected(this.#mainCtx, doc))
         : null;
   }
 
@@ -200,6 +197,15 @@ class DrawingBoard extends EventTarget {
   }
 
   /** Private  Method*/
+
+  #setHistory(data) {
+    const { value } = data;
+    if (value == "delete") {
+      this.#layerManager.removeShapes();
+      this.#selectedItems = [];
+      this.render();
+    }
+  }
 
   #setTool(data) {
     const { tool } = data;
@@ -321,6 +327,8 @@ class DrawingBoard extends EventTarget {
       this.applySelections();
       this.#handleChanges(event);
     });
+
+    //this.addEventListener("history", PropertiesPanel.updateDisplay);
   }
 
   #setMousEvents() {

@@ -7,19 +7,18 @@ class FreeHandShape extends Shape {
   #shape = "FreeHandShape";
   #pathSet = new Set();
 
-  constructor({
-    startPoint = Vector.zero(),
-    options = Shape.defaultOptions(),
+  constructor(
+    { startPoint = Vector.zero(), options = Shape.defaultOptions() },
     callback,
-  }) {
-    super({ options, callback });
+  ) {
+    super(options, callback);
 
     this.points = [startPoint];
     this.options = options;
   }
 
-  static load(data) {
-    const shape = new FreeHandShape(data);
+  static load(data, callback) {
+    const shape = new FreeHandShape(data, callback);
     return shape;
   }
 

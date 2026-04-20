@@ -21,8 +21,11 @@ class LayerManager {
   /**  Sets Gets */
   #Active(id) {
     if (this.#layers.some((l) => l.getId == id)) {
+      this.#main.setItemsUnselect = false;
+
       this.#activeLayer = id;
       this.#layers.forEach((l) => (l.setActive = this.#activeLayer == l.getId));
+      this.#main.getSelections;
     }
   }
   get layers() {
@@ -35,7 +38,6 @@ class LayerManager {
 
   get activeLayerShapes() {
     const idx = this.#layers.findIndex((l) => l.getId === this.#activeLayer);
-    console.log(idx);
     return idx > -1 ? this.#layers[idx].getShapes : null;
   }
 
@@ -69,6 +71,7 @@ class LayerManager {
       name,
       size,
       callback: this.#layerCallback.bind(this),
+      main: this.#main,
     });
     const idx = 0; //this.#layers.findIndex((l) => l.getId == this.#activeLayer);
 
@@ -123,6 +126,15 @@ class LayerManager {
     const idx = this.#layers.findIndex((l) => l.getId === this.#activeLayer);
     if (idx > -1) {
       this.#layers[idx].addShape = shape;
+      this.#layers[idx].renderThumb(size.w, size.h);
+    }
+  }
+
+  removeShapes() {
+    const size = this.#main.getSize;
+    const idx = this.#layers.findIndex((l) => l.getId === this.#activeLayer);
+    if (idx > -1) {
+      this.#layers[idx].removeShapes = true;
       this.#layers[idx].renderThumb(size.w, size.h);
     }
   }

@@ -6,21 +6,24 @@ class RectShape extends Shape {
   #shape = "RectShape";
   #pathSet = new Set();
 
-  constructor({
-    center = Vector.zero(),
-    size = { width: 0, height: 0 },
-    options = Shape.defaultOptions(),
+  constructor(
+    {
+      center = Vector.zero(),
+      size = { width: 0, height: 0 },
+      options = Shape.defaultOptions(),
+    },
     callback,
-  }) {
-    super({ options, callback });
+  ) {
+    super(options, callback);
+    console.log(options, callback);
 
     this.center = center instanceof Vector ? center : new Vector(center);
     this.size = size;
     this.options = options;
   }
 
-  static load(data) {
-    const shape = new RectShape(data);
+  static load(data, callback) {
+    const shape = new RectShape(data, callback);
     return shape;
   }
 

@@ -1,4 +1,5 @@
 import { RectShape } from "../shapes/patterns/rectangle";
+import { Shape } from "../shapes/shape";
 import { Vector } from "../utils/vector";
 import { createDOMElement } from "./model";
 
@@ -15,18 +16,22 @@ class Layer {
   #selected = false;
   #callback;
   #size = { w: 0, h: 0 };
+  #main = null;
 
-  constructor({ name, size, opts = null, callback = () => {} }) {
+  constructor({ name, size, main, opts = null, callback = () => {} }) {
     this.#name = name;
     this.#size = size;
+    this.#main = main;
     this.#callback = callback;
 
     if (opts) {
       this.#visible = opts.visible ?? true;
       this.#opacity = opts.opacity ?? 100;
-      this.#shapes = (opts.shapes ?? []).map((s) =>
-        s instanceof RectShape ? s : RectShape.load(s),
-      );
+      this.#shapes = (opts.shapes ?? []).map((s) => {
+        const shape = Shape.shapeClass(s.shape);
+        return shape.load(s, this.#main.ShapeCallback.bind(this.#main));
+        //s instanceof RectShape ? s : RectShape.load(s),
+      });
       // mergeHistory: array of layer snapshots that were merged to create this layer
       // Allows full unmerge back to original layers
       this.#mergeHistory = opts.mergeHistory ?? null; // null = not merged
@@ -85,6 +90,10 @@ class Layer {
 
   set addShape(shape) {
     this.#shapes.push(shape);
+  }
+
+  set removeShapes(value) {
+    this.#shapes = this.#shapes.filter((s) => !s.selected);
   }
 
   set setActive(val) {
@@ -152,7 +161,10 @@ class Layer {
       ctx.save();
       ctx.scale(scale, scale);
       ctx.globalAlpha = this.#opacity / 100;
-      for (const s of this.#shapes) s.draw(ctx, false);
+      for (const s of this.#shapes) {
+        console.log(s);
+        s.draw(ctx, false);
+      }
       ctx.restore();
 
       thumb = offcanvas.convertToBlob();
@@ -165,6 +177,27 @@ class Layer {
     });
   }
 
+  serialize() {
+    const shapes = this.#shapes.map((s) => s.serialize());
+    const mergeHistory = this.#mergeHistory
+      ? JSON.parse(JSON.stringify(this.#mergeHistory))
+      : null;
+
+    return {
+      id: this.#id,
+      name: this.#name,
+      size: this.#size,
+      main: this.#main,
+      callback: this.#callback,
+      opts: {
+        visible: this.#visible,
+        opacity: this.#opacity,
+        shapes,
+        mergeHistory,
+      },
+    };
+  }
+
   clone() {
     const shapes = this.#shapes.map((s) => s.serialize());
     const mergeHistory = this.#mergeHistory
@@ -173,6 +206,7 @@ class Layer {
     return new Layer({
       name: this.#name + " copy",
       size: this.#size,
+      main: this.#main,
       callback: this.#callback,
       opts: {
         visible: this.#visible,

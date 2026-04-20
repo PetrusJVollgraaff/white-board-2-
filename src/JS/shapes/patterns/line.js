@@ -6,19 +6,18 @@ class LineShape extends Shape {
   #shape = "LineShape";
   #pathSet = new Set();
 
-  constructor({
-    corner1 = Vector.zero(),
-    options = Shape.defaultOptions(),
+  constructor(
+    { corner1 = Vector.zero(), options = Shape.defaultOptions() },
     callback,
-  }) {
-    super({ options, callback });
+  ) {
+    super(options, callback);
 
     this.points = [corner1, corner1];
     this.options = options;
   }
 
-  static load(data) {
-    const shape = new LineShape(data);
+  static load(data, callback) {
+    const shape = new LineShape(data, callback);
     return shape;
   }
 

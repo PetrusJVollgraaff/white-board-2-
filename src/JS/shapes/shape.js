@@ -1,8 +1,14 @@
 import { BoundingBox } from "../transformbox/boundingBox";
 import { ShapeSelection } from "../transformbox/selections";
 import { Vector } from "../utils/vector";
+import { RectShape } from "./patterns/rectangle";
 
 class Shape {
+  static shapeClass(type) {
+    const classObj = eval(type);
+    return classObj;
+  }
+
   static defaultOptions() {
     return {
       lineCap: "round",
@@ -25,7 +31,8 @@ class Shape {
     };
   }
 
-  constructor({ callback, options = Shape.defaultOptions() }) {
+  constructor(options = Shape.defaultOptions(), callback) {
+    console.log(callback, options);
     this.id = null;
     this.center = Vector.zero();
     this.options = options;

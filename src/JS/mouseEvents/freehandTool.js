@@ -12,10 +12,12 @@ class FreeHandTool {
     if (evt.button == 0) {
       const vp = _.vpPt(evt);
       const startPoint = _._vp.toDoc(vp.x, vp.y);
-      let shape = new FreeHandShape({
-        startPoint,
-        callback: _.ShapeCallback.bind(_),
-      });
+      let shape = new FreeHandShape(
+        {
+          startPoint,
+        },
+        _.ShapeCallback.bind(_),
+      );
 
       const moveCallback = function (evt) {
         const vp = _.vpPt(evt);

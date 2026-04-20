@@ -46,32 +46,18 @@ class SelectionHandle {
   }
 
   draw(ctx, hitRegion = false) {
-    const zoom = 1; //viewport.zoom
-    const size = SelectionHandle.size / zoom;
     this.path = new Path2D();
 
-    ctx.fillStyle = "black";
-    //Object.values(Handle.TYPES).includes(this.type)? "black": "red";
-    ctx.strokeStyle = "black";
-    //Object.values(Handle.TYPES).includes(this.type)? "white": "black";
-    ctx.lineWidth = 2 * zoom;
+    const { size, TYPES } = SelectionHandle;
+    const { x, y } = this.center;
+    const isDefaultTypes = Object.values(TYPES).includes(this.type);
 
-    //if (Object.values(Handle.TYPES).includes(this.type)) {
-    this.path.rect(
-      this.center.x - size / 2,
-      this.center.y - size / 2,
-      size,
-      size,
-    );
-    /*} else {
-      this.path.arc(
-        this.center.x,
-        this.center.y,
-        Math.abs(size / 2),
-        0,
-        2 * Math.PI
-      );
-    }*/
+    ctx.fillStyle = isDefaultTypes ? "black" : "red";
+    ctx.strokeStyle = isDefaultTypes ? "white" : "black";
+    ctx.lineWidth = 2;
+
+    if (isDefaultTypes) this.path.rect(x - size / 2, y - size / 2, size, size);
+    else this.path.arc(x, y, Math.abs(size / 2), 0, 2 * Math.PI);
 
     ctx.fill(this.path);
   }
@@ -154,7 +140,6 @@ class ShapeSelection extends Selection {
   draw(ctx, hitRegion = false) {
     ctx.save();
     ctx.beginPath();
-    const zoom = 1; //viewport.zoom
 
     if (!hitRegion) {
       ctx.rect(
@@ -164,13 +149,13 @@ class ShapeSelection extends Selection {
         this.box.height,
       );
       ctx.strokeStyle = "white";
-      ctx.lineWidth = 2 / zoom;
+      ctx.lineWidth = 2;
       ctx.stroke();
       ctx.strokeStyle = "black";
       ctx.lineWidth /= 2;
       ctx.stroke();
 
-      const centerRadius = (0.5 * SelectionHandle.size) / zoom;
+      const centerRadius = 0.5 * SelectionHandle.size;
       const centerLength = 2 * Math.PI * centerRadius;
       const dashCount = 3;
       const dashLength = (0.25 * centerLength) / dashCount;
@@ -178,7 +163,7 @@ class ShapeSelection extends Selection {
 
       ctx.save();
       ctx.beginPath();
-      ctx.lineWidth = 3 / zoom;
+      ctx.lineWidth = 3;
       ctx.setLineDash([dashLength, spaceLength]);
       ctx.arc(this.center.x, this.center.y, centerRadius, 0, 2 * Math.PI);
       ctx.lineCap = "round";

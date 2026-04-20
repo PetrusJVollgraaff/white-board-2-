@@ -6,21 +6,23 @@ class EllipseShape extends Shape {
   #shape = "EllipseShape";
   #pathSet = new Set();
 
-  constructor({
-    center = Vector.zero(),
-    size = { width: 0, height: 0 },
-    options = Shape.defaultOptions(),
+  constructor(
+    {
+      center = Vector.zero(),
+      size = { width: 0, height: 0 },
+      options = Shape.defaultOptions(),
+    },
     callback,
-  }) {
-    super({ options, callback });
+  ) {
+    super(options, callback);
 
     this.center = center instanceof Vector ? center : new Vector(center);
     this.size = size;
     this.options = options;
   }
 
-  static load(data) {
-    const shape = new EllipseShape(data);
+  static load(data, callback) {
+    const shape = new EllipseShape(data, callback);
     return shape;
   }
 

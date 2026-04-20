@@ -18,10 +18,12 @@ class LineTool {
         const vp = _.vpPt(evt);
         const mousePosition = _._vp.toDoc(vp.x, vp.y);
 
-        shape = new LineShape({
-          corner1: startPosition,
-          callback: _.ShapeCallback.bind(_),
-        });
+        shape = new LineShape(
+          {
+            corner1: startPosition,
+          },
+          _.ShapeCallback.bind(_),
+        );
 
         shape.setCorner2 = mousePosition;
 

@@ -26,11 +26,13 @@ class RectTool {
           shape.setCenter = { center };
           shape.setSize = size;
         } else {
-          shape = new RectShape({
-            center,
-            size,
-            callback: _.ShapeCallback.bind(_),
-          });
+          shape = new RectShape(
+            {
+              center,
+              size,
+            },
+            _.ShapeCallback.bind(_),
+          );
         }
 
         _.render([shape]);

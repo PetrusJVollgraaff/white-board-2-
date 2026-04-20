@@ -26,11 +26,13 @@ class EllipseTool {
           shape.setCenter = { center };
           shape.setSize = size;
         } else {
-          shape = new EllipseShape({
-            center,
-            size,
-            callback: _.ShapeCallback.bind(_),
-          });
+          shape = new EllipseShape(
+            {
+              center,
+              size,
+            },
+            _.ShapeCallback.bind(_),
+          );
         }
 
         _.render([shape]);
