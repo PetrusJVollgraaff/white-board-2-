@@ -12,6 +12,9 @@ import { RectShape } from "./JS/shapes/patterns/rectangle";
 import { BoundingBox } from "./JS/transformbox/boundingBox";
 import { ViewportSizePanel } from "./JS/panels/ViewportSizePanel";
 import { ShapeSelection } from "./JS/transformbox/selections";
+import { EllipseTool } from "./JS/mouseEvents/ellipseTool";
+import { LineTool } from "./JS/mouseEvents/lineTool";
+import { FreeHandTool } from "./JS/mouseEvents/freehandTool";
 
 class DrawingBoard extends EventTarget {
   #mainArea = document.getElementById("main-area");
@@ -100,6 +103,7 @@ class DrawingBoard extends EventTarget {
     this.#fitToViewport();
   }
 
+  /** Setters */
   set setOffset(value) {
     this.#StageProperties.offset = value;
   }
@@ -107,6 +111,19 @@ class DrawingBoard extends EventTarget {
   set setLayers(elm) {
     this.#layerManager.render(elm);
     this.render();
+  }
+
+  set setMouseEvent(event) {
+    const vp = this.#viewportElm;
+    if (this.#SelectedEvent) this.#SelectedEvent.removeEventListeners(vp);
+
+    this.#SelectedEvent = event;
+    this.#SelectedEvent.configureEventListener(vp, this);
+  }
+
+  /** Getters */
+  get getmainCtx() {
+    return this.#mainCtx;
   }
 
   get vpPt() {
@@ -135,21 +152,58 @@ class DrawingBoard extends EventTarget {
   }
 
   get getSelections() {
-    console.log();
     return (doc) =>
       this.#selectedItems.length > 0
-        ? this.#selectedItems.find((s) => s.isSelected(this.#mainCtx, doc))
+        ? this.#selectedItems.find((s) => {
+            console.log(s.isSelected(this.#mainCtx, doc));
+            if (s.isSelected(this.#mainCtx, doc)) {
+              return s;
+            }
+          })
         : null;
   }
 
+  /** Public Method */
   appendShape(shape) {
     this.#layerManager.addShape(shape);
   }
 
+  render(shapes = []) {
+    const zoom = this._vp.getZoom;
+    const { offset, width, height, size } = this.#StageProperties;
+    if (this.#showRulers) this.#rulers.draw(this._vp, this.#StageProperties);
+
+    this.#mainCtx.clearRect(0, 0, width, height);
+    this.#mainCtx.save();
+    this.#mainCtx.fillStyle = "#ffffff";
+    this.#mainCtx.fillRect(offset.x, offset.y, size.w * zoom, size.h * zoom);
+    this.#mainCtx.scale(zoom, zoom);
+    this.#mainCtx.translate(offset.x / zoom, offset.y / zoom);
+
+    document.getElementById("zoom-level").textContent = this._vp.zoomLabel;
+
+    this.#layerManager.drawShape(this.#mainCtx, shapes);
+    this.#selectedItems.forEach((s) => s.draw(this.#mainCtx));
+    this.#mainCtx.restore();
+  }
+
+  applySelections() {
+    const shapes = this.getSelectedShapes;
+    this.#selectedItems = shapes.map((s) => new ShapeSelection(s));
+  }
+
+  ShapeCallback(data) {
+    if (data?.event) {
+      const { name, detail } = data?.event;
+      this.dispatchEvent(new CustomEvent(name, { detail }));
+    }
+  }
+
+  /** Private  Method*/
+
   #setTool(data) {
     const { tool } = data;
     this.#toolActive = tool;
-    this.#SelectedEvent.removeEventListeners(this.#viewportElm);
     this.#setMousEvents();
   }
 
@@ -225,25 +279,6 @@ class DrawingBoard extends EventTarget {
     });
   }
 
-  render(shapes = []) {
-    const zoom = this._vp.getZoom;
-    const { offset, width, height, size } = this.#StageProperties;
-    if (this.#showRulers) this.#rulers.draw(this._vp, this.#StageProperties);
-
-    this.#mainCtx.clearRect(0, 0, width, height);
-    this.#mainCtx.save();
-    this.#mainCtx.fillStyle = "#ffffff";
-    this.#mainCtx.fillRect(offset.x, offset.y, size.w * zoom, size.h * zoom);
-    this.#mainCtx.scale(zoom, zoom);
-    this.#mainCtx.translate(offset.x / zoom, offset.y / zoom);
-
-    document.getElementById("zoom-level").textContent = this._vp.zoomLabel;
-
-    this.#layerManager.drawShape(this.#mainCtx, shapes);
-    this.#selectedItems.forEach((s) => s.draw(this.#mainCtx));
-    this.#mainCtx.restore();
-  }
-
   #fitToViewport() {
     this._vp.fitDoc(this.#StageProperties);
     this.setOffset = this._vp.getOffset;
@@ -256,11 +291,6 @@ class DrawingBoard extends EventTarget {
     this._vp.handleZoom(e.deltaY, this.vpPt(e));
     this.setOffset = this._vp.getOffset;
     this.render();
-  }
-
-  applySelections() {
-    const shapes = this.getSelectedShapes;
-    this.#selectedItems = shapes.map((s) => new ShapeSelection(s));
   }
 
   #handleChanges({ detail }) {
@@ -294,32 +324,41 @@ class DrawingBoard extends EventTarget {
   }
 
   #setMousEvents() {
+    console.log(this.#toolActive);
     const vp = this.#viewportElm;
     if (this.#toolActive == "select") {
-      this.#SelectedEvent = SelectTool;
-      this.#SelectedEvent.configureEventListener(vp, this);
+      this.setMouseEvent = SelectTool;
       return;
     }
 
     if (this.#toolActive == "pan") {
       this.setItemsUnselect = false;
-      this.#SelectedEvent = PanTools;
-      this.#SelectedEvent.configureEventListener(vp, this);
+      this.setMouseEvent = PanTools;
       return;
     }
 
     if (this.#toolActive == "rect") {
       this.setItemsUnselect = false;
-      this.#SelectedEvent = RectTool;
-      this.#SelectedEvent.configureEventListener(vp, this);
+      this.setMouseEvent = RectTool;
       return;
     }
-  }
 
-  ShapeCallback(data) {
-    if (data?.event) {
-      const { name, detail } = data?.event;
-      this.dispatchEvent(new CustomEvent(name, { detail }));
+    if (this.#toolActive == "ellipse") {
+      this.setItemsUnselect = false;
+      this.setMouseEvent = EllipseTool;
+      return;
+    }
+
+    if (this.#toolActive == "line") {
+      this.setItemsUnselect = false;
+      this.setMouseEvent = LineTool;
+      return;
+    }
+
+    if (this.#toolActive == "freehand") {
+      this.setItemsUnselect = false;
+      this.setMouseEvent = FreeHandTool;
+      return;
     }
   }
 }

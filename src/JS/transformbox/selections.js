@@ -196,6 +196,122 @@ class ShapeSelection extends Selection {
 
     ctx.restore();
   }
+
+  addEventListeners(target, startPosition, handle, main) {
+    const selectedShapes = main.getSelectedShapes;
+    const oldBoxes = selectedShapes.map((s) =>
+      BoundingBox.fromPoints(s.getPoints.map((p) => p.add(this.center))),
+    );
+
+    const startingSigns = selectedShapes.map((s) => {
+      const { width, height } = s.size;
+      return {
+        widthSign: Math.sign(width),
+        heightSign: Math.sign(height),
+      };
+    });
+
+    const oldRotations = selectedShapes.map((s) => s.rotation);
+    let mouseDelta = null;
+    const { width, height } = this.box;
+    const prevSize = { width, height };
+
+    const moveCallback = (evt) => {
+      const vp = main.vpPt(evt);
+      const mousePosition = main._vp.toDoc(vp.x, vp.y);
+      mouseDelta = Vector.subtract(mousePosition, startPosition);
+      //const polar = diff.toPolar();
+      //polar.dir -= this.rotation;
+
+      let ratio = new Vector({
+        x: mouseDelta.x / prevSize.width,
+        y: mouseDelta.y / prevSize.height,
+      })
+        .scale(2)
+        .add(new Vector({ x: 1, y: 1 }));
+      const { TYPES } = SelectionHandle;
+
+      if (Object.values(TYPES).includes(handle.type)) {
+        switch (handle.type) {
+          case TYPES.RIGHT:
+            ratio = new Vector({ x: ratio.x, y: 1 });
+            break;
+          case TYPES.LEFT:
+            ratio = new Vector({ x: 2 - ratio.x, y: 1 });
+            break;
+          case TYPES.TOP:
+            ratio = new Vector({ x: 1, y: 2 - ratio.y });
+            break;
+          case TYPES.BOTTOM:
+            ratio = new Vector({ x: 1, y: ratio.y });
+            break;
+          case TYPES.TOP_LEFT:
+            ratio = new Vector({ x: 2 - ratio.x, y: 2 - ratio.y });
+            break;
+          case TYPES.TOP_RIGHT:
+            ratio = new Vector({ x: ratio.x, y: 2 - ratio.y });
+            break;
+          case TYPES.BOTTOM_LEFT:
+            ratio = new Vector({ x: 2 - ratio.x, y: ratio.y });
+            break;
+          case TYPES.BOTTOM_RIGHT:
+            ratio = new Vector({ x: ratio.x, y: ratio.y });
+            break;
+        }
+
+        // Preserve aspect ratio if shift key is held
+        // region shift key preserve ratio
+        if (
+          evt.shiftKey &&
+          [
+            TYPES.TOP_LEFT,
+            TYPES.TOP_RIGHT,
+            TYPES.BOTTOM_LEFT,
+            TYPES.BOTTOM_RIGHT,
+          ].includes(handle.type)
+        ) {
+          const scaler = Math.max(Math.abs(ratio.x), Math.abs(ratio.y));
+          ratio = new Vector({
+            x: Math.sign(ratio.x) * scaler,
+            y: Math.sign(ratio.y) * scaler,
+          });
+        }
+
+        // endregion
+        for (let i = 0; i < selectedShapes.length; i++) {
+          const shape = selectedShapes[i];
+          const oldBox = oldBoxes[i];
+          const oldRotation = oldRotations[i];
+
+          //if (handle.type === TYPES.ROTATE) {
+          //  const fixedStart = viewport.getAdjustedPosition(startPosition);
+          //  const fixedMouse = viewport.getAdjustedPosition(mousePosition);
+
+          // vectors centered at the bounding box center
+          //  const v1 = Vec2.subtract(fixedStart, oldBox.center);
+          //  const v2 = Vec2.subtract(fixedMouse, oldBox.center);
+          //  const angle = Vec2.getSignedAngle(v2, v1);
+          //  const combinedAngle = oldRotation + angle;
+          //  shape.setRotation(combinedAngle, false);
+          //} else {
+          shape.setSize = {
+            width: oldBox.width * ratio.x * startingSigns[i].widthSign,
+            height: oldBox.height * ratio.y * startingSigns[i].heightSign,
+            save: false,
+          };
+          main.rightNav.setSize = shape.getSize;
+          //}
+        }
+      }
+    };
+
+    const upCallback = (e) => {
+      target.removeEventListener("pointermove", moveCallback);
+      target.removeEventListener("pointerup", upCallback);
+    };
+    target.addEventListener("pointermove", moveCallback);
+    target.addEventListener("pointerup", upCallback);
+  }
 }
 
 export { ShapeSelection, SelectionHandle, Selection };

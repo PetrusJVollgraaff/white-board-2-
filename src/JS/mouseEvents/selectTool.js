@@ -12,7 +12,13 @@ class SelectTool {
       const vp = _.vpPt(evt);
       const startPosition = _._vp.toDoc(vp.x, vp.y);
       const shape = _.getShape(startPosition);
-      const selections = _.getSelections(startPosition);
+      const selection = _.getSelections(startPosition);
+
+      if (selection) {
+        const handle = selection.isSelected(this.getmainCtx, startPosition);
+        selection.addEventListeners(target, startPosition, handle, _);
+        return;
+      }
 
       const isClickingSelectedShape = shape && shape.selected;
 
@@ -42,6 +48,7 @@ class SelectTool {
         shape.setCenter = {
           center: Vector.add(OldCenter, mouseDelta),
         };
+        _.rightNav.setSize = shape.getSize;
 
         _.render();
       };

@@ -80,6 +80,29 @@ class Shape {
     ];
   }
 
+  get getSizeByPoints() {
+    const minX = Math.min(...this.points.map((p) => p.x));
+    const minY = Math.min(...this.points.map((p) => p.y));
+    const maxX = Math.max(...this.points.map((p) => p.x));
+    const maxY = Math.max(...this.points.map((p) => p.y));
+    return {
+      width: maxX - minX,
+      height: maxY - minY,
+    };
+  }
+
+  recenter() {
+    //const points = this.getPoints();
+    this.center = Vector.mid(this.points);
+    this.size = BoundingBox.fromPoints(this.points);
+    for (const point of this.points) {
+      const newPoint = Vector.subtract(point, this.center);
+      point.x = newPoint.x;
+      point.y = newPoint.y;
+    }
+    //this.setPoints(points);
+  }
+
   select(save = true) {
     this.selected = true;
     this.selections = new ShapeSelection(this);
