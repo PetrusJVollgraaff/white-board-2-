@@ -1,4 +1,5 @@
 import { BoundingBox } from "../../transformbox/boundingBox";
+import { ShapeFactory } from "../../utils/shapeFactory";
 import { Vector } from "../../utils/vector";
 import { Shape } from "../shape";
 
@@ -8,17 +9,24 @@ class FreeHandShape extends Shape {
   #pathSet = new Set();
 
   constructor(
-    { startPoint = Vector.zero(), options = Shape.defaultOptions() },
+    {
+      startPoint = Vector.zero(),
+      options = Shape.defaultOptions(),
+      points = null,
+    },
     callback,
   ) {
     super(options, callback);
 
-    this.points = [startPoint];
+    this.points = points ? points.map((p) => new Vector(p)) : [startPoint];
     this.options = options;
   }
 
   static load(data, callback) {
     const shape = new FreeHandShape(data, callback);
+    shape.setCenter = { center: new Vector(data.center), save: false };
+    shape.size = data.size;
+    shape.setSize = { ...data.size, ...{ save: false } };
     return shape;
   }
 
@@ -113,5 +121,7 @@ class FreeHandShape extends Shape {
     this.applyStyles(ctx, this.path);
   }
 }
+
+ShapeFactory.registerShape(FreeHandShape, "FreeHandShape");
 
 export { FreeHandShape };

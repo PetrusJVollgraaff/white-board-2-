@@ -1,3 +1,4 @@
+import { ShapeFactory } from "../../utils/shapeFactory";
 import { Vector } from "../../utils/vector";
 import { Shape } from "../shape";
 
@@ -15,8 +16,6 @@ class RectShape extends Shape {
     callback,
   ) {
     super(options, callback);
-    console.log(options, callback);
-
     this.center = center instanceof Vector ? center : new Vector(center);
     this.size = size;
     this.options = options;
@@ -85,5 +84,7 @@ class RectShape extends Shape {
     this.applyStyles(ctx, this.path);
   }
 }
+
+ShapeFactory.registerShape(RectShape, "RectShape");
 
 export { RectShape };

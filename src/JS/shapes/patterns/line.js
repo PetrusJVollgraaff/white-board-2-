@@ -1,3 +1,4 @@
+import { ShapeFactory } from "../../utils/shapeFactory";
 import { Vector } from "../../utils/vector";
 import { Shape } from "../shape";
 
@@ -7,17 +8,26 @@ class LineShape extends Shape {
   #pathSet = new Set();
 
   constructor(
-    { corner1 = Vector.zero(), options = Shape.defaultOptions() },
+    {
+      corner1 = Vector.zero(),
+      options = Shape.defaultOptions(),
+      points = null,
+    },
     callback,
   ) {
     super(options, callback);
 
-    this.points = [corner1, corner1];
+    this.points = points
+      ? points.map((p) => new Vector(p))
+      : [corner1, corner1];
     this.options = options;
   }
 
   static load(data, callback) {
     const shape = new LineShape(data, callback);
+    shape.setCenter = { center: new Vector(data.center), save: false };
+    shape.size = data.size;
+    shape.setSize = { ...data.size, ...{ save: false } };
     return shape;
   }
 
@@ -105,5 +115,7 @@ class LineShape extends Shape {
     this.applyStyles(ctx, this.path);
   }
 }
+
+ShapeFactory.registerShape(LineShape, "LineShape");
 
 export { LineShape };

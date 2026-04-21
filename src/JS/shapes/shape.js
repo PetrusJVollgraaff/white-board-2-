@@ -1,7 +1,8 @@
+//import { RectShape } from "./patterns/rectangle";
+//import { EllipseShape } from "./patterns/ellipse";
 import { BoundingBox } from "../transformbox/boundingBox";
 import { ShapeSelection } from "../transformbox/selections";
 import { Vector } from "../utils/vector";
-import { RectShape } from "./patterns/rectangle";
 
 class Shape {
   static shapeClass(type) {
@@ -32,7 +33,6 @@ class Shape {
   }
 
   constructor(options = Shape.defaultOptions(), callback) {
-    console.log(callback, options);
     this.id = null;
     this.center = Vector.zero();
     this.options = options;
@@ -177,21 +177,16 @@ class Shape {
 
   set setOptions({ options, save = true }) {
     for (const key in options) {
-      if (this.options.hasOwnProperty(key)) this.options[key] = options[key];
-    }
-  }
-
-  reCenter() {
-    const points = this.getPoints();
-    this.center = Vector.mid(points);
-    //this.size = BoundingBox.fromPoints(points)
-
-    for (const point of points) {
-      const newPoint = Vector.subtract(point, this.center);
-      point = newPoint;
+      if (this.options.hasOwnProperty(key))
+        this.options[key] = { ...this.options[key], ...options[key] };
     }
 
-    this.setPoints(points);
+    this.callback({
+      event: {
+        name: "optionsChanged",
+        detail: { shape: this, save },
+      },
+    });
   }
 
   applyHitRegionStyles(ctx, dilaion = 10) {

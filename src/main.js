@@ -68,7 +68,7 @@ class DrawingBoard extends EventTarget {
 
         switch (action) {
           case "setSize":
-            return this.#setSize(data);
+            return this.#setViewPortSize(data);
           case "setZoom":
             return this.#setZoom(data);
           case "setRuler":
@@ -92,6 +92,10 @@ class DrawingBoard extends EventTarget {
         switch (action) {
           case "setLayer":
             return this.#setLayer(data);
+          case "setColor":
+            return this.#setColor(data);
+          case "setSize":
+            return this.#setSize(data);
         }
       },
     });
@@ -123,6 +127,19 @@ class DrawingBoard extends EventTarget {
     this.#SelectedEvent.configureEventListener(vp, this);
   }
 
+  set setFillSettings(obj) {
+    const shapes = this.#layerManager.activeLayerShapes;
+    if (shapes)
+      shapes.forEach((s) => {
+        if (s.selected) s.setOptions = { options: obj };
+      });
+  }
+
+  set setItemsUnselect(value) {
+    const shapes = this.#layerManager.activeLayerShapes;
+    if (shapes) shapes.forEach((s) => s.unselect());
+  }
+
   /** Getters */
   get getmainCtx() {
     return this.#mainCtx;
@@ -146,11 +163,6 @@ class DrawingBoard extends EventTarget {
   get getSelectedShapes() {
     const shapes = this.#layerManager.activeLayerShapes;
     return shapes ? shapes.filter((s) => s.selected) : null;
-  }
-
-  set setItemsUnselect(value) {
-    const shapes = this.#layerManager.activeLayerShapes;
-    if (shapes) shapes.forEach((s) => s.unselect());
   }
 
   get getSelections() {
@@ -207,6 +219,10 @@ class DrawingBoard extends EventTarget {
     }
   }
 
+  #setColor(data) {}
+
+  #setSize(data) {}
+
   #setTool(data) {
     const { tool } = data;
     this.#toolActive = tool;
@@ -218,9 +234,9 @@ class DrawingBoard extends EventTarget {
     this.#mainArea.classList[action]("rulers-hidden");
   }
 
-  #setSize(data) {
+  #setViewPortSize(data) {
     this.#StageProperties.size = data?.size
-      ? SizePanel.Sizes[data?.size]
+      ? ViewportSizePanel.Sizes[data?.size]
       : data.custom;
     this.#fitToViewport();
   }
@@ -332,7 +348,6 @@ class DrawingBoard extends EventTarget {
   }
 
   #setMousEvents() {
-    console.log(this.#toolActive);
     const vp = this.#viewportElm;
     if (this.#toolActive == "select") {
       this.setMouseEvent = SelectTool;

@@ -11,21 +11,13 @@ class LineTool {
     const { target } = evt;
     if (evt.button == 0) {
       const vp = _.vpPt(evt);
-      const startPosition = _._vp.toDoc(vp.x, vp.y);
-      let shape = null;
+      const corner1 = _._vp.toDoc(vp.x, vp.y);
+      let shape = new LineShape({ corner1 }, _.ShapeCallback.bind(_));
 
       const moveCallback = function (evt) {
         const vp = _.vpPt(evt);
-        const mousePosition = _._vp.toDoc(vp.x, vp.y);
-
-        shape = new LineShape(
-          {
-            corner1: startPosition,
-          },
-          _.ShapeCallback.bind(_),
-        );
-
-        shape.setCorner2 = mousePosition;
+        shape.setCorner2 = _._vp.toDoc(vp.x, vp.y);
+        shape.recenter();
 
         _.render([shape]);
       };

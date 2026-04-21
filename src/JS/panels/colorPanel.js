@@ -200,9 +200,10 @@ class ColorPanel {
   #areaEvents() {
     Object.entries(this.#AreaOptions).forEach((item, idx) => {
       const { elm, event } = item[1];
-
+      const obj = { fill: {} };
       elm.addEventListener(event, (evt) => {
-        console.log(evt.target.value);
+        obj.fill[item[0]] = evt.target.value;
+        this.#main.setFillSettings = obj;
       });
     });
   }

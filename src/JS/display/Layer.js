@@ -1,5 +1,6 @@
-import { RectShape } from "../shapes/patterns/rectangle";
-import { Shape } from "../shapes/shape";
+//import { RectShape } from "../shapes/patterns/rectangle";
+//import { Shape } from "../shapes/shape";
+import { ShapeFactory } from "../utils/shapeFactory";
 import { Vector } from "../utils/vector";
 import { createDOMElement } from "./model";
 
@@ -27,11 +28,14 @@ class Layer {
     if (opts) {
       this.#visible = opts.visible ?? true;
       this.#opacity = opts.opacity ?? 100;
-      this.#shapes = (opts.shapes ?? []).map((s) => {
-        const shape = Shape.shapeClass(s.shape);
-        return shape.load(s, this.#main.ShapeCallback.bind(this.#main));
-        //s instanceof RectShape ? s : RectShape.load(s),
-      });
+      this.#shapes = ShapeFactory.loadShapes(
+        opts.shapes ?? [],
+        this.#main.ShapeCallback.bind(this.#main),
+      );
+      //(opts.shapes ?? []).map((s) => {
+      //  const shape = Shape.shapeClass(s.shape);
+      //  return shape.load(s, this.#main.ShapeCallback.bind(this.#main));
+      //});
       // mergeHistory: array of layer snapshots that were merged to create this layer
       // Allows full unmerge back to original layers
       this.#mergeHistory = opts.mergeHistory ?? null; // null = not merged
@@ -162,7 +166,6 @@ class Layer {
       ctx.scale(scale, scale);
       ctx.globalAlpha = this.#opacity / 100;
       for (const s of this.#shapes) {
-        console.log(s);
         s.draw(ctx, false);
       }
       ctx.restore();
