@@ -135,6 +135,15 @@ class DrawingBoard extends EventTarget {
       });
   }
 
+  set setShapeSize(data) {
+    console.log(data);
+    const shapes = this.#layerManager.activeLayerShapes;
+    if (shapes)
+      shapes.forEach((s) => {
+        if (s.selected) s[data.action] = data.obj;
+      });
+  }
+
   set setItemsUnselect(value) {
     const shapes = this.#layerManager.activeLayerShapes;
     if (shapes) shapes.forEach((s) => s.unselect());
@@ -331,6 +340,7 @@ class DrawingBoard extends EventTarget {
   }
 
   #customEvents() {
+    this.addEventListener("optionsChanged", this.#handleChanges.bind(this));
     this.addEventListener("positionChanged", this.#handleChanges.bind(this));
     this.addEventListener("sizeChanged", this.#handleChanges.bind(this));
     this.addEventListener("rotationChanged", this.#handleChanges.bind(this));

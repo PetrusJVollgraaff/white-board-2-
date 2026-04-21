@@ -66,6 +66,11 @@ class SizePanel {
     },
   };
   #main = null;
+
+  size = { width: 0, height: 0 };
+  center = Vector.zero();
+  angle = 0;
+
   #callback = () => {};
   constructor({ elmP, main, callback }) {
     this.#elmP = elmP;
@@ -82,13 +87,17 @@ class SizePanel {
   }) {
     const { x, y, width, height, rotation } = this.#elms;
 
-    x.elm.value = center.x;
-    y.elm.value = center.y;
+    this.size = size;
+    this.center = center;
+    this.angle = angle;
 
-    width.elm.value = size.width;
-    height.elm.value = size.height;
+    x.elm.value = this.center.x;
+    y.elm.value = this.center.y;
 
-    rotation.elm.value = angle;
+    width.elm.value = this.size.width;
+    height.elm.value = this.size.height;
+
+    rotation.elm.value = this.angle;
   }
 
   #init() {
@@ -117,6 +126,19 @@ class SizePanel {
       const { elm, event } = item[1];
 
       elm.addEventListener(event, (evt) => {
+        if (item[0] == "width" || item[0] == "height") {
+          this.size[item[0]] = Number(evt.target.value);
+          this.#main.setShapeSize = {
+            action: "setSize",
+            obj: { ...this.size },
+          };
+        } else if (item[0] == "x" || item[0] == "y") {
+          this.center[item[0]] = Number(evt.target.value);
+          this.#main.setShapeSize = {
+            action: "setCenter",
+            obj: { center: new Vector(this.center) },
+          };
+        }
         console.log(evt.target.value);
       });
     });

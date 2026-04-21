@@ -11,7 +11,7 @@ class EllipseShape extends Shape {
     {
       center = Vector.zero(),
       size = { width: 0, height: 0 },
-      options = Shape.defaultOptions(),
+      options = Shape.defaultOptions,
     },
     callback,
   ) {

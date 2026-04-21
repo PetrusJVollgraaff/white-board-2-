@@ -201,20 +201,27 @@ class ColorPanel {
     Object.entries(this.#AreaOptions).forEach((item, idx) => {
       const { elm, event } = item[1];
       const obj = { fill: {} };
-      elm.addEventListener(event, (evt) => {
-        obj.fill[item[0]] = evt.target.value;
-        this.#main.setFillSettings = obj;
-      });
+
+      if (item[0] != "picker") {
+        elm.addEventListener(event, (evt) => {
+          obj.fill[item[0]] = evt.target.value;
+          this.#main.setFillSettings = obj;
+        });
+      }
     });
   }
 
   #lineEvents() {
     Object.entries(this.#LineOptions).forEach((item, idx) => {
       const { elm, event } = item[1];
+      const obj = { stroke: {} };
 
-      elm.addEventListener(event, (evt) => {
-        console.log(evt.target.value);
-      });
+      if (item[0] != "picker") {
+        elm.addEventListener(event, (evt) => {
+          obj.stroke[item[0]] = evt.target.value;
+          this.#main.setFillSettings = obj;
+        });
+      }
     });
   }
 }

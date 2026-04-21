@@ -5,31 +5,34 @@ import { ShapeSelection } from "../transformbox/selections";
 import { Vector } from "../utils/vector";
 
 class Shape {
-  static shapeClass(type) {
-    const classObj = eval(type);
-    return classObj;
-  }
+  static defaultOptions = {
+    lineCap: "round",
+    lineJoin: "round",
+    fill: {
+      visible: true,
+      type: "solid",
+      color: "#FFFF00",
+      opacity: 100,
+    },
 
-  static defaultOptions() {
-    return {
-      lineCap: "round",
-      lineJoin: "round",
-      fill: {
-        visible: true,
-        type: "solid",
-        color: "#FFFF00",
-        opacity: 100,
-      },
+    stroke: {
+      visible: true,
+      type: "solid",
+      style: "continues",
+      color: "#000000",
+      opacity: 100,
+      size: 2,
+    },
+  };
 
-      stroke: {
-        visible: true,
-        type: "solid",
-        style: "continues",
-        color: "#000000",
-        opacity: 100,
-        size: 2,
-      },
-    };
+  static setOptions(options) {
+    for (const key in this.defaultOptions) {
+      if (this.defaultOptions.hasOwnProperty(key))
+        this.defaultOptions[key] = {
+          ...this.defaultOptions[key],
+          ...options[key],
+        };
+    }
   }
 
   constructor(options = Shape.defaultOptions(), callback) {
@@ -181,6 +184,8 @@ class Shape {
         this.options[key] = { ...this.options[key], ...options[key] };
     }
 
+    console.log(this.options);
+
     this.callback({
       event: {
         name: "optionsChanged",
@@ -208,7 +213,7 @@ class Shape {
     const { type, image, color, opacity, linear } = options;
     const { width, height } = this.size;
 
-    if (type == "linear" || type == "axial") {
+    /*if (type == "linear" || type == "axial") {
       const radius = Math.min(height, width);
       const { points, colors, angle } = linear;
       ctx[ctxstyle] = LinearStyle(
@@ -220,9 +225,19 @@ class Shape {
         radius,
         this.center,
       );
-    } else if (type == "solid" || (type == "image" && image.file == "")) {
-      ctx[ctxstyle] = color; //+ decimalToHexOpacity(opacity);
+    } else if (type == "solid") {*/
+    ctx[ctxstyle] = color + this.decimalToHexOpacity(Number(opacity) / 100);
+    //}
+  }
+
+  decimalToHexOpacity(decimal) {
+    if (decimal < 0 || decimal > 1) {
+      throw new Error("Opacity must be a decimal between 0 and 1.");
     }
+    // Convert to 8-bit value and to hex
+    let hex = Math.round(decimal * 255).toString(16);
+    // Ensure it's two characters long
+    return hex.padStart(2, "0");
   }
 
   applyStyles(ctx, path) {
@@ -233,6 +248,9 @@ class Shape {
     this.createColors(ctx, fill, "fillStyle");
 
     //Border options
+    if (stroke.style != "continues" && stroke.type == "solid") {
+      this.setStrokeStyle(ctx);
+    }
     this.createColors(ctx, stroke, "strokeStyle");
 
     ctx.lineWidth = stroke.size;
@@ -245,6 +263,27 @@ class Shape {
 
     ctx.stroke(path);
     ctx.restore();
+  }
+
+  setStrokeStyle(ctx) {
+    let pattern = [];
+    switch (this.options.stroke.style) {
+      case "dashed":
+        pattern = [5, 15];
+        break;
+      case "ultrafinedash":
+        pattern = [1.5, 1.5];
+        break;
+      case "finedash":
+        pattern = [10, 10];
+        break;
+    }
+    //drawDashedLine([20, 5]);
+    //drawDashedLine([15, 3, 3, 3]);
+    //drawDashedLine([20, 3, 3, 3, 3, 3, 3, 3]);
+    //drawDashedLine([12, 3, 3]);
+
+    ctx.setLineDash(pattern);
   }
 
   setPoints() {
