@@ -142,7 +142,7 @@ class LayerPanel {
 
     this.#buildTop();
     this.#buildMiddle();
-    this.#buildBottom();
+    //this.#buildBottom();
   }
 
   #topActions(value) {
@@ -154,14 +154,11 @@ class LayerPanel {
   #eventListener() {
     this.#topEvents();
 
-    this.OpInput.addEventListener("change", () => {});
+    this.OpInput.addEventListener("input", (evt) => {
+      this.#main.setLayerOpacity = evt.target.value;
+    });
 
-    this.mergedownBtn.addEventListener("click", () => {});
-    this.mergetoBtn.addEventListener("click", () => {});
-    this.unmerge.addEventListener("click", () => {});
-    this.mergemodeBtn.addEventListener("click", () => {});
-    this.mergecancelBtn.addEventListener("click", () => {});
-    this.flattenBtn.addEventListener("click", () => {});
+    //this.#bottomEvents()
   }
 
   #topEvents() {
@@ -180,6 +177,15 @@ class LayerPanel {
     this.delBtn.addEventListener("click", () => {
       this.#topActions("delete");
     });
+  }
+
+  #bottomEvents() {
+    this.mergedownBtn.addEventListener("click", () => {});
+    this.mergetoBtn.addEventListener("click", () => {});
+    this.unmerge.addEventListener("click", () => {});
+    this.mergemodeBtn.addEventListener("click", () => {});
+    this.mergecancelBtn.addEventListener("click", () => {});
+    this.flattenBtn.addEventListener("click", () => {});
   }
 }
 

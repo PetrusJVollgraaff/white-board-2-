@@ -119,6 +119,11 @@ class DrawingBoard extends EventTarget {
     this.render();
   }
 
+  set setLayerOpacity(value) {
+    this.#layerManager.setLayerOpacity = value;
+    this.render();
+  }
+
   set setMouseEvent(event) {
     const vp = this.#viewportElm;
     if (this.#SelectedEvent) this.#SelectedEvent.removeEventListeners(vp);

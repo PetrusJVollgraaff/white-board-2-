@@ -19,7 +19,7 @@ class Layer extends EventTarget {
   #callback;
   #size = { w: 0, h: 0 };
   #main = null;
-  #order = 0;
+  order = 0;
   #dragged = false;
 
   constructor({ name, size, main, opts = null, callback = () => {} }) {
@@ -103,7 +103,7 @@ class Layer extends EventTarget {
   }
 
   set setOrder(order) {
-    this.#order = order;
+    this.order = order;
   }
 
   set addShape(shape) {
@@ -118,6 +118,10 @@ class Layer extends EventTarget {
     this.#selected = val;
     const active = this.#selected ? "add" : "remove";
     this.#elm.classList[active]("active");
+  }
+
+  set setOpacity(val) {
+    this.#opacity = Number(val);
   }
 
   set setElmClass({ action, className }) {
@@ -295,6 +299,14 @@ class Layer extends EventTarget {
       this.#elm.draggable = false;
       this.setElmClass = { className: "dragging", action: "remove" };
     });
+  }
+
+  renderShapes(ctx, shape = []) {
+    if (!this.#visible) return;
+    ctx.save();
+    ctx.globalAlpha = this.#opacity / 100;
+    for (const s of [...this.#shapes, ...shape]) s.draw(ctx);
+    ctx.restore();
   }
 }
 

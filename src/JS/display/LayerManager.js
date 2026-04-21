@@ -30,6 +30,7 @@ class LayerManager {
       this.#main.getSelections;
     }
   }
+
   get layers() {
     return this.#layers;
   }
@@ -41,6 +42,11 @@ class LayerManager {
   get activeLayerShapes() {
     const idx = this.#layers.findIndex((l) => l.getId === this.#activeLayer);
     return idx > -1 ? this.#layers[idx].getShapes : null;
+  }
+
+  set setLayerOpacity(value) {
+    const idx = this.#layers.findIndex((l) => l.getId === this.#activeLayer);
+    this.#layers[idx].setOpacity = value;
   }
 
   #layerCallback(data) {
@@ -186,16 +192,12 @@ class LayerManager {
 
   drawShape(ctx, shape = []) {
     const size = this.#main.getSize;
-    const shapes = Object.values(
-      this.#layers
-        .map((l) => {
-          l.renderThumb(size.w, size.h);
-          return l.getShapes;
-        })
-        .reverse(),
-    ).flat();
-    [...shapes, ...shape].forEach((s) => {
-      s.draw(ctx);
+    this.#layers.forEach((l) => l.renderThumb(size.w, size.h));
+    const layers = Object.values(this.#layers).flat().reverse();
+
+    layers.forEach((l) => {
+      const newshape = l.getId === this.#activeLayer ? shape : [];
+      l.renderShapes(ctx, newshape);
     });
   }
 }
