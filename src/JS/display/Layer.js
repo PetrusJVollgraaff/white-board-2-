@@ -4,7 +4,7 @@ import { ShapeFactory } from "../utils/shapeFactory";
 import { Vector } from "../utils/vector";
 import { createDOMElement } from "./model";
 
-class Layer {
+class Layer extends EventTarget {
   #id = Layer._uid();
   #name = null;
   #visible = true;
@@ -13,13 +13,17 @@ class Layer {
   #mergeHistory = null;
   #elm = null;
   #viewElm = null;
+  #dragElm = null;
   #thumbElm = null;
   #selected = false;
   #callback;
   #size = { w: 0, h: 0 };
   #main = null;
+  #order = 0;
+  #dragged = false;
 
   constructor({ name, size, main, opts = null, callback = () => {} }) {
+    super();
     this.#name = name;
     this.#size = size;
     this.#main = main;
@@ -66,6 +70,12 @@ class Layer {
       text: this.#visible ? "👁" : "⊘",
     });
 
+    this.#dragElm = createDOMElement({
+      type: "span",
+      attributes: { class: "layer-drag-grip", title: "Drag to reorder" },
+      text: "⠿",
+    });
+
     this.#thumbElm = createDOMElement({
       type: "img",
       attributes: {
@@ -92,6 +102,10 @@ class Layer {
     return this.#visible ? this.#shapes : [];
   }
 
+  set setOrder(order) {
+    this.#order = order;
+  }
+
   set addShape(shape) {
     this.#shapes.push(shape);
   }
@@ -106,18 +120,16 @@ class Layer {
     this.#elm.classList[active]("active");
   }
 
+  set setElmClass({ action, className }) {
+    this.#elm.classList[action](className);
+  }
+
   render(selectedId, { w, h }) {
     this.setActive = selectedId == this.#id;
     this.#elm.innerHTML = "";
     this.renderThumb(w, h);
 
-    this.#elm.appendChild(
-      createDOMElement({
-        type: "span",
-        attributes: { class: "layer-drag-grip", title: "Drag to reorder" },
-        text: "⠿",
-      }),
-    );
+    this.#elm.appendChild(this.#dragElm);
     this.#elm.appendChild(this.#viewElm);
     this.#elm.appendChild(this.#thumbElm);
 
@@ -233,6 +245,55 @@ class Layer {
       this.#viewElm.innerHTML = this.#visible ? "👁" : "⊘";
 
       this.#callback({ action: "view" });
+    });
+
+    this.#elm.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      this.#callback({ action: "dragsover", id: this.#id });
+
+      this.setElmClass = { className: "drag-over", action: "add" };
+    });
+
+    this.#elm.addEventListener(
+      "dragleave",
+      () => (this.setElmClass = { className: "drag-over", action: "remove" }),
+    );
+
+    this.#elm.addEventListener("drop", (e) => {
+      e.preventDefault();
+      this.setElmClass = { className: "drag-over", action: "remove" };
+      this.#callback({ action: "dragend", id: this.#id });
+      this.dispatchEvent(new CustomEvent("endDrag", { detail: {} }));
+    });
+
+    this.#dragElm.addEventListener("pointerdown", (evt) => {
+      this.dispatchEvent(new CustomEvent("startDrag", { detail: {} }));
+    });
+
+    this.#dragElm.addEventListener("pointerup", (evt) => {
+      this.dispatchEvent(new CustomEvent("endDrag", { detail: {} }));
+    });
+
+    this.#customEvents();
+  }
+
+  #customEvents() {
+    this.addEventListener("startDrag", () => {
+      this.#elm.draggable = true;
+      this.#dragged = true;
+      this.#elm.addEventListener("dragstart", (e) => {
+        this.#callback({ action: "dragstart", id: this.#id });
+        this.setElmClass = { className: "dragging", action: "add" };
+
+        e.dataTransfer.effectAllowed = "move";
+      });
+    });
+
+    this.addEventListener("endDrag", () => {
+      this.#dragged = false;
+      this.#elm.draggable = false;
+      this.setElmClass = { className: "dragging", action: "remove" };
     });
   }
 }

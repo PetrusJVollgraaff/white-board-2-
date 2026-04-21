@@ -136,7 +136,6 @@ class DrawingBoard extends EventTarget {
   }
 
   set setShapeSize(data) {
-    console.log(data);
     const shapes = this.#layerManager.activeLayerShapes;
     if (shapes)
       shapes.forEach((s) => {

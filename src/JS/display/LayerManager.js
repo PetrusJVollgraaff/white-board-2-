@@ -7,6 +7,8 @@ class LayerManager {
   #mergeSelIds = new Set();
   #onChange = null;
   #main = null;
+  #dragSrcId = null;
+  #layerList = [];
   constructor({ main }) {
     this.#main = main;
     this.#init();
@@ -44,13 +46,30 @@ class LayerManager {
   #layerCallback(data) {
     const { action } = data;
     if (action == "active") this.#Active(data.id);
+    if (action == "dragstart") this.#dragSrcId = data.id;
+    if (action == "dragsover") {
+      this.#layers.forEach((l, i) => {
+        l.setElmClass = { className: "drag-over", action: "remove" };
+      });
+    }
+    if (action == "dragend") {
+      this.reorderTo(this.#dragSrcId, data.id);
+      const layer = this.#layers.find((l) => l.getId == this.#dragSrcId);
+      layer.dispatchEvent(new CustomEvent("endDrag", { detail: {} }));
+      this.#dragSrcId = null;
+    }
+
     this.#main.render();
   }
 
   /** layer methods */
-  render(elm) {
+  render(elm = null) {
+    if (!this.#layerList.includes(elm) && elm) this.#layerList.push(elm);
+
     this.#layers.forEach((l) => {
-      elm.append(l.render(this.#activeLayer, this.#main.getSize));
+      this.#layerList.forEach((elm) => {
+        elm.append(l.render(this.#activeLayer, this.#main.getSize));
+      });
     });
   }
 
@@ -77,6 +96,8 @@ class LayerManager {
 
     this.#layers.splice(idx, 0, layer);
     this.#activeLayer = layer.getId;
+
+    this.#fixlayerOrder();
     return layer;
   }
 
@@ -86,9 +107,12 @@ class LayerManager {
 
     const copy = src.clone();
     copy.name = src.name + " copy";
+
     const idx = this.#layers.findIndex((l) => l.getId == this.#activeLayer);
     this.#layers.splice(idx, 0, copy);
     this.#activeLayer = copy.getId;
+
+    this.#fixlayerOrder();
     return copy;
   }
 
@@ -98,19 +122,40 @@ class LayerManager {
     this.#layers.splice(idx, 1);
     this.#activeLayer =
       this.#layers[Math.min(idx, this.#layers.length - 1)].getId;
+
+    this.#fixlayerOrder();
     return true;
+  }
+
+  reorderTo(fromId, toId) {
+    const fi = this.#layers.findIndex((l) => l.getId === fromId);
+    const ti = this.#layers.findIndex((l) => l.getId === toId);
+
+    if (fi === -1 || ti === -1 || fi === ti) return;
+    const [layer] = this.#layers.splice(fi, 1);
+    this.#layers.splice(ti, 0, layer);
+    this.#fixlayerOrder();
+    this.render();
   }
 
   moveUp() {
     const idx = this.#layers.findIndex((l) => l.getId == this.#activeLayer);
     if (idx <= 0) return;
     this.#move(idx, idx - 1);
+    this.#fixlayerOrder();
   }
 
   moveDown() {
     const idx = this.#layers.findIndex((l) => l.getId == this.#activeLayer);
     if (idx >= this.#layers.length - 1) return;
     this.#move(idx, idx + 1);
+    this.#fixlayerOrder();
+  }
+
+  #fixlayerOrder() {
+    this.#layers.forEach((l, i) => {
+      l.setOrder = i;
+    });
   }
 
   #move(idx, idx2) {
