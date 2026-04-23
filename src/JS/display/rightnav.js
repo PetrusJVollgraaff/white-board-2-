@@ -14,7 +14,7 @@ class RightNav {
     colors: { title: "colors", elm: null, btn: null },
     size: { title: "size & position", elm: null, btn: null },
     layers: { title: "layers", elm: null, btn: null },
-    graphic: { title: "graphic", elm: null, btn: null },
+    //graphic: { title: "graphic", elm: null, btn: null },
   };
   constructor({ elm, main, callback }) {
     this.#elm = elm;
@@ -84,11 +84,11 @@ class RightNav {
       callback: this.#callback,
     });
 
-    new GraphicPanel({
+    /*new GraphicPanel({
       elmP: this.#tabs.graphic.elm.querySelector(".inner-tab"),
       main: this.#main,
       callback: this.#callback,
-    });
+    });*/
   }
 
   #eventListener() {

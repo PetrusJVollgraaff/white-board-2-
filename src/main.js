@@ -16,6 +16,7 @@ import { EllipseTool } from "./JS/mouseEvents/ellipseTool";
 import { LineTool } from "./JS/mouseEvents/lineTool";
 import { FreeHandTool } from "./JS/mouseEvents/freehandTool";
 import { HistoryTool } from "./JS/display/HistoryTool";
+import { EditTool } from "./JS/display/EditTools";
 
 class DrawingBoard extends EventTarget {
   #mainArea = document.getElementById("main-area");
@@ -81,6 +82,8 @@ class DrawingBoard extends EventTarget {
             return this.#setFile(data);
           case "setHistory":
             return this.#setHistory(data);
+          case "setEdit":
+            return this.#setEdit(data);
         }
       },
     });
@@ -241,6 +244,13 @@ class DrawingBoard extends EventTarget {
         this.render();
       });
     }
+  }
+
+  #setEdit(data) {
+    const { value } = data;
+
+    EditTool[value](this.#layerManager, this);
+    console.log(this.#layerManager);
   }
 
   #setColor(data) {}

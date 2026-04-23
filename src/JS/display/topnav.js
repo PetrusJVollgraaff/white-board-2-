@@ -4,6 +4,7 @@ import { RulerPanel } from "../panels/rulerPanel";
 import { ViewportSizePanel } from "../panels/ViewportSizePanel";
 import { ToolPanel } from "../panels/toolPanel";
 import { ZoomPanel } from "../panels/zoomPanel";
+import { EditPanel } from "../panels/editPanel";
 
 class TopNav {
   #callback = () => {};
@@ -19,6 +20,7 @@ class TopNav {
     new RulerPanel(this.#elm, this.#callback);
     new ToolPanel(this.#elm, this.#callback);
     new HistoryPanel(this.#elm, this.#callback);
+    new EditPanel(this.#elm, this.#callback);
     new FilePanel(this.#elm, this.#callback);
 
     this.#init();
