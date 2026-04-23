@@ -1,3 +1,4 @@
+import { HistoryTool } from "./HistoryTool";
 import { Layer } from "./Layer";
 
 class LayerManager {
@@ -89,6 +90,14 @@ class LayerManager {
     return newName;
   }
 
+  load({ layers }) {
+    this.#layers = layers.map((l) =>
+      Layer.load({ ...l, ...{ callback: this.#layerCallback.bind(this) } }),
+    );
+    this.#layerList.forEach((elm) => (elm.innerHTML = ""));
+    this.render();
+  }
+
   add(givenname) {
     const size = this.#main.getSize;
     const name = givenname ?? this.#layerNameExist("Layer", 1);
@@ -104,6 +113,7 @@ class LayerManager {
     this.#activeLayer = layer.getId;
 
     this.#fixlayerOrder();
+    HistoryTool.record(this.#layers);
     return layer;
   }
 
@@ -111,7 +121,7 @@ class LayerManager {
     const src = this.#layers.find((l) => l.getId == this.#activeLayer);
     if (!src) return null;
 
-    const copy = src.clone();
+    const copy = src.clone(this.#layerCallback.bind(this));
     copy.name = src.name + " copy";
 
     const idx = this.#layers.findIndex((l) => l.getId == this.#activeLayer);

@@ -15,6 +15,7 @@ import { ShapeSelection } from "./JS/transformbox/selections";
 import { EllipseTool } from "./JS/mouseEvents/ellipseTool";
 import { LineTool } from "./JS/mouseEvents/lineTool";
 import { FreeHandTool } from "./JS/mouseEvents/freehandTool";
+import { HistoryTool } from "./JS/display/HistoryTool";
 
 class DrawingBoard extends EventTarget {
   #mainArea = document.getElementById("main-area");
@@ -46,6 +47,7 @@ class DrawingBoard extends EventTarget {
   #startPoint = Vector.zero();
 
   #layerManager = new LayerManager({ main: this });
+
   constructor() {
     super();
     this.#mainC.width = this.#viewportElm.clientWidth;
@@ -186,8 +188,9 @@ class DrawingBoard extends EventTarget {
   }
 
   /** Public Method */
-  appendShape(shape) {
+  appendShape(shape, save = true) {
     this.#layerManager.addShape(shape);
+    this.dispatchEvent(new CustomEvent("shapesAdded", { detail: { save } }));
   }
 
   render(shapes = []) {
@@ -229,6 +232,14 @@ class DrawingBoard extends EventTarget {
       this.#layerManager.removeShapes();
       this.#selectedItems = [];
       this.render();
+    } else {
+      console.log(data);
+      HistoryTool[value]((data) => {
+        const { event } = data;
+        console.log(event);
+        this.#layerManager.load(event.detail);
+        this.render();
+      });
     }
   }
 
@@ -330,9 +341,9 @@ class DrawingBoard extends EventTarget {
 
   #handleChanges({ detail }) {
     this.render();
-    //if (detail.save) {
-    //  HistoryTools.record(this.layers);
-    //}
+    if (detail.save) {
+      HistoryTool.record(this.#layerManager.layers);
+    }
   }
 
   #bindEvents() {
@@ -348,6 +359,7 @@ class DrawingBoard extends EventTarget {
     this.addEventListener("positionChanged", this.#handleChanges.bind(this));
     this.addEventListener("sizeChanged", this.#handleChanges.bind(this));
     this.addEventListener("rotationChanged", this.#handleChanges.bind(this));
+    this.addEventListener("shapesAdded", this.#handleChanges.bind(this));
     this.addEventListener("shapeSelected", (event) => {
       this.applySelections();
       this.#handleChanges(event);
@@ -357,7 +369,6 @@ class DrawingBoard extends EventTarget {
       this.applySelections();
       this.#handleChanges(event);
     });
-
     //this.addEventListener("history", PropertiesPanel.updateDisplay);
   }
 

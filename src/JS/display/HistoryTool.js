@@ -3,17 +3,18 @@ class HistoryTool {
   static undoStack = [];
 
   static redo(callback) {
-    if (this.redoStack.length > 0) {
-      const data = HistoryTool.redo.pop();
-      HistoryTool.undoStack.push(data);
-    }
+    if (!this.redoStack.length) return;
+
+    if (this.redoStack.length == 0) return;
+
+    const layers = this.redoStack.pop();
+    console.log(layers);
+    this.undoStack.push(layers);
 
     callback({
       event: {
-        event: {
-          name: "history",
-          detail: { layers: [] },
-        },
+        name: "history",
+        detail: { layers },
       },
     });
   }
@@ -22,17 +23,12 @@ class HistoryTool {
     if (!this.undoStack.length) return;
     this.redoStack.push(this.undoStack.pop());
 
-    if (this.undoStack.length > 0) {
-      const newLayers = this.undoStack[this.undoStack.length - 1];
-    } else {
-    }
+    if (this.undoStack.length == 0) return;
 
     callback({
       event: {
-        event: {
-          name: "history",
-          detail: { layers: [] },
-        },
+        name: "history",
+        detail: { layers: this.undoStack[this.undoStack.length - 1] },
       },
     });
   }
@@ -40,12 +36,16 @@ class HistoryTool {
   static record(layers) {
     const newState = layers.map((l) => l.serialize());
 
-    if (this.undoStack.length > 0) {
+    /*if (this.undoStack.length > 0) {
       const lastItem = this.undoStack[this.undoStack.length - 1];
       if (JSON.stringify(lastItem) === JSON.stringify(newState)) return;
-    }
+    }*/
 
     this.undoStack.push(newState);
+
+    console.log(this.undoStack);
     this.redoStack.length = 0;
   }
 }
+
+export { HistoryTool };

@@ -23,8 +23,8 @@ class RectTool {
         );
 
         if (shape) {
-          shape.setCenter = { center };
-          shape.setSize = size;
+          shape.setCenter = { center, save: false };
+          shape.setSize = { ...size, ...{ save: false } };
         } else {
           shape = new RectShape(
             {

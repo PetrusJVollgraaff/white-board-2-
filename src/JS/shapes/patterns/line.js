@@ -32,9 +32,6 @@ class LineShape extends Shape {
       JSON.stringify({ ...{ shape: this.#shape }, ...this }),
     );
 
-    json.options.fill.color = "#FF0000";
-    json.options.stroke.color = "#00FFFF";
-
     return json;
   }
 

@@ -36,15 +36,16 @@ class Layer extends EventTarget {
         opts.shapes ?? [],
         this.#main.ShapeCallback.bind(this.#main),
       );
-      //(opts.shapes ?? []).map((s) => {
-      //  const shape = Shape.shapeClass(s.shape);
-      //  return shape.load(s, this.#main.ShapeCallback.bind(this.#main));
-      //});
       // mergeHistory: array of layer snapshots that were merged to create this layer
       // Allows full unmerge back to original layers
       this.#mergeHistory = opts.mergeHistory ?? null; // null = not merged
     }
     this.#init();
+  }
+
+  static load(data) {
+    const layer = new Layer(data);
+    return layer;
   }
 
   #init() {
@@ -207,7 +208,6 @@ class Layer extends EventTarget {
       name: this.#name,
       size: this.#size,
       main: this.#main,
-      callback: this.#callback,
       opts: {
         visible: this.#visible,
         opacity: this.#opacity,
@@ -217,23 +217,29 @@ class Layer extends EventTarget {
     };
   }
 
-  clone() {
+  getDetails({ newName = null, callback }) {
     const shapes = this.#shapes.map((s) => s.serialize());
     const mergeHistory = this.#mergeHistory
       ? JSON.parse(JSON.stringify(this.#mergeHistory))
       : null;
-    return new Layer({
-      name: this.#name + " copy",
+
+    return {
+      name: newName ?? this.#name,
       size: this.#size,
       main: this.#main,
-      callback: this.#callback,
+      callback,
       opts: {
         visible: this.#visible,
         opacity: this.#opacity,
         shapes,
         mergeHistory,
       },
-    });
+    };
+  }
+
+  clone(callback) {
+    const obj = this.getDetails({ newName: this.#name + " copy", callback });
+    return Layer.load(obj);
   }
 
   #eventListener() {
