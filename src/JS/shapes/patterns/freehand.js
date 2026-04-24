@@ -1,5 +1,4 @@
 import { BoundingBox } from "../../transformbox/boundingBox";
-import { ShapeFactory } from "../../utils/shapeFactory";
 import { Vector } from "../../utils/vector";
 import { Shape } from "../shape";
 
@@ -119,7 +118,5 @@ class FreeHandShape extends Shape {
     this.applyStyles(ctx, this.path);
   }
 }
-
-ShapeFactory.registerShape(FreeHandShape, "FreeHandShape");
 
 export { FreeHandShape };

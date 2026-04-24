@@ -8,7 +8,6 @@ class HistoryTool {
     if (this.redoStack.length == 0) return;
 
     const layers = this.redoStack.pop();
-    console.log(layers);
     this.undoStack.push(layers);
 
     callback({
@@ -42,9 +41,9 @@ class HistoryTool {
     }*/
 
     this.undoStack.push(newState);
+    this.redoStack.length = 0;
 
     console.log(this.undoStack);
-    this.redoStack.length = 0;
   }
 }
 

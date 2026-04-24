@@ -1,4 +1,4 @@
-import { HistoryTool } from "./HistoryTool";
+import { ToolFactory } from "../utils/toolFactory";
 import { Layer } from "./Layer";
 
 class LayerManager {
@@ -10,6 +10,7 @@ class LayerManager {
   #main = null;
   #dragSrcId = null;
   #layerList = [];
+  #history = ToolFactory.getTool("history");
   constructor({ main }) {
     this.#main = main;
     this.#init();
@@ -42,7 +43,7 @@ class LayerManager {
 
   get activeLayerShapes() {
     const idx = this.#layers.findIndex((l) => l.getId === this.#activeLayer);
-    console.log(idx, this.#activeLayer, this.#layers);
+
     return idx > -1 ? this.#layers[idx].getShapes : null;
   }
 
@@ -65,7 +66,7 @@ class LayerManager {
       const layer = this.#layers.find((l) => l.getId == this.#dragSrcId);
       layer.dispatchEvent(new CustomEvent("endDrag", { detail: {} }));
       this.#dragSrcId = null;
-      HistoryTool.record(this.#layers);
+      this.#history.record(this.#layers);
     }
 
     this.#main.render();
@@ -125,7 +126,7 @@ class LayerManager {
     this.#activeLayer = layer.getId;
 
     this.#fixlayerOrder();
-    HistoryTool.record(this.#layers);
+    this.#history.record(this.#layers);
     return layer;
   }
 
@@ -143,7 +144,7 @@ class LayerManager {
     this.#activeLayer = copy.getId;
 
     this.#fixlayerOrder();
-    HistoryTool.record(this.#layers);
+    this.#history.record(this.#layers);
     return copy;
   }
 
@@ -157,7 +158,7 @@ class LayerManager {
     this.#layers[Math.min(idx, this.#layers.length - 1)].setActive = true;
 
     this.#fixlayerOrder();
-    HistoryTool.record(this.#layers);
+    this.#history.record(this.#layers);
     return true;
   }
 

@@ -5,18 +5,16 @@ import { Vector } from "./JS/utils/vector";
 import { ExportManager } from "./JS/utils/export";
 import { RightNav } from "./JS/display/rightnav";
 import { LayerManager } from "./JS/display/LayerManager";
-import { SelectTool } from "./JS/mouseEvents/selectTool";
-import { PanTools } from "./JS/mouseEvents/panTool";
-import { RectTool } from "./JS/mouseEvents/rectTool";
-import { RectShape } from "./JS/shapes/patterns/rectangle";
 import { BoundingBox } from "./JS/transformbox/boundingBox";
 import { ViewportSizePanel } from "./JS/panels/ViewportSizePanel";
 import { ShapeSelection } from "./JS/transformbox/selections";
-import { EllipseTool } from "./JS/mouseEvents/ellipseTool";
-import { LineTool } from "./JS/mouseEvents/lineTool";
-import { FreeHandTool } from "./JS/mouseEvents/freehandTool";
-import { HistoryTool } from "./JS/display/HistoryTool";
-import { EditTool } from "./JS/display/EditTools";
+import { ToolFactory } from "./JS/utils/toolFactory";
+import { ShapeFactory } from "./JS/utils/shapeFactory";
+import { ShapeToolFactory } from "./JS/utils/shapeToolFactory";
+
+ToolFactory.registerTools();
+ShapeFactory.registerShapes();
+ShapeToolFactory.registerTools();
 
 class DrawingBoard extends EventTarget {
   #mainArea = document.getElementById("main-area");
@@ -48,9 +46,11 @@ class DrawingBoard extends EventTarget {
   #startPoint = Vector.zero();
 
   #layerManager = new LayerManager({ main: this });
+  #ShapeTools = ["rect", "freehand", "line", "ellipse"];
 
   constructor() {
     super();
+
     this.#mainC.width = this.#viewportElm.clientWidth;
     this.#mainC.height = this.#viewportElm.clientHeight;
     this.#setStageProperties();
@@ -180,7 +180,6 @@ class DrawingBoard extends EventTarget {
 
   get getSelectedShapes() {
     const shapes = this.#layerManager.activeLayerShapes;
-    console.log(shapes);
     return shapes ? shapes.filter((s) => s.selected) : null;
   }
 
@@ -218,7 +217,6 @@ class DrawingBoard extends EventTarget {
 
   applySelections() {
     const shapes = this.getSelectedShapes;
-    console.log(shapes);
     this.#selectedItems = shapes.map((s) => new ShapeSelection(s));
   }
 
@@ -232,14 +230,13 @@ class DrawingBoard extends EventTarget {
   /** Private  Method*/
 
   #setHistory(data) {
-    console.log(data);
     const { value } = data;
     if (value == "delete") {
       this.#layerManager.removeShapes();
       this.#selectedItems = [];
       this.render();
     } else {
-      HistoryTool[value]((data) => {
+      ToolFactory.getTool("history")[value]((data) => {
         const { event } = data;
         this.#layerManager.load(event.detail);
         this.applySelections();
@@ -250,7 +247,7 @@ class DrawingBoard extends EventTarget {
 
   #setEdit(data) {
     const { value } = data;
-    EditTool[value](this.#layerManager, this);
+    ToolFactory.getTool("edit")[value](this.#layerManager, this);
   }
 
   #setColor(data) {}
@@ -353,7 +350,7 @@ class DrawingBoard extends EventTarget {
     const { detail } = data;
     this.render();
     if (detail?.save) {
-      HistoryTool.record(this.#layerManager.layers);
+      ToolFactory.getTool("history").record(this.#layerManager.layers);
     }
   }
 
@@ -386,37 +383,19 @@ class DrawingBoard extends EventTarget {
   #setMousEvents() {
     const vp = this.#viewportElm;
     if (this.#toolActive == "select") {
-      this.setMouseEvent = SelectTool;
+      this.setMouseEvent = ToolFactory.getTool(this.#toolActive);
       return;
     }
 
     if (this.#toolActive == "pan") {
       this.setItemsUnselect = false;
-      this.setMouseEvent = PanTools;
+      this.setMouseEvent = ToolFactory.getTool(this.#toolActive);
       return;
     }
 
-    if (this.#toolActive == "rect") {
+    if (this.#ShapeTools.includes(this.#toolActive)) {
       this.setItemsUnselect = false;
-      this.setMouseEvent = RectTool;
-      return;
-    }
-
-    if (this.#toolActive == "ellipse") {
-      this.setItemsUnselect = false;
-      this.setMouseEvent = EllipseTool;
-      return;
-    }
-
-    if (this.#toolActive == "line") {
-      this.setItemsUnselect = false;
-      this.setMouseEvent = LineTool;
-      return;
-    }
-
-    if (this.#toolActive == "freehand") {
-      this.setItemsUnselect = false;
-      this.setMouseEvent = FreeHandTool;
+      this.setMouseEvent = ShapeToolFactory.getTool(this.#toolActive);
       return;
     }
   }

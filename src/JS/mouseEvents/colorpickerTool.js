@@ -1,3 +1,5 @@
+import { ToolFactory } from "../utils/toolFactory";
+
 class ColorPickerTool {
   static #Event = null;
   static addPointerDownListener(evt) {
@@ -17,3 +19,5 @@ class ColorPickerTool {
     this.#Event = null;
   }
 }
+
+ToolFactory.registerTool(ColorPickerTool, "ColorPickerTool");

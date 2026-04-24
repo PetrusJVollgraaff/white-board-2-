@@ -7,20 +7,20 @@
 }
 
 :root {
-  --bg: #16161f;
-  --surface: #1e1e2c;
-  --surface2: #262636;
-  --surface3: #30304a;
-  --border: #3a3a55;
-  --accent: #7c6af7;
+  --bg: #474747;
+  --surface: #252525;
+  --surface2: #5d5d5d;
+  --surface3: #5d5d5d;
+  --border: #5d5d5d;
+  --accent: #5d5d5d;
   --accent-dim: rgba(124, 106, 247, 0.18);
   --green: #4ec9a0;
   --danger: #f76a6a;
   --warn: #f7c46a;
-  --text: #e0e0f0;
-  --text-dim: #8888aa;
-  --text-muted: #50506a;
-  --ruler-bg: #13131c;
+  --text: #d5d5d5;
+  --text-dim: #d5d5d5;
+  --text-muted: #d5d5d5;
+  --ruler-bg: #252525;
   --ruler-size: 22px;
   --toolbar-h: 46px;
   --panel-w: 228px;
@@ -53,13 +53,13 @@ body {
   white-space: nowrap;
 }
 
-#top_navbar > ul {
+#top_navbar>ul {
   display: flex;
   align-items: center;
   list-style-type: none;
 }
 
-#top_navbar > ul > li {
+#top_navbar>ul>li {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -71,11 +71,12 @@ body {
   margin-right: 2px;
 }
 
-#top_navbar > ul > li:not(:last-child) {
+#top_navbar>ul>li:not(:last-child) {
   border-right-width: 1px;
   border-right-style: solid;
 }
-#top_navbar > ul > li > label {
+
+#top_navbar>ul>li>label {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -104,24 +105,25 @@ body {
   right: calc(0px - var(--panel-w));
 }
 
-#right_navbar > #right_navbar_btn {
+#right_navbar>#right_navbar_btn {
   position: absolute;
   left: -27px;
-  top: 20px;
+  top: 10px;
+  border-radius: 4px 0px 0px 4px;
 }
 
-#right_navbar > div.tab {
+#right_navbar>div.tab {
   width: var(--panel-w);
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-#right_navbar > div.tab[data-tab="layers"]:not(.hide) {
+#right_navbar>div.tab[data-tab="layers"]:not(.hide) {
   height: 100%;
 }
 
-#right_navbar > div.tab > div:not(.inner-tab) {
+#right_navbar>div.tab>div:not(.inner-tab) {
   padding: 7px 8px;
   border: 1px solid var(--border);
   display: flex;
@@ -138,11 +140,11 @@ body {
   transition: height 2s linear;
 }*/
 
-#right_navbar > div.tab.hide > div.inner-tab {
+#right_navbar>div.tab.hide>div.inner-tab {
   height: 0px;
 }
 
-#right_navbar > div.tab:not(.hide) > div.inner-tab {
+#right_navbar>div.tab:not(.hide)>div.inner-tab {
   height: 100%;
 }
 
@@ -158,6 +160,7 @@ body {
   position: relative;
   grid-template-areas: "ruler_c ruler_h" "ruler_v viewport";
 }
+
 #main-area #ruler {
   grid-area: ruler_c;
   height: 100%;
@@ -166,6 +169,7 @@ body {
   border-right: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
 }
+
 #main-area #ruler-h {
   grid-area: ruler_h;
   height: var(--ruler-size);
@@ -173,6 +177,7 @@ body {
   background: var(--ruler-bg);
   border-bottom: 1px solid var(--border);
 }
+
 #main-area #ruler-v {
   grid-area: ruler_v;
   width: var(--ruler-size);
@@ -180,12 +185,13 @@ body {
   background: var(--ruler-bg);
   border-right: 1px solid var(--border);
 }
+
 #main-area #viewport {
   grid-area: viewport;
   overflow: hidden;
   position: relative;
   background:
-    radial-gradient(circle at 1px 1px, #333350 1px, transparent 0) 0 0/20px 20px,
+    radial-gradient(circle at 1px 1px, var(--surface2) 1px, transparent 0) 0 0/20px 20px,
     var(--bg);
   cursor: crosshair;
 }
@@ -194,11 +200,13 @@ body {
   width: 100%;
   height: 100%;
 }
+
 #main-area.rulers-hidden {
   grid-template-columns: 0 1fr;
   grid-template-rows: 0 1fr;
   grid-template-areas: "viewport viewport" "viewport viewport";
 }
+
 #main-area.rulers-hidden #ruler,
 #main-area.rulers-hidden #ruler-h,
 #main-area.rulers-hidden #ruler-v {
@@ -208,9 +216,11 @@ body {
 #main-area #viewport.pan-mode {
   cursor: grab;
 }
+
 #main-area #viewport.panning {
   cursor: grabbing;
 }
+
 #main-area #viewport.select-mode {
   cursor: default;
 }
@@ -245,10 +255,12 @@ button {
   min-width: 26px;
   white-space: nowrap;
 }
+
 button:hover {
   background: var(--surface3);
   border-color: var(--accent);
 }
+
 button:active {
   background: var(--accent);
   color: #fff;

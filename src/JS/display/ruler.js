@@ -38,12 +38,12 @@ class RulerRenderer {
 
   #clearCtx(ctx, { width, height }, { x, y, w, h }) {
     ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = "#1a1a28";
+    ctx.fillStyle = "#5d5d5d";
     ctx.fillRect(0, 0, width, height);
 
-    ctx.fillStyle = "rgba(124,106,247,0.18)";
+    ctx.fillStyle = "rgba(0,0,0,0.28)";
     ctx.fillRect(x, y, w, h);
-    ctx.fillStyle = "#3a3a52";
+    ctx.fillStyle = "#ffffff";
   }
 
   #ctxFont(ctx, pos) {
@@ -52,12 +52,12 @@ class RulerRenderer {
   }
 
   #ctxFillRect(ctx, { x, y, w, h }) {
-    ctx.fillStyle = "#555577";
+    ctx.fillStyle = "#ffffff";
     ctx.fillRect(x, y, w, h);
   }
 
   #ctxText(ctx, { v1, v2 = 0, v3 = 0 }) {
-    ctx.fillStyle = "#888aaa";
+    ctx.fillStyle = "#ffffff";
     ctx.fillText(v1, v2, v3);
   }
 

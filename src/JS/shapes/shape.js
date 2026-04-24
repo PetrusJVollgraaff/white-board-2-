@@ -1,5 +1,3 @@
-//import { RectShape } from "./patterns/rectangle";
-//import { EllipseShape } from "./patterns/ellipse";
 import { BoundingBox } from "../transformbox/boundingBox";
 import { ShapeSelection } from "../transformbox/selections";
 import { Vector } from "../utils/vector";
@@ -183,8 +181,6 @@ class Shape {
       if (this.options.hasOwnProperty(key))
         this.options[key] = { ...this.options[key], ...options[key] };
     }
-
-    console.log(this.options);
 
     this.callback({
       event: {

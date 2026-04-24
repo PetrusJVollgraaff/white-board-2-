@@ -1,4 +1,3 @@
-import { ShapeFactory } from "../../utils/shapeFactory";
 import { Vector } from "../../utils/vector";
 import { Shape } from "../shape";
 
@@ -109,7 +108,5 @@ class LineShape extends Shape {
     this.applyStyles(ctx, this.path);
   }
 }
-
-ShapeFactory.registerShape(LineShape, "LineShape");
 
 export { LineShape };

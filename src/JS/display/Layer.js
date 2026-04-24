@@ -1,5 +1,3 @@
-//import { RectShape } from "../shapes/patterns/rectangle";
-//import { Shape } from "../shapes/shape";
 import { ShapeFactory } from "../utils/shapeFactory";
 import { Vector } from "../utils/vector";
 import { createDOMElement } from "./model";

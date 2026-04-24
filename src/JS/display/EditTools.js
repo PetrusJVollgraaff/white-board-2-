@@ -1,5 +1,3 @@
-import { ShapeFactory } from "../utils/shapeFactory";
-
 class EditTool {
   static clipboard = null;
 
