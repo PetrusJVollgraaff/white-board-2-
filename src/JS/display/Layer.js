@@ -136,6 +136,61 @@ class Layer extends EventTarget {
     this.#elm.classList[action](className);
   }
 
+  sendToBack() {
+    const selShapes = this.#shapes.map((s) => s.selected);
+    const unselShapes = this.#shapes.map((s) => !s.selected);
+
+    this.#shapes = selShapes.concat(unselShapes);
+
+    this.#main.dispatchEvent(
+      new CustomEvent("shapesReordered", { detail: { save: true } }),
+    );
+  }
+
+  sendBackward() {
+    const indices = this.#getSelectedShapeIndices();
+
+    for (const index of indices) {
+      const newIndex = index - 1;
+      const shape = this.#shapes[newIndex];
+      if (newIndex >= 0 && !shape.selected) {
+        this.#swapShapes(index, newIndex);
+      }
+    }
+
+    this.#main.dispatchEvent(
+      new CustomEvent("shapesReordered", { detail: { save: true } }),
+    );
+  }
+
+  bringToFront() {
+    const selShapes = this.#shapes.map((s) => s.selected);
+    const unselShapes = this.#shapes.map((s) => !s.selected);
+
+    this.#shapes = unselShapes.concat(selShapes);
+
+    this.#main.dispatchEvent(
+      new CustomEvent("shapesReordered", { detail: { save: true } }),
+    );
+  }
+
+  bringForward() {
+    const indices = this.#getSelectedShapeIndices();
+    const total = this.#shapes.length;
+
+    for (const index of indices) {
+      const newIndex = index + 1;
+      const shape = this.#shapes[newIndex];
+      if (newIndex < total && !shape.selected) {
+        this.#swapShapes(index, newIndex);
+      }
+    }
+
+    this.#main.dispatchEvent(
+      new CustomEvent("shapesReordered", { detail: { save: true } }),
+    );
+  }
+
   render(selectedId, { w, h }) {
     this.setActive = selectedId == this.#id;
     this.#elm.innerHTML = "";
@@ -248,6 +303,22 @@ class Layer extends EventTarget {
   clone(callback) {
     const obj = this.getDetails({ newName: this.#name + " copy", callback });
     return Layer.load(obj);
+  }
+
+  #getSelectedShapeIndices() {
+    const indices = [];
+    this.#shapes.forEach((s, i) => {
+      if (s.selected) {
+        indices.push(i);
+      }
+    });
+    return indices;
+  }
+
+  #swapShapes(index1, index2) {
+    const temp = this.#shapes[index1];
+    this.#shapes[index1] = this.#shapes[index2];
+    this.#shapes[index2] = temp;
   }
 
   #eventListener() {

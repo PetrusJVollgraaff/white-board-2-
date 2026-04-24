@@ -43,16 +43,19 @@ class SizePanel {
     back: {
       elm: null,
       event: "click",
+      method: "sendToBack",
       option: { type: "button", attributes: { title: "back" }, text: "back" },
     },
     front: {
       elm: null,
       event: "click",
+      method: "bringToFront",
       option: { type: "button", attributes: { title: "front" }, text: "front" },
     },
     backward: {
       elm: null,
       event: "click",
+      method: "sendBackward",
       option: {
         type: "button",
         attributes: { title: "backward" },
@@ -62,6 +65,7 @@ class SizePanel {
     forward: {
       elm: null,
       event: "click",
+      method: "bringForward",
       option: { type: "button", attributes: { title: "forward" }, text: "Fwd" },
     },
   };
@@ -156,10 +160,13 @@ class SizePanel {
 
   #arrangeEventListener() {
     Object.entries(this.#arrangebtn).forEach((item, idx) => {
-      const { elm, event } = item[1];
+      const { elm, event, method } = item[1];
 
       elm.addEventListener(event, (evt) => {
-        console.log(evt.target.value);
+        this.#main.setArrangeShapes = {
+          action: "setArrange",
+          method,
+        };
       });
     });
   }

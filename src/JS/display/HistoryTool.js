@@ -42,8 +42,6 @@ class HistoryTool {
 
     this.undoStack.push(newState);
     this.redoStack.length = 0;
-
-    console.log(this.undoStack);
   }
 }
 

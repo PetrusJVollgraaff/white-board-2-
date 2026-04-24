@@ -153,6 +153,10 @@ class DrawingBoard extends EventTarget {
       });
   }
 
+  set setArrangeShapes(data) {
+    this.#layerManager.arrangeLayerShapes = data.method;
+  }
+
   set setItemsUnselect(value) {
     const shapes = this.#layerManager.activeLayerShapes;
     if (shapes) shapes.forEach((s) => s.unselect(value));
@@ -368,6 +372,7 @@ class DrawingBoard extends EventTarget {
     this.addEventListener("sizeChanged", this.#handleChanges.bind(this));
     this.addEventListener("rotationChanged", this.#handleChanges.bind(this));
     this.addEventListener("shapesAdded", this.#handleChanges.bind(this));
+    this.addEventListener("shapesReordered", this.#handleChanges.bind(this));
     this.addEventListener("shapeSelected", (event) => {
       this.applySelections();
       this.#handleChanges(event);

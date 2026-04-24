@@ -52,6 +52,12 @@ class LayerManager {
     this.#layers[idx].setOpacity = value;
   }
 
+  set arrangeLayerShapes(value) {
+    const layer = this.activeLayer;
+
+    if (layer) layer[value];
+  }
+
   #layerCallback(data) {
     const { action } = data;
     if (action == "active") this.#Active(data.id);

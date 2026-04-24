@@ -15,8 +15,6 @@ class ShapeToolFactory {
 
   static registerTool(classType, typeName) {
     this.#available[typeName] = { tool: classType };
-
-    console.log(this.#available);
   }
 
   static getTool(tool) {
