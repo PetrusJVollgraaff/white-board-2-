@@ -5,7 +5,7 @@ import { Vector } from "../utils/vector";
 import { createDOMElement } from "./model";
 
 class Layer extends EventTarget {
-  #id = Layer._uid();
+  #id = null;
   #name = null;
   #visible = true;
   #opacity = 100;
@@ -22,11 +22,19 @@ class Layer extends EventTarget {
   order = 0;
   #dragged = false;
 
-  constructor({ name, size, main, opts = null, callback = () => {} }) {
+  constructor({
+    name,
+    size,
+    main,
+    id = null,
+    opts = null,
+    callback = () => {},
+  }) {
     super();
     this.#name = name;
     this.#size = size;
     this.#main = main;
+    this.#id = id ?? Layer._uid();
     this.#callback = callback;
 
     if (opts) {
@@ -45,6 +53,7 @@ class Layer extends EventTarget {
 
   static load(data) {
     const layer = new Layer(data);
+    layer.setActive = data.selected;
     return layer;
   }
 
@@ -208,6 +217,7 @@ class Layer extends EventTarget {
       name: this.#name,
       size: this.#size,
       main: this.#main,
+      selected: this.#selected,
       opts: {
         visible: this.#visible,
         opacity: this.#opacity,

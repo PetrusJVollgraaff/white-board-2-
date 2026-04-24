@@ -8,7 +8,6 @@ class EditTool {
   }
 
   static unSelectAll(layerManager) {
-    console.log(layerManager.activeLayerShapes);
     layerManager.activeLayerShapes.forEach((s) => s.unselect());
   }
 

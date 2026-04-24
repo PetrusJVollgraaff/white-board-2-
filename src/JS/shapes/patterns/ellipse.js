@@ -24,6 +24,7 @@ class EllipseShape extends Shape {
 
   static load(data, callback) {
     const shape = new EllipseShape(data, callback);
+    shape.selected = data.selected;
     return shape;
   }
 

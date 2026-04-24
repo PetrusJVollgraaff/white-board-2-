@@ -23,6 +23,7 @@ class RectShape extends Shape {
 
   static load(data, callback) {
     const shape = new RectShape(data, callback);
+    shape.selected = data.selected;
     return shape;
   }
 

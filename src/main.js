@@ -155,7 +155,7 @@ class DrawingBoard extends EventTarget {
 
   set setItemsUnselect(value) {
     const shapes = this.#layerManager.activeLayerShapes;
-    if (shapes) shapes.forEach((s) => s.unselect());
+    if (shapes) shapes.forEach((s) => s.unselect(value));
   }
 
   /** Getters */
@@ -180,6 +180,7 @@ class DrawingBoard extends EventTarget {
 
   get getSelectedShapes() {
     const shapes = this.#layerManager.activeLayerShapes;
+    console.log(shapes);
     return shapes ? shapes.filter((s) => s.selected) : null;
   }
 
@@ -217,6 +218,7 @@ class DrawingBoard extends EventTarget {
 
   applySelections() {
     const shapes = this.getSelectedShapes;
+    console.log(shapes);
     this.#selectedItems = shapes.map((s) => new ShapeSelection(s));
   }
 
@@ -230,17 +232,17 @@ class DrawingBoard extends EventTarget {
   /** Private  Method*/
 
   #setHistory(data) {
+    console.log(data);
     const { value } = data;
     if (value == "delete") {
       this.#layerManager.removeShapes();
       this.#selectedItems = [];
       this.render();
     } else {
-      console.log(data);
       HistoryTool[value]((data) => {
         const { event } = data;
-        console.log(event);
         this.#layerManager.load(event.detail);
+        this.applySelections();
         this.render();
       });
     }
@@ -248,9 +250,7 @@ class DrawingBoard extends EventTarget {
 
   #setEdit(data) {
     const { value } = data;
-
     EditTool[value](this.#layerManager, this);
-    console.log(this.#layerManager);
   }
 
   #setColor(data) {}
@@ -349,9 +349,10 @@ class DrawingBoard extends EventTarget {
     this.render();
   }
 
-  #handleChanges({ detail }) {
+  #handleChanges(data) {
+    const { detail } = data;
     this.render();
-    if (detail.save) {
+    if (detail?.save) {
       HistoryTool.record(this.#layerManager.layers);
     }
   }

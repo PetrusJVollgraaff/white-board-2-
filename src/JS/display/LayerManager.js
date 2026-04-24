@@ -42,6 +42,7 @@ class LayerManager {
 
   get activeLayerShapes() {
     const idx = this.#layers.findIndex((l) => l.getId === this.#activeLayer);
+    console.log(idx, this.#activeLayer, this.#layers);
     return idx > -1 ? this.#layers[idx].getShapes : null;
   }
 
@@ -64,6 +65,7 @@ class LayerManager {
       const layer = this.#layers.find((l) => l.getId == this.#dragSrcId);
       layer.dispatchEvent(new CustomEvent("endDrag", { detail: {} }));
       this.#dragSrcId = null;
+      HistoryTool.record(this.#layers);
     }
 
     this.#main.render();
@@ -91,14 +93,23 @@ class LayerManager {
   }
 
   load({ layers }) {
-    this.#layers = layers.map((l) =>
-      Layer.load({ ...l, ...{ callback: this.#layerCallback.bind(this) } }),
-    );
+    this.#layers = layers.map((l) => {
+      if (l.selected) {
+        this.#activeLayer = l.id;
+      }
+      return Layer.load({
+        ...l,
+        ...{ callback: this.#layerCallback.bind(this) },
+      });
+    });
     this.#layerList.forEach((elm) => (elm.innerHTML = ""));
     this.render();
   }
 
   add(givenname) {
+    const src = this.#layers.find((l) => l.getId == this.#activeLayer);
+    if (src) src.setActive = false;
+
     const size = this.#main.getSize;
     const name = givenname ?? this.#layerNameExist("Layer", 1);
     const layer = new Layer({
@@ -110,6 +121,7 @@ class LayerManager {
     const idx = 0; //this.#layers.findIndex((l) => l.getId == this.#activeLayer);
 
     this.#layers.splice(idx, 0, layer);
+    layer.setActive = true;
     this.#activeLayer = layer.getId;
 
     this.#fixlayerOrder();
@@ -126,9 +138,12 @@ class LayerManager {
 
     const idx = this.#layers.findIndex((l) => l.getId == this.#activeLayer);
     this.#layers.splice(idx, 0, copy);
+    src.setActive = false;
+    copy.setActive = true;
     this.#activeLayer = copy.getId;
 
     this.#fixlayerOrder();
+    HistoryTool.record(this.#layers);
     return copy;
   }
 
@@ -136,10 +151,13 @@ class LayerManager {
     if (this.#layers.length <= 1) return false;
     const idx = this.#layers.findIndex((l) => l.getId == this.#activeLayer);
     this.#layers.splice(idx, 1);
+
     this.#activeLayer =
       this.#layers[Math.min(idx, this.#layers.length - 1)].getId;
+    this.#layers[Math.min(idx, this.#layers.length - 1)].setActive = true;
 
     this.#fixlayerOrder();
+    HistoryTool.record(this.#layers);
     return true;
   }
 

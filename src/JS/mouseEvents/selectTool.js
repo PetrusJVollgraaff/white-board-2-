@@ -47,8 +47,9 @@ class SelectTool {
         isDragging = true;
         shape.setCenter = {
           center: Vector.add(OldCenter, mouseDelta),
+          save: false,
         };
-        _.rightNav.setSize = shape.getSize;
+        _.rightNav.setSize = { ...shape.getSize, ...{ save: false } };
 
         _.render();
       };

@@ -24,6 +24,7 @@ class LineShape extends Shape {
     shape.setCenter = { center: new Vector(data.center), save: false };
     shape.size = data.size;
     shape.setSize = { ...data.size, ...{ save: false } };
+    shape.selected = data.selected;
     return shape;
   }
 
