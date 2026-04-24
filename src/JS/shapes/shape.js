@@ -40,6 +40,7 @@ class Shape {
     this.rotation = 0;
     this.selected = false;
     this.callback = callback;
+    this.ratio = 0;
   }
 
   static getHitRGB(id) {
@@ -69,6 +70,7 @@ class Shape {
       center: this.center,
       size: this.size,
       angle: this.rotation,
+      ratio: this.ratio,
     };
   }
 
@@ -103,11 +105,13 @@ class Shape {
     //const points = this.getPoints();
     this.center = Vector.mid(this.points);
     this.size = BoundingBox.fromPoints(this.points);
+    this.ratio = this.size.width / this.size.height;
     for (const point of this.points) {
       const newPoint = Vector.subtract(point, this.center);
       point.x = newPoint.x;
       point.y = newPoint.y;
     }
+
     //this.setPoints(points);
   }
 
@@ -155,6 +159,8 @@ class Shape {
   set setSize({ width, height, save = true }) {
     this.setWidth = width;
     this.setHeight = height;
+    this.ratio = this.size.width / this.size.height;
+
     this.selections?.updateSize();
     this.callback({
       event: {

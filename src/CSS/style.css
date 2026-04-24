@@ -12,7 +12,7 @@
   --surface2: #5d5d5d;
   --surface3: #5d5d5d;
   --border: #5d5d5d;
-  --accent: #5d5d5d;
+  --accent: #252525;
   --accent-dim: rgba(124, 106, 247, 0.18);
   --green: #4ec9a0;
   --danger: #f76a6a;
@@ -84,7 +84,7 @@ body {
 
 #tool_ctn .active {
   background: var(--accent) !important;
-  border-color: var(--accent) !important;
+  border-color: var(--surface3) !important;
 }
 
 /* right side Navbar */

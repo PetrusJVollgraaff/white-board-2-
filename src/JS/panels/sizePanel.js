@@ -71,7 +71,7 @@ class SizePanel {
   };
   #main = null;
 
-  size = { width: 0, height: 0 };
+  size = { width: 0, height: 0, ratio: 0 };
   center = Vector.zero();
   angle = 0;
 
@@ -88,12 +88,14 @@ class SizePanel {
     center = Vector.zero(),
     size = { width: 0, height: 0 },
     angle = 0,
+    ratio = 0,
   }) {
     const { x, y, width, height, rotation } = this.#elms;
 
     this.size = size;
     this.center = center;
     this.angle = angle;
+    this.size.ratio = ratio;
 
     x.elm.value = this.center.x;
     y.elm.value = this.center.y;
@@ -126,24 +128,41 @@ class SizePanel {
   }
 
   #sizeEventListener() {
+    const constrainElm = this.#elms.constrain.elm;
     Object.entries(this.#elms).forEach((item, idx) => {
       const { elm, event } = item[1];
+      const key = item[0];
 
       elm.addEventListener(event, (evt) => {
-        if (item[0] == "width" || item[0] == "height") {
-          this.size[item[0]] = Number(evt.target.value);
+        if (key == "width" || key == "height") {
+          this.size[key] = Number(evt.target.value);
+          if (constrainElm.checked) {
+            const key2 = key == "width" ? "height" : "width";
+            this.size[key2] = this.size[key] / this.size.ratio;
+            this.#elms[key2].elm.value = this.size[key2];
+          }
+
           this.#main.setShapeSize = {
             action: "setSize",
             obj: { ...this.size },
           };
-        } else if (item[0] == "x" || item[0] == "y") {
-          this.center[item[0]] = Number(evt.target.value);
+        } else if (key == "x" || key == "y") {
+          this.center[key] = Number(evt.target.value);
           this.#main.setShapeSize = {
             action: "setCenter",
             obj: { center: new Vector(this.center) },
           };
+        } else if (key == "rotaion") {
+          /*this.#main.setRotation = {
+            action: "setRotation",
+            rotation: Number(evt.target.value),
+          };*/
+        } else {
+          /*this.#main.setConstrain = {
+            action: "setConstrain",
+            constrain: Number(evt.target.value.checked),
+          };*/
         }
-        console.log(evt.target.value);
       });
     });
   }
