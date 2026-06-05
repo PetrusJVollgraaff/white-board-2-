@@ -1,4 +1,5 @@
 import { TopNav } from "./JS/display/topnav";
+import { BottomNav } from "./JS/display/bottomnav";
 import { RulerRenderer } from "./JS/display/ruler";
 import ViewPort from "./JS/display/viewport";
 import { Vector } from "./JS/utils/vector";
@@ -19,6 +20,7 @@ ShapeToolFactory.registerTools();
 class DrawingBoard extends EventTarget {
   #mainArea = document.getElementById("main-area");
   #topNavElm = document.getElementById("top_navbar");
+  #bottomNavElm = document.getElementById("bottom_navbar");
   #rightNavElm = document.getElementById("right_navbar");
   #mainC = document.getElementById("main-canvas");
   #mainCtx = this.#mainC.getContext("2d");
@@ -63,21 +65,29 @@ class DrawingBoard extends EventTarget {
 
     this.#bindEvents();
 
+    new BottomNav({
+      elm: this.#bottomNavElm,
+      main: this,
+      callback: (data) => {
+        switch (data) {
+          case "setZoom":
+            return this.#setZoom(data);
+          case "setTool":
+            return this.#setTool(data);
+        }
+      },
+    });
+
     new TopNav({
       elm: this.#topNavElm,
       main: this,
       callback: (data) => {
         const { action } = data;
-
         switch (action) {
           case "setSize":
             return this.#setViewPortSize(data);
-          case "setZoom":
-            return this.#setZoom(data);
           case "setRuler":
             return this.#setRuler(data);
-          case "setTool":
-            return this.#setTool(data);
           case "setFile":
             return this.#setFile(data);
           case "setHistory":

@@ -24,6 +24,7 @@ class SelectionHandle {
     BOTTOM_LEFT: "bottomLeft",
     BOTTOM_RIGHT: "bottomRight",
     ROTATE: "rotate",
+    CONSTRAIN: "constrain",
   };
 
   static EXTRA = {
@@ -103,6 +104,10 @@ class ShapeSelection extends Selection {
       new Vector({ x: 0, y: 2 * size }),
     );
 
+    const constrainPoint = new Vector(topRight).subtract(
+      new Vector({ x: -2 * size, y: 2 * size }),
+    );
+
     this.handles = [
       new SelectionHandle(topLeft, TYPES.TOP_LEFT),
       new SelectionHandle(topRight, TYPES.TOP_RIGHT),
@@ -113,6 +118,7 @@ class ShapeSelection extends Selection {
       new SelectionHandle(Vector.mid([topLeft, bottomLeft]), TYPES.LEFT),
       new SelectionHandle(Vector.mid([topRight, bottomRight]), TYPES.RIGHT),
       new SelectionHandle(rotationPoint, TYPES.ROTATE),
+      new SelectionHandle(constrainPoint, TYPES.CONSTRAIN),
     ];
   }
 
