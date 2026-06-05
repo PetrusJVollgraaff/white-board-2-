@@ -40,8 +40,6 @@ class FilePanel {
   constructor(elmP, callback) {
     this.#elmP = elmP;
     this.#callback = callback;
-    this.#elm = this.#elmP.querySelector("li#file_ctn");
-
     this.#init();
   }
 
@@ -51,16 +49,9 @@ class FilePanel {
   }
 
   #build() {
-    this.#elm.appendChild(
-      createDOMElement({
-        type: "span",
-        attributes: { class: "tlbl" },
-        text: "File",
-      }),
-    );
-    this.#saveBtn = createDOMElement({ type: "button", text: "💾 Save" });
-    this.#loadBtn = createDOMElement({ type: "button", text: "📂 Load" });
-    this.#exportBtn = createDOMElement({ type: "button", text: "⬇ Export" });
+    this.#saveBtn = createDOMElement({ type: "li", text: "💾 Save" });
+    this.#loadBtn = createDOMElement({ type: "li", text: "📂 Load" });
+    this.#exportBtn = createDOMElement({ type: "li", text: "⬇ Export" });
     this.#formSlct = createDOMElement({
       type: "select",
       attributes: { name: "sel-fmt" },
@@ -75,10 +66,10 @@ class FilePanel {
       );
     }
 
-    this.#elm.appendChild(this.#saveBtn);
-    this.#elm.appendChild(this.#loadBtn);
-    this.#elm.appendChild(this.#exportBtn);
-    this.#elm.appendChild(this.#formSlct);
+    this.#elmP.appendChild(this.#saveBtn);
+    this.#elmP.appendChild(this.#loadBtn);
+    this.#elmP.appendChild(this.#exportBtn);
+    //this.#dropdownElm.appendChild(this.#formSlct);
   }
 
   #eventListener() {

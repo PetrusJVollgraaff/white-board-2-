@@ -49,9 +49,10 @@ body {
   height: var(--toolbar-h);
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  overflow-x: auto;
-  overflow-y: hidden;
+  /*overflow-x: auto;
+  overflow-y: hidden;*/
   white-space: nowrap;
+  z-index: 2;
 }
 
 #top_navbar>ul,
@@ -93,6 +94,48 @@ body {
   border-color: var(--surface3) !important;
 }
 
+/* Top Nav dropdown */
+#top_navbar ul.dropbox {
+  position: absolute;
+  top: 100%;
+  left: 0px;
+  background: var(--surface2);
+  transition: height 0.12s;
+  border-color: var(--text-dim);
+  border-style: solid;
+  border-width: 0.5px;
+}
+
+#top_navbar ul.dropbox:not([data-s="true"]) {
+  height: 0px;
+  display: none;
+}
+
+#top_navbar ul.dropbox>li {
+  padding: 2px 8px;
+  height: 26px;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 11px;
+  transition: background 0.12s, border-color 0.12s;
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  gap: 4px;
+  min-width: 26px;
+  white-space: nowrap;
+}
+
+#top_navbar ul.dropbox>li:not(:last-child) {
+  border-bottom-color: var(--text-dim);
+  border-bottom-style: solid;
+  border-bottom-width: 0.5px;
+}
+
+#top_navbar ul.dropbox>li:hover {
+  background: var(--surface3);
+}
+
 /* right side Navbar */
 #right_navbar {
   width: var(--panel-w);
@@ -105,6 +148,7 @@ body {
   transition: right 0.5s linear;
   display: flex;
   flex-direction: column;
+  z-index: 3;
 }
 
 #right_navbar.hide {
@@ -165,6 +209,7 @@ body {
   overflow: hidden;
   position: relative;
   grid-template-areas: "ruler_c ruler_h" "ruler_v viewport";
+  z-index: 1;
 }
 
 #main-area #ruler {
