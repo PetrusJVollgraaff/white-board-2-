@@ -12,9 +12,6 @@ class TopNav {
   #callback = () => {};
   #elm = null;
   #main = null;
-  #fileshow = false;
-  #elmFile = null;
-  #dropFileElm = null;
   constructor({ elm, main, callback }) {
     this.#elm = elm;
     this.#main = main;
@@ -27,8 +24,6 @@ class TopNav {
     this.#buildEditDrop();
     new ViewportSizePanel(this.#elm, this.#callback);
     new RulerPanel(this.#elm, this.#callback);
-    //new HistoryPanel(this.#elm, this.#callback);
-    //new EditPanel(this.#elm, this.#callback);
   }
 
   #buildFileDrop() {
@@ -49,13 +44,6 @@ class TopNav {
         new HistoryPanel(dropElm, this.#callback);
         new EditPanel(dropElm, this.#callback);
       },
-    });
-  }
-
-  #eventListener() {
-    this.#elmFile.addEventListener("click", () => {
-      this.#fileshow = !this.#fileshow;
-      this.#dropFileElm.setAttribute("data-s", this.#fileshow);
     });
   }
 }
