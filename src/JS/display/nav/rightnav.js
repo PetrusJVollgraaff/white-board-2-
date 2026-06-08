@@ -1,8 +1,8 @@
-import { ColorPanel } from "../panels/colorPanel";
-import { GraphicPanel } from "../panels/graphicPanel";
-import { LayerPanel } from "../panels/layerPanel";
-import { SizePanel } from "../panels/sizePanel";
-import { createDOMElement } from "./model";
+import { ColorPanel } from "../../panels/colorPanel";
+import { GraphicPanel } from "../../panels/graphicPanel";
+import { LayerPanel } from "../../panels/layerPanel";
+import { SizePanel } from "../../panels/sizePanel";
+import { createDOMElement } from "../model";
 
 class RightNav {
   #callback = () => {};

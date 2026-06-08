@@ -3,7 +3,12 @@ import { createDOMElement } from "../display/model";
 class HistoryPanel {
   #callback = () => {};
   #elmP = null;
-  #elm = null;
+
+  #tools = {
+    undo: { text: "↩ Undo", attributes: { title: "Undo (Ctrl+Z)" } },
+    redo: { text: "↪ Redo", attributes: { title: "Redo (Ctrl+Y)" } },
+    delete: { text: "🗑 Delete", attributes: { title: "Delete (Del)" } },
+  };
 
   #undoBtn = null;
   #redoBtn = null;
@@ -11,7 +16,6 @@ class HistoryPanel {
   constructor(elmP, callback) {
     this.#elmP = elmP;
     this.#callback = callback;
-    this.#elm = this.#elmP.querySelector("li#history_ctn");
 
     this.#init();
   }
@@ -22,39 +26,26 @@ class HistoryPanel {
   }
 
   #build() {
-    this.#undoBtn = createDOMElement({
-      type: "button",
-      attributes: { title: "Undo (Ctrl+Z)" },
-      text: "↩ Undo",
-    });
-    this.#redoBtn = createDOMElement({
-      type: "button",
-      attributes: { title: "Redo (Ctrl+Y)" },
-      text: "↪ Redo",
-    });
-    this.#delBtn = createDOMElement({
-      type: "button",
-      attributes: { title: "Delete (Del)" },
-      text: "🗑",
-    });
+    for (const key in this.#tools) {
+      const { attributes, text } = this.#tools[key];
+      this.#tools[key]["elm"] = createDOMElement({
+        type: "li",
+        attributes,
+        text,
+      });
 
-    this.#elm.appendChild(this.#undoBtn);
-    this.#elm.appendChild(this.#redoBtn);
-    this.#elm.appendChild(this.#delBtn);
+      this.#elmP.appendChild(this.#tools[key]["elm"]);
+    }
   }
 
   #eventListener() {
-    this.#undoBtn.addEventListener("click", () => {
-      this.#callback({ action: "setHistory", value: "undo" });
-    });
-
-    this.#redoBtn.addEventListener("click", () => {
-      this.#callback({ action: "setHistory", value: "redo" });
-    });
-
-    this.#delBtn.addEventListener("click", () =>
-      this.#callback({ action: "setHistory", value: "delete" }),
-    );
+    for (const value in this.#tools) {
+      this.#tools[value].elm.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.#callback({ action: "setHistory", value });
+      });
+    }
   }
 }
 export { HistoryPanel };

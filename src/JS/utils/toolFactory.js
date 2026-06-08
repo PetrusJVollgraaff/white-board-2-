@@ -1,5 +1,5 @@
-import { EditTool } from "../display/EditTools";
-import { HistoryTool } from "../display/HistoryTool";
+import { EditTool } from "../tools/EditTools";
+import { HistoryTool } from "../tools/HistoryTool";
 import { PanTools } from "../mouseEvents/panTool";
 import { SelectTool } from "../mouseEvents/selectTool";
 

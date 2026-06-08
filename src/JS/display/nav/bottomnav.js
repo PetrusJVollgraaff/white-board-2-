@@ -1,5 +1,5 @@
-import { ToolPanel } from "../panels/toolPanel";
-import { ZoomPanel } from "../panels/zoomPanel";
+import { ToolPanel } from "../../panels/toolPanel";
+import { ZoomPanel } from "../../panels/zoomPanel";
 
 class BottomNav {
   #callback = () => {};

@@ -3,7 +3,12 @@ import { createDOMElement } from "../display/model";
 class FilePanel {
   #callback = () => {};
   #elmP = null;
-  #elm = null;
+
+  #tools = {
+    save: { text: "💾 Save" },
+    load: { text: "📂 Load" },
+    export: { text: "⬇ Export" },
+  };
 
   #saveBtn = null;
   #loadBtn = null;
@@ -49,9 +54,13 @@ class FilePanel {
   }
 
   #build() {
-    this.#saveBtn = createDOMElement({ type: "li", text: "💾 Save" });
-    this.#loadBtn = createDOMElement({ type: "li", text: "📂 Load" });
-    this.#exportBtn = createDOMElement({ type: "li", text: "⬇ Export" });
+    for (const key in this.#tools) {
+      const { text } = this.#tools[key];
+      this.#tools[key]["elm"] = createDOMElement({ type: "li", text });
+
+      this.#elmP.appendChild(this.#tools[key]["elm"]);
+    }
+
     this.#formSlct = createDOMElement({
       type: "select",
       attributes: { name: "sel-fmt" },
@@ -66,26 +75,27 @@ class FilePanel {
       );
     }
 
-    this.#elmP.appendChild(this.#saveBtn);
-    this.#elmP.appendChild(this.#loadBtn);
-    this.#elmP.appendChild(this.#exportBtn);
     //this.#dropdownElm.appendChild(this.#formSlct);
   }
 
   #eventListener() {
-    this.#saveBtn.addEventListener("click", () => {
-      this.#callback({ action: "setFile", value: "save" });
-    });
+    for (const value in this.#tools) {
+      if (value == "load") {
+        this.#tools[value].elm.addEventListener("click", (e) => {
+          console.log(e);
+          e.preventDefault();
+          e.stopPropagation();
 
-    this.#loadBtn.addEventListener("click", () => {
-      FilePanel.loadFile({ accept: ".json" }, (data) => {
-        this.#callback({ ...{ action: "setFile", value: "load" }, ...data });
-      });
-    });
-
-    this.#exportBtn.addEventListener("click", () =>
-      this.#callback({ action: "setFile", value: "export" }),
-    );
+          FilePanel.loadFile({ accept: ".json" }, (data) => {
+            this.#callback({ ...{ action: "setFile", value }, ...data });
+          });
+        });
+      } else {
+        this.#tools[value].elm.addEventListener("click", (e) => {
+          this.#callback({ action: "setFile", value });
+        });
+      }
+    }
 
     this.#formSlct.addEventListener("change", (evt) => {
       const format = evt.target.value;

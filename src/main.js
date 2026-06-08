@@ -1,10 +1,10 @@
-import { TopNav } from "./JS/display/topnav";
-import { BottomNav } from "./JS/display/bottomnav";
+import { TopNav } from "./JS/display/nav/topnav";
+import { BottomNav } from "./JS/display/nav/bottomnav";
 import { RulerRenderer } from "./JS/display/ruler";
 import ViewPort from "./JS/display/viewport";
 import { Vector } from "./JS/utils/vector";
 import { ExportManager } from "./JS/utils/export";
-import { RightNav } from "./JS/display/rightnav";
+import { RightNav } from "./JS/display/nav/rightnav";
 import { LayerManager } from "./JS/display/LayerManager";
 import { BoundingBox } from "./JS/transformbox/boundingBox";
 import { ViewportSizePanel } from "./JS/panels/ViewportSizePanel";

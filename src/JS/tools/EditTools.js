@@ -1,11 +1,11 @@
 class EditTool {
   static clipboard = null;
 
-  static selectAll(layerManager) {
+  static selectall(layerManager) {
     layerManager.activeLayerShapes.forEach((s) => s.select());
   }
 
-  static unSelectAll(layerManager) {
+  static unselectall(layerManager) {
     layerManager.activeLayerShapes.forEach((s) => s.unselect());
   }
 
