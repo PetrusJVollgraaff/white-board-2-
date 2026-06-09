@@ -1,0 +1,56 @@
+.modal_ctn input[title="Hue"][type="range"] {
+    width: 100%;
+    -webkit-appearance: none;
+    background: linear-gradient(to right, red, yellow, lime, cyan, blue, magenta, red);
+    border-radius: 5px;
+    height: 10px;
+    cursor: pointer;
+}
+
+.modal_ctn input[title="Opacity"][type="range"] {
+    width: 100%;
+    -webkit-appearance: none;
+    border-radius: 5px;
+    height: 10px;
+    cursor: pointer;
+    border: 0.5px solid rgba(0, 0, 0, 0.3)
+}
+
+.modal_ctn input[title="Hue"][type="range"]::-webkit-slider-thumb,
+.modal_ctn input[title="Opacity"][type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background-color: white;
+    border: 2px solid #666;
+}
+
+.modal_ctn .color_prev {
+    width: 30px;
+    height: 30px;
+}
+
+.modal_ctn div.col_3 {
+    display: grid;
+    grid-template-columns: repeat(3, 33%);
+    column-gap: 2px;
+    margin-bottom: 25px
+}
+
+.modal_ctn div.col_3 input {
+    width: 30px;
+}
+
+.modal_ctn div.col_3 label {
+    position: relative;
+}
+
+.modal_ctn div.col_3 label::after {
+    content: attr(title);
+    color: black;
+    font-size: 16px;
+    position: absolute;
+    bottom: -20px;
+    left: 10px;
+}

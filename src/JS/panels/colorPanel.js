@@ -1,4 +1,5 @@
 import { createDOMElement } from "../display/model";
+import { ColorPicker } from "../tools/ColorPicker";
 
 class ColorPanel {
   #elmP = null;
@@ -24,7 +25,7 @@ class ColorPanel {
     },
     picker: {
       elm: null,
-      event: "button",
+      event: "click",
       for: "color",
       option: { type: "button", attributes: { type: "color" } },
     },
@@ -206,6 +207,11 @@ class ColorPanel {
         elm.addEventListener(event, (evt) => {
           obj.fill[item[0]] = evt.target.value;
           this.#main.setFillSettings = obj;
+        });
+      } else {
+        elm.addEventListener(event, (evt) => {
+          console.log("helo");
+          new ColorPicker(elm);
         });
       }
     });

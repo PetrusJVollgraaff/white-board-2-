@@ -1,0 +1,48 @@
+.modal_overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    background-color: rgba(0, 0, 0, 0.5);
+    /*dim the background*/
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal_overlay .modal_ctn {
+    background-color: lightgray;
+    padding: 5px;
+    width: min-content;
+}
+
+.modal_overlay:has(.modal_ctn.topleft) {
+    align-items: start;
+    justify-content: start;
+}
+
+.modal_overlay:has(.modal_ctn.topright) {
+    align-items: start;
+    justify-content: end;
+}
+
+.modal_overlay:has(.modal_ctn.bottomleft) {
+    align-items: end;
+    justify-content: start;
+}
+
+.modal_overlay:has(.bottomright) {
+    align-items: end;
+    justify-content: start;
+}
+
+.modal_ctn .btn_ctn {
+    display: flex;
+    column-gap: 2px;
+}
+
+.modal_ctn .btn_ctn>button {
+    flex: 1;
+}

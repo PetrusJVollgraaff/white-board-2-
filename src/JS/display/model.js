@@ -14,7 +14,7 @@ class Modal {
     autoOpen: true,
     overlayer: true,
   };
-
+  #ContentDiv = null;
   #popupEl = null;
   constructor(options, callback = () => {}) {
     this.#settings = {
@@ -46,7 +46,7 @@ class Modal {
       );
     }
 
-    const ContentDiv = createDOMElement({
+    this.#ContentDiv = createDOMElement({
       attributes: { class: "content_ctn" },
     });
     const { customClass } = this.#settings;
@@ -54,27 +54,25 @@ class Modal {
     if (customClass) this.CtnDiv.classList.add(customClass);
 
     this.CtnDiv.appendChild(InnerCtnDiv);
-    InnerCtnDiv.appendChild(ContentDiv);
+    InnerCtnDiv.appendChild(this.#ContentDiv);
     InnerCtnDiv.appendChild(BtnDiv);
   }
 
   #loadContent(fallback) {
     if (this.#popupEl) {
       const { content, ajaxUrl, ajaxData } = this.#settings;
-      var contentCtn = this.#popupEl.getElementsByClassName("content_ctn");
       if (content) {
         switch (typeof content) {
           case "string":
-            contentCtn[0].innerHTML = content;
+            this.#ContentDiv[0].innerHTML = content;
             break;
           case "object":
-            contentCtn[0].appendChild(content);
+            this.#ContentDiv[0].appendChild(content);
             break;
         }
 
-        this.#loadButtons();
-
         if (typeof fallback == "function") fallback();
+        this.#loadButtons();
         this.#appendToBody();
       } else if (ajaxUrl) {
         const request = !ajaxData
@@ -112,6 +110,8 @@ class Modal {
             console.error(err.message);
             this.callback(err.data);
           });
+      } else {
+        if (typeof fallback == "function") fallback();
       }
     }
   }
@@ -144,24 +144,26 @@ class Modal {
   }
 
   open() {
-    const { overlayer, OutsideClick } = this.#settings;
+    const body = document.getElementsByTagName("body");
+    const { overlayer, outsideClose } = this.#settings;
     if (overlayer) {
       this.OverDiv = createDOMElement({
-        attributes: {
-          class: "modal_overlay",
-          onclick: outsideClose && overlayer ? this.OutsideClick : "",
-        },
+        attributes: { class: "modal_overlay" },
       });
       this.OverDiv.appendChild(this.CtnDiv);
-      this.#popupEl = this.OverDiv;
+      //this.#popupEl = this.OverDiv;
+      body[0].appendChild(this.OverDiv);
     } else {
-      this.#popupEl = this.CtnDiv;
-      this.#EventListener();
+      //this.#popupEl = this.CtnDiv;
+      body[0].appendChild(this.OverDiv);
     }
 
+    this.#popupEl = body[0].lastChild;
+    this.#EventListener();
     this.#loadContent(() => {
       const { onOpen } = this.#settings;
-      if (typeof onOpen == "function") onOpen(this);
+
+      if (typeof onOpen == "function") onOpen(this.#popupEl, this.#ContentDiv);
     });
   }
 
@@ -192,11 +194,13 @@ class Modal {
 
   #EventListener() {
     const { overlayer } = this.#settings;
+    if (overlayer)
+      this.OverDiv.addEventListener("click", this.close.bind(this));
     if (!overlayer) document.addEventListener("click", this.OutsideClick);
   }
 
   #outsideClickListener(e) {
-    if (!e.target.closest(".modal_ctn") && e.target != this.elem) {
+    if (!e.target.closest(".modal_ctn") && e.target != this.OverDiv) {
       this.close();
     }
   }
@@ -226,6 +230,7 @@ class AlertPopup {
     autoClose: false,
     timer: 1000,
   };
+  #ContentDiv = null;
   #popupEl = null;
   constructor(options) {
     this.#settings = {
@@ -252,7 +257,7 @@ class AlertPopup {
       );
     }
 
-    const ContentDiv = createDOMElement({
+    this.#ContentDiv = createDOMElement({
       attributes: { class: "content_ctn" },
     });
     const BtnDiv = createDOMElement({ attributes: { class: "btn_ctn" } });
@@ -261,20 +266,20 @@ class AlertPopup {
     }
 
     this.CtnDiv.appendChild(InnerCtnDiv);
-    InnerCtnDiv.appendChild(ContentDiv);
+    InnerCtnDiv.appendChild(this.#ContentDiv);
     InnerCtnDiv.appendChild(BtnDiv);
   }
 
   #loadContent(fallback) {
     if (!this.#popupEl) return;
     const { content } = this.#settings;
-    var contentCtn = this.#popupEl.getElementsByClassName("content_ctn");
+
     switch (typeof content) {
       case "string":
-        contentCtn[0].innerHTML = content;
+        this.#ContentDiv[0].innerHTML = content;
         break;
       case "object":
-        contentCtn[0].appendChild(content);
+        this.#ContentDiv[0].appendChild(content);
         break;
     }
 
@@ -318,7 +323,7 @@ class AlertPopup {
       this.OverDiv = createDOMElement({
         attributes: {
           class: "alert_overlay",
-          onclick: outsideClose && overlayer ? this.OutsideClick : () => {},
+          onclick: outsideClose ? this.OutsideClick : () => {},
         },
       });
       this.OverDiv.appendChild(this.CtnDiv);
