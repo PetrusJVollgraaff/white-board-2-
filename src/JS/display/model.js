@@ -195,7 +195,9 @@ class Modal {
   #EventListener() {
     const { overlayer } = this.#settings;
     if (overlayer)
-      this.OverDiv.addEventListener("click", this.close.bind(this));
+      this.OverDiv.addEventListener("click", (e) => {
+        if (e.target == this.OverDiv) this.close();
+      });
     if (!overlayer) document.addEventListener("click", this.OutsideClick);
   }
 

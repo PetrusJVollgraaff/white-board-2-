@@ -270,7 +270,6 @@ class DrawingBoard extends EventTarget {
   #setSize(data) {}
 
   #setTool(data) {
-    console.log(data);
     const { tool } = data;
     this.#toolActive = tool;
     this.#setMousEvents();

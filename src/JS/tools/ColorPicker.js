@@ -214,6 +214,8 @@ class ColorPicker {
   }
 
   #updateSL(e) {
+    e.preventDefault();
+    e.stopPropagation();
     const { width: w, height: h } = this.#size;
     const { offsetX: x, offsetY: y } = e;
     const lightFac = 1 - (0.5 * x) / w;
@@ -295,6 +297,8 @@ class ColorPicker {
   }
 
   #changeColorType(e) {
+    e.preventDefault();
+    e.stopPropagation();
     this.#colortype = e.target.value;
     this.#divcont.innerHTML = "";
     this.#NumberInput();
@@ -345,20 +349,28 @@ class ColorPicker {
   }
 
   #changeRGB(e, data) {
+    e.preventDefault();
+    e.stopPropagation();
     this.#colorOp.rgb[data.subkey] = e.target.value;
     this.#setRGBtoHSL();
   }
 
   #changeOpacity(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
     const v = Number(e.target.value);
     this.#colorOp.hsl.a = v;
     this.#colorOp.rgb.a = v;
     this.#colorOp.cmyk.a = v;
     this.#setHexValue();
     this.#setColor();
+    this.#colorOp.cmyk = ColorConvertor.hexToCmyk(this.#colorOp.hex);
   }
 
   #changeHue(e) {
+    e.preventDefault();
+    e.stopPropagation();
     const v = Number(e.target.value);
     let h = v < 0 ? v % 360 : v > 360 ? v % 360 : v == "" ? 0 : v;
     this.#colorOp.hsl.h = h;
@@ -368,6 +380,8 @@ class ColorPicker {
   }
 
   #changeSat(e) {
+    e.preventDefault();
+    e.stopPropagation();
     const v = Number(e.target.value);
     var s = v < 0 ? v % 100 : v > 100 ? v % 100 : v == "" ? 0 : v;
     this.#colorOp.hsl.s = s * 100;
@@ -375,6 +389,8 @@ class ColorPicker {
   }
 
   #changeLight(e) {
+    e.preventDefault();
+    e.stopPropagation();
     const v = Number(e.target.value);
     var l = v < 0 ? v % 100 : v > 100 ? v % 100 : v == "" ? 0 : v;
     this.#colorOp.hsl.l = l * 100;
@@ -383,6 +399,8 @@ class ColorPicker {
   }
 
   #changeHex(e) {
+    e.preventDefault();
+    e.stopPropagation();
     const v = Number(e.target.value);
     const { a } = this.#colorOp.hsl;
     this.#colorOp.hex = v + ColorConvertor.decimalToHexOpacity(a);
@@ -410,9 +428,9 @@ class ColorPicker {
   #setCMYLtoHSL() {
     this.#colorOp.hsl = ColorConvertor.cmykToHsl(this.#colorOp.cmyk);
     this.#colorOp.rgb = ColorConvertor.hslToRgb(this.#colorOp.hsl);
+    this.#Inputs.hue.elm.value = this.#colorOp.hsl.h;
     this.#setHexValue();
     this.#setTopColor();
-    this.#Inputs.hue.elm.value = this.#colorOp.hsl.h;
   }
 
   #setRGBtoHSL() {
