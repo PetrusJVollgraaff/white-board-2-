@@ -69,7 +69,8 @@ class DrawingBoard extends EventTarget {
       elm: this.#bottomNavElm,
       main: this,
       callback: (data) => {
-        switch (data) {
+        const { action } = data;
+        switch (action) {
           case "setZoom":
             return this.#setZoom(data);
           case "setTool":
@@ -269,6 +270,7 @@ class DrawingBoard extends EventTarget {
   #setSize(data) {}
 
   #setTool(data) {
+    console.log(data);
     const { tool } = data;
     this.#toolActive = tool;
     this.#setMousEvents();
