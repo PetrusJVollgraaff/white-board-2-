@@ -94,10 +94,9 @@ body {
   border-color: var(--surface3) !important;
 }
 
-/* Top Nav dropdown */
-#top_navbar ul.dropbox {
+/* dropdown */
+ul.dropbox {
   position: absolute;
-  top: 100%;
   left: 0px;
   background: var(--surface2);
   transition: height 0.12s;
@@ -106,12 +105,20 @@ body {
   border-width: 0.5px;
 }
 
-#top_navbar ul.dropbox:not([data-s="true"]) {
+ul.dropbox[data-dir="down"] {
+  top: 120%;
+}
+
+ul.dropbox[data-dir="up"] {
+  bottom: 120%;
+}
+
+ul.dropbox:not([data-s="true"]) {
   height: 0px;
   display: none;
 }
 
-#top_navbar ul.dropbox>li {
+ul.dropbox>li {
   padding: 2px 8px;
   height: 26px;
   cursor: pointer;
@@ -126,13 +133,13 @@ body {
   white-space: nowrap;
 }
 
-#top_navbar ul.dropbox>li:not(:last-child) {
+ul.dropbox>li:not(:last-child) {
   border-bottom-color: var(--text-dim);
   border-bottom-style: solid;
   border-bottom-width: 0.5px;
 }
 
-#top_navbar ul.dropbox>li:hover {
+ul.dropbox>li:hover {
   background: var(--surface3);
 }
 

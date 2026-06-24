@@ -3,13 +3,30 @@ import { createDOMElement } from "../display/model";
 class DropDown {
   #elm = null;
   #title = null;
+  #innerhtml = null;
   #callback = () => {};
   #dropElm = null;
   #dropshow = false;
-  constructor({ elm, title, callback }) {
+  #dir = "down";
+  #html = "span";
+  #extraclass = ["dropbox"];
+  constructor({
+    elm,
+    callback,
+    dir = "down",
+    extraclass = [],
+    title = null,
+    innerhtml = null,
+    html = "span",
+  }) {
     this.#elm = elm;
     this.#title = title;
+    this.#innerhtml = innerhtml;
     this.#callback = callback;
+    this.#html = html;
+    this.#dir = dir;
+    this.#extraclass = this.#extraclass.concat(extraclass);
+    console.log(this.#extraclass, extraclass);
     this.#init();
   }
 
@@ -24,20 +41,24 @@ class DropDown {
 
     this.#elm.appendChild(
       createDOMElement({
-        type: "span",
+        type: this.#html,
         attributes: { class: "tlbl" },
         text: this.#title,
+        innerhtml: this.#innerhtml,
       }),
     );
 
     this.#dropElm = createDOMElement({
       type: "ul",
-      attributes: { class: "dropbox", "data-s": this.#dropshow },
+      attributes: {
+        class: this.#extraclass.map((c) => c).join(" "),
+        "data-s": this.#dropshow,
+        "data-dir": this.#dir,
+      },
     });
 
     this.#elm.appendChild(this.#dropElm);
     this.#callback(this.#dropElm);
-    //new FilePanel(this.#dropElm, this.#callback);
   }
 
   #eventListener() {

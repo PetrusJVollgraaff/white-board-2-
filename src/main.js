@@ -48,7 +48,6 @@ class DrawingBoard extends EventTarget {
   #startPoint = Vector.zero();
 
   #layerManager = new LayerManager({ main: this });
-  #ShapeTools = ["rect", "freehand", "line", "ellipse"];
 
   constructor() {
     super();
@@ -409,11 +408,9 @@ class DrawingBoard extends EventTarget {
       return;
     }
 
-    if (this.#ShapeTools.includes(this.#toolActive)) {
-      this.setItemsUnselect = false;
-      this.setMouseEvent = ShapeToolFactory.getTool(this.#toolActive);
-      return;
-    }
+    this.setItemsUnselect = false;
+    this.setMouseEvent = ShapeToolFactory.getTool(this.#toolActive);
+    return;
   }
 }
 

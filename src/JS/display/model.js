@@ -112,12 +112,13 @@ class Modal {
           });
       } else {
         if (typeof fallback == "function") fallback();
+        this.#loadButtons();
       }
     }
   }
 
   #loadButtons() {
-    const { buttons } = this.settings;
+    const { buttons } = this.#settings;
     var btnCtn = this.#popupEl.getElementsByClassName("btn_ctn");
     if (buttons && typeof buttons == "object" && buttons.length > 0) {
       buttons.forEach((btn) => {

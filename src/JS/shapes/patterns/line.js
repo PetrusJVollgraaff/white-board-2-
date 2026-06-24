@@ -99,6 +99,7 @@ class LineShape extends Shape {
     this.path = new Path2D();
     const center = this.center ? this.center : Vector.zero();
     const { x, y } = center;
+    console.log(this.points, center);
 
     ctx.beginPath();
     this.path = new Path2D();

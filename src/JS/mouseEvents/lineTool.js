@@ -17,8 +17,6 @@ class LineTool {
       const moveCallback = function (evt) {
         const vp = _.vpPt(evt);
         shape.setCorner2 = _._vp.toDoc(vp.x, vp.y);
-        shape.recenter();
-
         _.render([shape]);
       };
 
@@ -27,7 +25,6 @@ class LineTool {
         target.removeEventListener("pointerup", upCallback);
         shape.recenter();
         _.appendShape(shape);
-        //if (shape?.size.width > 0 && shape?.size.height > 0) {}
       };
 
       _.render();

@@ -153,9 +153,9 @@ class ColorPicker {
   #Canvas = createDOMElement({ type: "canvas" });
   #Ctx = this.#Canvas.getContext("2d");
   #modal = null;
-  #colorOp = { showFill: true, hex: "FFFFFF" };
+  #colorOp = { showFill: true, hex: "ffffff" };
   #divcont = createDOMElement();
-  constructor(elm, hexvalue = "FFFFFF") {
+  constructor(elm, hexvalue = "ffffff") {
     this.#colorOp.hex = hexvalue;
     this.#assignInputElements();
     this.#assignInputEvents();
@@ -171,33 +171,6 @@ class ColorPicker {
 
     this.mainDiv = createDOMElement();
     this.#buildContent();
-
-    this.modalshow = false;
-
-    this.modal = new Modal({
-      title: "Color Picker",
-      autoOpen: false,
-      onOpen: (modal, contentdiv) => {
-        contentdiv.appendChild(this.mainDiv);
-        this.#addColorEvent();
-        this.#setColor();
-      },
-      buttons: [
-        {
-          title: "Apply",
-          click: (modal) => {
-            //this.#elm.style.background = `hsla(${this.#colorOp.hsl.h}, ${this.#colorOp.hsl.s}%, ${this.#colorOp.hsl.l}%, ${Number(this.#colorOp.hsl.a)})`;
-            modal.close();
-          },
-        },
-        {
-          title: "Cancel",
-          click: function (modal) {
-            modal.close();
-          },
-        },
-      ],
-    });
 
     this.#init();
   }
@@ -230,9 +203,29 @@ class ColorPicker {
   }
 
   #init() {
-    var action = !this.modalshow ? "open" : "close";
-    this.modal[action]();
-    this.modalshow = !this.modalshow;
+    this.modal = new Modal({
+      title: "Color Picker",
+      onOpen: (modal, contentdiv) => {
+        contentdiv.appendChild(this.mainDiv);
+        this.#addColorEvent();
+        this.#setColor();
+      },
+      buttons: [
+        {
+          title: "Apply",
+          click: (modal) => {
+            this.#elm.style.background = `hsla(${this.#colorOp.hsl.h}, ${this.#colorOp.hsl.s}%, ${this.#colorOp.hsl.l}%, ${Number(this.#colorOp.hsl.a)})`;
+            modal.close();
+          },
+        },
+        {
+          title: "Cancel",
+          click: function (modal) {
+            modal.close();
+          },
+        },
+      ],
+    });
   }
 
   #buildContent() {

@@ -6,6 +6,7 @@ class ToolPanel {
   #elm = null;
 
   #Active = "select";
+
   #SelectBtn = null;
   #RectBtn = null;
   #EllipseBtn = null;
@@ -61,9 +62,8 @@ class ToolPanel {
   }
 
   #setSelected(Elm, val) {
-    this.#elmP
-      .querySelector('button[data-tool="' + this.#Active + '"]')
-      .classList.remove("active");
+    const active = this.#elmP.querySelector("button.active");
+    if (active) active.classList.remove("active");
 
     this.#Active = val;
     Elm.classList.add("active");
@@ -78,54 +78,23 @@ class ToolPanel {
 
   #build() {
     for (const key in this.#tools) {
-      switch (key) {
-        case "select":
-          this.#SelectBtn = createDOMElement(this.#tools[key]);
-          this.#elm.appendChild(this.#SelectBtn);
-          break;
-        case "rect":
-          this.#RectBtn = createDOMElement(this.#tools[key]);
-          this.#elm.appendChild(this.#RectBtn);
-          break;
-        case "ellipse":
-          this.#EllipseBtn = createDOMElement(this.#tools[key]);
-          this.#elm.appendChild(this.#EllipseBtn);
-          break;
-        case "line":
-          this.#LineBtn = createDOMElement(this.#tools[key]);
-          this.#elm.appendChild(this.#LineBtn);
-          break;
-        case "freehand":
-          this.#FreeHandBtn = createDOMElement(this.#tools[key]);
-          this.#elm.appendChild(this.#FreeHandBtn);
-          break;
-        case "pan":
-          this.#PanBtn = createDOMElement(this.#tools[key]);
-          this.#elm.appendChild(this.#PanBtn);
-          break;
-      }
+      const { type, attributes, innerhtml } = this.#tools[key];
+      this.#tools[key]["elm"] = createDOMElement({
+        type,
+        attributes,
+        innerhtml,
+      });
+      this.#elm.appendChild(this.#tools[key]["elm"]);
     }
   }
 
   #eventListener() {
-    this.#SelectBtn.addEventListener("click", (evt) => {
-      this.#setSelected(this.#SelectBtn, "select");
-    });
-    this.#RectBtn.addEventListener("click", () => {
-      this.#setSelected(this.#RectBtn, "rect");
-    });
-    this.#EllipseBtn.addEventListener("click", () => {
-      this.#setSelected(this.#EllipseBtn, "ellipse");
-    });
-    this.#LineBtn.addEventListener("click", () => {
-      this.#setSelected(this.#LineBtn, "line");
-    });
-    this.#FreeHandBtn.addEventListener("click", () => {
-      this.#setSelected(this.#FreeHandBtn, "freehand");
-    });
-    this.#PanBtn.addEventListener("click", () => {
-      this.#setSelected(this.#PanBtn, "pan");
-    });
+    for (const key in this.#tools) {
+      const { elm } = this.#tools[key];
+      elm.addEventListener("click", (evt) => {
+        this.#setSelected(elm, key);
+      });
+    }
   }
 }
 
