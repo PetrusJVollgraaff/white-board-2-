@@ -26,7 +26,6 @@ class DropDown {
     this.#html = html;
     this.#dir = dir;
     this.#extraclass = this.#extraclass.concat(extraclass);
-    console.log(this.#extraclass, extraclass);
     this.#init();
   }
 

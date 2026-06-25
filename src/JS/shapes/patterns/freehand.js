@@ -21,6 +21,15 @@ class FreeHandShape extends Shape {
     this.options = options;
   }
 
+  static btn() {
+    return {
+      type: "button",
+      attributes: { "data-tool": "freehand", title: "Freehand (F)" },
+      innerhtml:
+        '<svg viewBox="0 0 16 16"><path d="M2 14 Q4 2 8 8 Q12 14 14 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg>',
+    };
+  }
+
   static load(data, callback) {
     const shape = new FreeHandShape(data, callback);
     shape.setCenter = { center: new Vector(data.center), save: false };

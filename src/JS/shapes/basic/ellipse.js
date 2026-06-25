@@ -21,6 +21,15 @@ class EllipseShape extends Shape {
     this.options = options;
   }
 
+  static btn() {
+    return {
+      type: "button",
+      attributes: { "data-tool": "ellipse", title: "Ellipse" },
+      innerhtml:
+        '<svg viewBox="0 0 16 16"><ellipse cx="8" cy="8" rx="6" ry="4" fill="none" stroke="currentColor" stroke-width="1.5"></ellipse></svg>',
+    };
+  }
+
   static load(data, callback) {
     const shape = new EllipseShape(data, callback);
     shape.selected = data.selected;

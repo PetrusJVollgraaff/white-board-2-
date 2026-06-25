@@ -1,8 +1,13 @@
-import { EllipseShape } from "../shapes/patterns/ellipse";
+import { EllipseShape } from "../shapes/basic/ellipse";
 import { FreeHandShape } from "../shapes/patterns/freehand";
 import { LineShape } from "../shapes/patterns/line";
-import { RectShape } from "../shapes/patterns/rectangle";
-import { IsoselesTriangle } from "../shapes/patterns/isoselestriangle";
+import { RectShape } from "../shapes/basic/rectangle";
+import { IsoscelesTriangle } from "../shapes/basic/isoscelestriangle";
+import { AngleTriangle } from "../shapes/basic/angletriangle";
+import { Octagon } from "../shapes/basic/octagon";
+import { Pentagon } from "../shapes/basic/pentagon";
+import { Hexagon } from "../shapes/basic/hexagon";
+import { CrossShape } from "../shapes/basic/crossshape";
 
 class ShapeFactory {
   static #available = {};
@@ -12,8 +17,12 @@ class ShapeFactory {
     this.registerShape(EllipseShape, "EllipseShape");
     this.registerShape(FreeHandShape, "FreeHandShape");
     this.registerShape(LineShape, "LineShape");
-    this.registerShape(IsoselesTriangle, "IsoselesTriangle");
-    console.log(this.#available);
+    this.registerShape(IsoscelesTriangle, "IsoscelesTriangle");
+    this.registerShape(AngleTriangle, "AngleTriangle");
+    this.registerShape(Octagon, "Octagon");
+    this.registerShape(Pentagon, "Pentagon");
+    this.registerShape(Hexagon, "Hexagon");
+    this.registerShape(CrossShape, "CrossShape");
   }
 
   static registerShape(classType, typeName) {

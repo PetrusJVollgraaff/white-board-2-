@@ -227,8 +227,6 @@ class ShapeSelection extends Selection {
         .add(new Vector({ x: 1, y: 1 }));
       const { TYPES } = SelectionHandle;
 
-      console.log(handle.type);
-
       if (Object.values(TYPES).includes(handle.type)) {
         switch (handle.type) {
           case TYPES.RIGHT:

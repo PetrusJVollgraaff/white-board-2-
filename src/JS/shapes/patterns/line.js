@@ -18,6 +18,15 @@ class LineShape extends Shape {
     this.options = options;
   }
 
+  static btn() {
+    return {
+      type: "button",
+      attributes: { "data-tool": "line", title: "Line" },
+      innerhtml:
+        '<svg viewBox="0 0 16 16"><line x1="2" y1="14" x2="14" y2="2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></line></svg>',
+    };
+  }
+
   static load(data, callback) {
     const shape = new LineShape(data, callback);
     shape.setCenter = { center: new Vector(data.center), save: false };
@@ -99,7 +108,6 @@ class LineShape extends Shape {
     this.path = new Path2D();
     const center = this.center ? this.center : Vector.zero();
     const { x, y } = center;
-    console.log(this.points, center);
 
     ctx.beginPath();
     this.path = new Path2D();

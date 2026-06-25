@@ -113,11 +113,6 @@ ul.dropbox[data-dir="up"] {
   bottom: 120%;
 }
 
-ul.dropbox:not([data-s="true"]) {
-  height: 0px;
-  display: none;
-}
-
 ul.dropbox>li {
   padding: 2px 8px;
   height: 26px;
@@ -141,6 +136,25 @@ ul.dropbox>li:not(:last-child) {
 
 ul.dropbox>li:hover {
   background: var(--surface3);
+}
+
+ul.dropbox.grid_dropdown {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 6px;
+  width: 220px;
+  align-items: center;
+  justify-content: center;
+}
+
+ul.dropbox.grid_dropdown>li {
+  border: unset;
+}
+
+ul.dropbox[data-s="false"] {
+  height: 0px;
+  display: none;
 }
 
 /* right side Navbar */

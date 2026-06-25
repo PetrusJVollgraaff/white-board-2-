@@ -28,6 +28,7 @@ class BottomNav {
         '<svg viewBox="0 0 16 16"><rect x="2" y="4" width="12" height="8" fill="none" stroke="currentColor" stroke-width="1.5"></rect></svg>',
       html: "button",
       dir: "up",
+      extraclass: ["grid_dropdown"],
       callback: (dropElm) => {
         new BasicShapePanel(dropElm, this.#callback);
       },

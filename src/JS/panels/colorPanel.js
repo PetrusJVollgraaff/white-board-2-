@@ -210,7 +210,6 @@ class ColorPanel {
         });
       } else {
         elm.addEventListener(event, (evt) => {
-          console.log("helo");
           new ColorPicker(elm);
         });
       }

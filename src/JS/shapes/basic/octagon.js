@@ -1,9 +1,9 @@
 import { Vector } from "../../utils/vector";
 import { Shape } from "../shape";
 
-class IsoselesTriangle extends Shape {
+class Octagon extends Shape {
   #rotation = 0;
-  #shape = "IsoselesTriangle";
+  #shape = "Octagon";
   #pathSet = new Set();
   #extraoptions = {
     values: [0.5],
@@ -24,8 +24,20 @@ class IsoselesTriangle extends Shape {
     this.options = options;
   }
 
+  static btn() {
+    return {
+      type: "button",
+      attributes: {
+        "data-tool": "octagon",
+        title: "Octagon",
+      },
+      innerhtml:
+        '<svg viewBox="0 0 16 16"><polygon points="5,0 10,0 16,5 16,10 10,16 5,16 0,10 0,5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>',
+    };
+  }
+
   static load(data, callback) {
-    const shape = new IsoselesTriangle(data, callback);
+    const shape = new Octagon(data, callback);
     shape.selected = data.selected;
     return shape;
   }
@@ -74,22 +86,31 @@ class IsoselesTriangle extends Shape {
   }
 
   draw(ctx, hitRegion = false) {
-    const { size } = this;
     this.path = new Path2D();
-    const center = this.center ? this.center : Vector.zero();
-    const left = center.x - size.width / 2;
-    const top = center.y - size.height / 2;
-    const toppoint_x = left + size.width * this.#extraoptions.values[0];
+    const { x, y } = this.center ? this.center : Vector.zero();
+    const { size } = this;
+
+    const dist1 = this.#extraoptions.values[0];
+    const half_width = size.width / 2;
+    const half_height = size.height / 2;
+    const left = x - size.width / 2;
+    const top = y - size.height / 2;
+    const right = left + size.width;
+    const bottom = top + size.height;
 
     ctx.beginPath();
-    //this.path.rect(left, top, this.size.width, this.size.height);
-    this.path.moveTo(toppoint_x, top);
-    this.path.lineTo(left + size.width, top + size.height);
-    this.path.lineTo(left, top + size.height);
-    this.path.lineTo(toppoint_x, top);
+    this.path.moveTo(x - half_width * dist1, top);
+    this.path.lineTo(x + half_width * dist1, top);
+    this.path.lineTo(right, y - half_height * dist1);
+    this.path.lineTo(right, y + half_height * dist1);
+    this.path.lineTo(x + half_width * dist1, bottom);
+    this.path.lineTo(x - half_width * dist1, bottom);
+    this.path.lineTo(left, y + half_height * dist1);
+    this.path.lineTo(left, y - half_height * dist1);
+    this.path.lineTo(x - half_width * dist1, top);
 
     this.applyStyles(ctx, this.path);
   }
 }
 
-export { IsoselesTriangle };
+export { Octagon };
