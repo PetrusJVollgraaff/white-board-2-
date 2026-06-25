@@ -3,6 +3,8 @@ import { ShapeSelection } from "../transformbox/selections";
 import { Vector } from "../utils/vector";
 
 class Shape {
+  rotation = 0;
+
   static defaultOptions = {
     lineCap: "round",
     lineJoin: "round",
@@ -175,6 +177,7 @@ class Shape {
   }
 
   set setRotation({ angle, save = true }) {
+    console.log(angle);
     this.rotation = angle;
     this.selections?.updateRotation();
 

@@ -259,6 +259,14 @@ class Layer extends EventTarget {
     });
   }
 
+  static rotateCanvas(ctx, center, rotation) {
+    console.log(ctx, center, rotation);
+    if (rotation == undefined) return;
+    ctx.translate(center.x, center.y);
+    ctx.rotate(rotation);
+    ctx.translate(-center.x, -center.y);
+  }
+
   serialize() {
     const shapes = this.#shapes.map((s) => s.serialize());
     const mergeHistory = this.#mergeHistory
@@ -390,7 +398,11 @@ class Layer extends EventTarget {
     if (!this.#visible) return;
     ctx.save();
     ctx.globalAlpha = this.#opacity / 100;
-    for (const s of [...this.#shapes, ...shape]) s.draw(ctx);
+    for (const s of [...this.#shapes, ...shape]) {
+      Layer.rotateCanvas(ctx, s.center, s.rotation);
+      s.draw(ctx);
+      Layer.rotateCanvas(ctx, s.center, -s.rotation);
+    }
     ctx.restore();
   }
 }

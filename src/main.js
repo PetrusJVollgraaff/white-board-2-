@@ -13,6 +13,7 @@ import { ToolFactory } from "./JS/utils/toolFactory";
 import { ShapeFactory } from "./JS/utils/shapeFactory";
 import { ShapeToolFactory } from "./JS/utils/shapeToolFactory";
 import { Shape } from "./JS/shapes/shape";
+import { Layer } from "./JS/display/Layer";
 
 ToolFactory.registerTools();
 ShapeFactory.registerShapes();
@@ -108,10 +109,6 @@ class DrawingBoard extends EventTarget {
         switch (action) {
           case "setLayer":
             return this.#setLayer(data);
-          case "setColor":
-            return this.#setColor(data);
-          case "setSize":
-            return this.#setSize(data);
         }
       },
     });
@@ -233,7 +230,11 @@ class DrawingBoard extends EventTarget {
     document.getElementById("zoom-level").textContent = this._vp.zoomLabel;
 
     this.#layerManager.drawShape(this.#mainCtx, shapes);
-    this.#selectedItems.forEach((s) => s.draw(this.#mainCtx));
+    this.#selectedItems.forEach((s) => {
+      Layer.rotateCanvas(this.#mainCtx, s.center, s.rotation);
+      s.draw(this.#mainCtx);
+      Layer.rotateCanvas(this.#mainCtx, s.center, -s.rotation);
+    });
     this.#mainCtx.restore();
   }
 
@@ -271,10 +272,6 @@ class DrawingBoard extends EventTarget {
     const { value } = data;
     ToolFactory.getTool("edit")[value](this.#layerManager, this);
   }
-
-  #setColor(data) {}
-
-  #setSize(data) {}
 
   #setTool(data) {
     const { tool } = data;

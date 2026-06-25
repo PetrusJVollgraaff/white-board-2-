@@ -2,7 +2,6 @@ import { Vector } from "../../utils/vector";
 import { Shape } from "../shape";
 
 class LineShape extends Shape {
-  #rotation = 0;
   #shape = "LineShape";
   #pathSet = new Set();
 

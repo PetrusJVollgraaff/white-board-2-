@@ -3,7 +3,6 @@ import { Vector } from "../../utils/vector";
 import { Shape } from "../shape";
 
 class FreeHandShape extends Shape {
-  #rotation = 0;
   #shape = "FreeHandShape";
   #pathSet = new Set();
 

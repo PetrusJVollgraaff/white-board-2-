@@ -72,7 +72,7 @@ class ShapeSelection extends Selection {
     super();
     this.#shape = shape;
     this.center = shape.getCenter;
-    this.rotation = 0;
+    this.rotation = shape.rotation;
 
     this.#generate();
     shape.selections = this;
@@ -89,8 +89,8 @@ class ShapeSelection extends Selection {
 
   updateRotation() {
     this.rotation = this.#shape?.rotation
-      ? this.shape.rotation
-      : this.shape.angle;
+      ? this.#shape.rotation
+      : this.#shape.angle;
     this.#update();
   }
 
@@ -195,6 +195,7 @@ class ShapeSelection extends Selection {
 
   addEventListeners(target, startPosition, handle, main) {
     const selectedShapes = main.getSelectedShapes;
+    const oldRotations = selectedShapes.map((s) => s.rotation);
     const oldBoxes = selectedShapes.map((s) =>
       BoundingBox.fromPoints(s.getPoints.map((p) => p.add(this.center))),
     );
@@ -207,7 +208,6 @@ class ShapeSelection extends Selection {
       };
     });
 
-    const oldRotations = selectedShapes.map((s) => s.rotation);
     let mouseDelta = null;
     const { width, height } = this.box;
     const prevSize = { width, height };
@@ -279,18 +279,19 @@ class ShapeSelection extends Selection {
           const oldBox = oldBoxes[i];
           const oldRotation = oldRotations[i];
 
-          //if (handle.type === TYPES.ROTATE) {
-          //  const fixedStart = viewport.getAdjustedPosition(startPosition);
-          //  const fixedMouse = viewport.getAdjustedPosition(mousePosition);
+          if (handle.type === TYPES.ROTATE) {
+            //const fixedStart = viewport.getAdjustedPosition(startPosition);
+            //const fixedMouse = viewport.getAdjustedPosition(mousePosition);
+            const fixedStart = main._vp.toDoc(startPosition.x, startPosition.y);
+            const fixedMouse = main._vp.toDoc(mousePosition.x, mousePosition.y);
 
-          // vectors centered at the bounding box center
-          //  const v1 = Vec2.subtract(fixedStart, oldBox.center);
-          //  const v2 = Vec2.subtract(fixedMouse, oldBox.center);
-          //  const angle = Vec2.getSignedAngle(v2, v1);
-          //  const combinedAngle = oldRotation + angle;
-          //  shape.setRotation(combinedAngle, false);
-          //} else {
-          if (handle.type !== TYPES.ROTATE && handle.type !== TYPES.CONSTRAIN) {
+            // vectors centered at the bounding box center
+            const v1 = Vector.subtract(startPosition, oldBox.center);
+            const v2 = Vector.subtract(mousePosition, oldBox.center);
+            const angle = Vector.getSignAngle(v2, v1);
+            const combinedAngle = oldRotation + angle;
+            shape.setRotation = { angle: combinedAngle, save: false };
+          } else if (handle.type !== TYPES.CONSTRAIN) {
             shape.setSize = {
               width: oldBox.width * ratio.x * startingSigns[i].widthSign,
               height: oldBox.height * ratio.y * startingSigns[i].heightSign,

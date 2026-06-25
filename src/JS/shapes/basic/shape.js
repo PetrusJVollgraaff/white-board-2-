@@ -57,7 +57,6 @@ class BasicShape extends Shape {
 }
 
 class AngleTriangle extends BasicShape {
-  #rotation = 0;
   shape = "AngleTriangle";
   #pathSet = new Set();
   #extraoptions = {
@@ -106,7 +105,6 @@ class AngleTriangle extends BasicShape {
 }
 
 class CrossShape extends BasicShape {
-  #rotation = 0;
   shape = "CrossShape";
   #pathSet = new Set();
   #extraoptions = {
@@ -172,7 +170,6 @@ class CrossShape extends BasicShape {
 }
 
 class EllipseShape extends BasicShape {
-  #rotation = 0;
   #shape = "EllipseShape";
   #pathSet = new Set();
 
@@ -216,7 +213,6 @@ class EllipseShape extends BasicShape {
 }
 
 class EllipsePie extends BasicShape {
-  #rotation = 0;
   #shape = "EllipsePie";
   #pathSet = new Set();
   #extraoptions = {
@@ -273,7 +269,6 @@ class EllipsePie extends BasicShape {
 }
 
 class Hexagon extends BasicShape {
-  #rotation = 0;
   shape = "Hexagon";
   #pathSet = new Set();
   #extraoptions = {
@@ -328,7 +323,6 @@ class Hexagon extends BasicShape {
 }
 
 class IsoscelesTriangle extends BasicShape {
-  #rotation = 0;
   shape = "IsoscelesTriangle";
   #pathSet = new Set();
   #extraoptions = {
@@ -379,7 +373,6 @@ class IsoscelesTriangle extends BasicShape {
 }
 
 class Octagon extends BasicShape {
-  #rotation = 0;
   shape = "Octagon";
   #pathSet = new Set();
   #extraoptions = {
@@ -438,7 +431,6 @@ class Octagon extends BasicShape {
 }
 
 class Pentagon extends BasicShape {
-  #rotation = 0;
   shape = "Pentagon";
   #pathSet = new Set();
 
@@ -485,7 +477,6 @@ class Pentagon extends BasicShape {
 }
 
 class RectShape extends BasicShape {
-  #rotation = 0;
   shape = "RectShape";
   #pathSet = new Set();
 
@@ -523,7 +514,6 @@ class RectShape extends BasicShape {
 }
 
 class Diament extends BasicShape {
-  #rotation = 0;
   shape = "Diament";
   #pathSet = new Set();
 
@@ -565,7 +555,6 @@ class Diament extends BasicShape {
 }
 
 class Trapezoid extends BasicShape {
-  #rotation = 0;
   shape = "Trapezoid";
   #pathSet = new Set();
   #extraoptions = {
@@ -615,7 +604,6 @@ class Trapezoid extends BasicShape {
 }
 
 class Parallelorgram extends BasicShape {
-  #rotation = 0;
   shape = "Parallelorgram";
   #pathSet = new Set();
   #extraoptions = {
