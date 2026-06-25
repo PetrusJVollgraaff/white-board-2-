@@ -6,15 +6,24 @@ class BasicShapePanel {
   #elm = null;
 
   #tools = {
-    rect: {
+    RectShape: {
       type: "button",
-      attributes: { "data-tool": "rect", title: "Select (R)" },
+      attributes: { "data-tool": "rect", title: "Rectangle" },
       innerhtml:
         '<svg viewBox="0 0 16 16"><rect x="2" y="4" width="12" height="8" fill="none" stroke="currentColor" stroke-width="1.5"></rect></svg>',
     },
-    ellipse: {
+    EllipseShape: {
       type: "button",
-      attributes: { "data-tool": "ellipse", title: "Ellipse (E)" },
+      attributes: { "data-tool": "ellipse", title: "Ellipse" },
+      innerhtml:
+        '<svg viewBox="0 0 16 16"><ellipse cx="8" cy="8" rx="6" ry="4" fill="none" stroke="currentColor" stroke-width="1.5"></ellipse></svg>',
+    },
+    IsoselesTriangle: {
+      type: "button",
+      attributes: {
+        "data-tool": "isoseles triangle",
+        title: "Isoseles Triangle",
+      },
       innerhtml:
         '<svg viewBox="0 0 16 16"><ellipse cx="8" cy="8" rx="6" ry="4" fill="none" stroke="currentColor" stroke-width="1.5"></ellipse></svg>',
     },

@@ -21,13 +21,13 @@ class ToolPanel {
       innerhtml:
         '<svg viewBox="0 0 16 16"><path d="M3 1l4.5 13L9 9l5 2z"></path></svg>',
     },
-    rect: {
+    RectShape: {
       type: "button",
       attributes: { "data-tool": "rect", title: "Select (R)" },
       innerhtml:
         '<svg viewBox="0 0 16 16"><rect x="2" y="4" width="12" height="8" fill="none" stroke="currentColor" stroke-width="1.5"></rect></svg>',
     },
-    ellipse: {
+    EllipseShape: {
       type: "button",
       attributes: { "data-tool": "ellipse", title: "Ellipse (E)" },
       innerhtml:

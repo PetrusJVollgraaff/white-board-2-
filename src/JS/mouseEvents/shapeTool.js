@@ -1,8 +1,8 @@
-import { EllipseShape } from "../shapes/patterns/ellipse";
 import { Shape } from "../shapes/shape";
+import { ShapeFactory } from "../utils/shapeFactory";
 import { Vector } from "../utils/vector";
 
-class EllipseTool {
+class ShapeTool {
   static #Event = null;
 
   static addPointerDownListener(evt) {
@@ -26,7 +26,8 @@ class EllipseTool {
           shape.setCenter = { center, save: false };
           shape.setSize = { ...size, ...{ save: false } };
         } else {
-          shape = new EllipseShape(
+          const ShapeClass = ShapeFactory.newShape(_.getActiveTool);
+          shape = new ShapeClass(
             {
               center,
               size,
@@ -63,4 +64,4 @@ class EllipseTool {
   }
 }
 
-export { EllipseTool };
+export { ShapeTool };

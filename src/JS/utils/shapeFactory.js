@@ -2,6 +2,7 @@ import { EllipseShape } from "../shapes/patterns/ellipse";
 import { FreeHandShape } from "../shapes/patterns/freehand";
 import { LineShape } from "../shapes/patterns/line";
 import { RectShape } from "../shapes/patterns/rectangle";
+import { IsoselesTriangle } from "../shapes/patterns/isoselestriangle";
 
 class ShapeFactory {
   static #available = {};
@@ -11,6 +12,8 @@ class ShapeFactory {
     this.registerShape(EllipseShape, "EllipseShape");
     this.registerShape(FreeHandShape, "FreeHandShape");
     this.registerShape(LineShape, "LineShape");
+    this.registerShape(IsoselesTriangle, "IsoselesTriangle");
+    console.log(this.#available);
   }
 
   static registerShape(classType, typeName) {
@@ -22,6 +25,10 @@ class ShapeFactory {
     const shape = cls.load(shapeData, callback);
 
     return shape;
+  }
+
+  static newShape(shape) {
+    return this.#available[shape].shape;
   }
 
   static loadShapes(data, callback) {

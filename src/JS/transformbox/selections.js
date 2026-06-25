@@ -132,6 +132,10 @@ class ShapeSelection extends Selection {
       new Vector({ x: 0, y: 2 * size }),
     );
 
+    const constrainPoint = new Vector(topRight).subtract(
+      new Vector({ x: -2 * size, y: 2 * size }),
+    );
+
     this.handles[0].center = topLeft;
     this.handles[1].center = topRight;
     this.handles[2].center = bottomLeft;
@@ -141,6 +145,7 @@ class ShapeSelection extends Selection {
     this.handles[6].center = Vector.mid([topLeft, bottomLeft]);
     this.handles[7].center = Vector.mid([topRight, bottomRight]);
     this.handles[8].center = rotationPoint;
+    this.handles[9].center = constrainPoint;
   }
 
   draw(ctx, hitRegion = false) {
@@ -222,6 +227,8 @@ class ShapeSelection extends Selection {
         .add(new Vector({ x: 1, y: 1 }));
       const { TYPES } = SelectionHandle;
 
+      console.log(handle.type);
+
       if (Object.values(TYPES).includes(handle.type)) {
         switch (handle.type) {
           case TYPES.RIGHT:
@@ -285,12 +292,14 @@ class ShapeSelection extends Selection {
           //  const combinedAngle = oldRotation + angle;
           //  shape.setRotation(combinedAngle, false);
           //} else {
-          shape.setSize = {
-            width: oldBox.width * ratio.x * startingSigns[i].widthSign,
-            height: oldBox.height * ratio.y * startingSigns[i].heightSign,
-            save: false,
-          };
-          main.rightNav.setSize = shape.getSize;
+          if (handle.type !== TYPES.ROTATE && handle.type !== TYPES.CONSTRAIN) {
+            shape.setSize = {
+              width: oldBox.width * ratio.x * startingSigns[i].widthSign,
+              height: oldBox.height * ratio.y * startingSigns[i].heightSign,
+              save: false,
+            };
+            main.rightNav.setSize = shape.getSize;
+          }
           //}
         }
       }

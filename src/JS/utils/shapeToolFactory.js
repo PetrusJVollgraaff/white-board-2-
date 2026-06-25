@@ -1,16 +1,14 @@
-import { EllipseTool } from "../mouseEvents/ellipseTool";
 import { FreeHandTool } from "../mouseEvents/freehandTool";
 import { LineTool } from "../mouseEvents/lineTool";
-import { RectTool } from "../mouseEvents/rectTool";
+import { ShapeTool } from "../mouseEvents/shapeTool";
 
 class ShapeToolFactory {
   static #available = {};
 
   static registerTools() {
-    this.registerTool(RectTool, "rect");
-    this.registerTool(EllipseTool, "ellipse");
     this.registerTool(FreeHandTool, "freehand");
     this.registerTool(LineTool, "line");
+    this.registerTool(ShapeTool, "shape");
   }
 
   static registerTool(classType, typeName) {
@@ -18,7 +16,11 @@ class ShapeToolFactory {
   }
 
   static getTool(tool) {
-    return this.#available[tool].tool;
+    if (tool == "freehand" || tool == "line") {
+      return this.#available[tool].tool;
+    }
+
+    return this.#available.shape.tool;
   }
 }
 

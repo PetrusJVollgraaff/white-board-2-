@@ -173,6 +173,10 @@ class DrawingBoard extends EventTarget {
   }
 
   /** Getters */
+  get getActiveTool() {
+    return this.#toolActive;
+  }
+
   get getmainCtx() {
     return this.#mainCtx;
   }
