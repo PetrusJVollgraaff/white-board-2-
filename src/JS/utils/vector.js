@@ -86,6 +86,20 @@ class Vector {
 
     return Vector.subtract(rotated, center);
   }
+
+  static DegreeToRadians(degree) {
+    return (degree * Math.PI) / 180;
+  }
+
+  static RadianToDegree(radian) {
+    return Vec2.fixDegree((radian * 180) / Math.PI);
+  }
+
+  static fixDegree(degrees) {
+    if (degrees < 0) return degrees + 360;
+    if (degrees > 360) return degrees - 360;
+    return degrees;
+  }
   /*
   static rotateAroundCenter(v, center, angle) {
     let { x, y } = new Vector({ x: v.x - center.x, y: v.y - center.y });

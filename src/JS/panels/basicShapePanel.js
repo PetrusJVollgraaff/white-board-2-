@@ -15,6 +15,10 @@ class BasicShapePanel {
     Pentagon: BS.Pentagon.btn(),
     Hexagon: BS.Hexagon.btn(),
     CrossShape: BS.CrossShape.btn(),
+    Diament: BS.Diament.btn(),
+    Trapezoid: BS.Trapezoid.btn(),
+    Parallelorgram: BS.Parallelorgram.btn(),
+    EllipsePie: BS.EllipsePie.btn(),
   };
 
   constructor(elmP, callback) {

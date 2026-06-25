@@ -197,20 +197,76 @@ class EllipseShape extends BasicShape {
 
   draw(ctx, hitRegion = false) {
     this.path = new Path2D();
-    const center = this.center ? this.center : Vector.zero();
-    const { x, y } = center;
-    const { width, height } = this.size;
+    const { x, y } = this.center ? this.center : Vector.zero();
+    const { size } = this;
 
     ctx.beginPath();
     this.path.ellipse(
       x,
       y,
-      Math.abs(width / 2),
-      Math.abs(height / 2),
+      Math.abs(size.width / 2),
+      Math.abs(size.height / 2),
       0,
       0,
       2 * Math.PI,
     );
+
+    this.applyStyles(ctx, this.path);
+  }
+}
+
+class EllipsePie extends BasicShape {
+  #rotation = 0;
+  #shape = "EllipsePie";
+  #pathSet = new Set();
+  #extraoptions = {
+    values: [0, 270],
+    handles: 2,
+    direction: "xy",
+  };
+
+  constructor(data, callback) {
+    super(data, callback);
+  }
+
+  static btn() {
+    return {
+      type: "button",
+      attributes: { "data-tool": "ellipsepie", title: "EllipsePie" },
+      innerhtml:
+        '<svg viewBox="0 0 16 16"><ellipse cx="8" cy="8" rx="6" ry="4" fill="none" stroke="currentColor" stroke-width="1.5"></ellipse></svg>',
+    };
+  }
+
+  static load(data, callback) {
+    const shape = new EllipsePie(data, callback);
+    shape.selected = data.selected;
+    return shape;
+  }
+
+  draw(ctx, hitRegion = false) {
+    this.path = new Path2D();
+    const { x, y } = this.center ? this.center : Vector.zero();
+    const { size } = this;
+    const left = x - size.width / 2;
+    const top = y - size.height / 2;
+
+    const radiusX = Math.abs(size.width / 2);
+    const radiusY = Math.abs(size.height / 2);
+
+    ctx.beginPath();
+    this.path.moveTo(left + size.width / 2, top + size.height / 2);
+    this.path.ellipse(
+      x,
+      y,
+      radiusX,
+      radiusY,
+      0,
+      Vector.DegreeToRadians(this.#extraoptions.values[0]),
+      Vector.DegreeToRadians(this.#extraoptions.values[1]),
+    );
+
+    this.path.lineTo(left + size.width / 2, top + size.height / 2);
 
     this.applyStyles(ctx, this.path);
   }
@@ -454,12 +510,155 @@ class RectShape extends BasicShape {
 
   draw(ctx, hitRegion = false) {
     this.path = new Path2D();
-    const center = this.center ? this.center : Vector.zero();
-    const left = center.x - this.size.width / 2;
-    const top = center.y - this.size.height / 2;
+    const { x, y } = this.center ? this.center : Vector.zero();
+    const { size } = this;
+    const left = x - size.width / 2;
+    const top = y - size.height / 2;
 
     ctx.beginPath();
-    this.path.rect(left, top, this.size.width, this.size.height);
+    this.path.rect(left, top, size.width, size.height);
+
+    this.applyStyles(ctx, this.path);
+  }
+}
+
+class Diament extends BasicShape {
+  #rotation = 0;
+  shape = "Diament";
+  #pathSet = new Set();
+
+  constructor(data, callback) {
+    super(data, callback);
+  }
+
+  static btn() {
+    return {
+      type: "button",
+      attributes: { "data-tool": "diament", title: "Diament" },
+      innerhtml:
+        '<svg viewBox="0 0 16 16"><polygon points="8,0 16,8 8,16 0,8" fill="none" stroke="currentColor" stroke-width="1.5"/></rect></svg>',
+    };
+  }
+
+  static load(data, callback) {
+    const shape = new Diament(data, callback);
+    shape.selected = data.selected;
+    return shape;
+  }
+
+  draw(ctx, hitRegion = false) {
+    this.path = new Path2D();
+    const { x, y } = this.center ? this.center : Vector.zero();
+    const { size } = this;
+    const left = x - size.width / 2;
+    const top = y - size.height / 2;
+
+    ctx.beginPath();
+    this.path.moveTo(left + size.width / 2, top);
+    this.path.lineTo(left + size.width, top + size.height / 2);
+    this.path.lineTo(left + size.width / 2, top + size.height);
+    this.path.lineTo(left, top + size.height / 2);
+    this.path.lineTo(left + size.width / 2, top);
+
+    this.applyStyles(ctx, this.path);
+  }
+}
+
+class Trapezoid extends BasicShape {
+  #rotation = 0;
+  shape = "Trapezoid";
+  #pathSet = new Set();
+  #extraoptions = {
+    values: [0.25],
+    handles: 1,
+  };
+
+  constructor(data, callback) {
+    super(data, callback);
+  }
+
+  static btn() {
+    return {
+      type: "button",
+      attributes: { "data-tool": "trapezoid", title: "Trapezoid" },
+      innerhtml:
+        '<svg viewBox="0 0 16 16"><polygon points="8,0 16,8 8,16 0,8" fill="none" stroke="currentColor" stroke-width="1.5"/></rect></svg>',
+    };
+  }
+
+  static load(data, callback) {
+    const shape = new Trapezoid(data, callback);
+    shape.selected = data.selected;
+    return shape;
+  }
+
+  draw(ctx, hitRegion = false) {
+    this.path = new Path2D();
+    const { x, y } = this.center ? this.center : Vector.zero();
+    const { size } = this;
+    const dist1 = this.#extraoptions.values[0];
+    const half_h = size.height / 2;
+    const half_w = size.width / 2;
+    const left = x - half_w;
+    const right = left + size.width;
+    const top = y - half_h;
+
+    ctx.beginPath();
+    this.path.moveTo(left, top);
+    this.path.lineTo(left + size.width, top);
+    this.path.lineTo(right - half_w * dist1, top + size.height);
+    this.path.lineTo(left + half_w * dist1, top + size.height);
+    this.path.lineTo(left, top);
+
+    this.applyStyles(ctx, this.path);
+  }
+}
+
+class Parallelorgram extends BasicShape {
+  #rotation = 0;
+  shape = "Parallelorgram";
+  #pathSet = new Set();
+  #extraoptions = {
+    values: [0.25],
+    handles: 1,
+  };
+
+  constructor(data, callback) {
+    super(data, callback);
+  }
+
+  static btn() {
+    return {
+      type: "button",
+      attributes: { "data-tool": "parallelorgram", title: "Parallelorgram" },
+      innerhtml:
+        '<svg viewBox="0 0 16 16"><polygon points="8,0 16,8 8,16 0,8" fill="none" stroke="currentColor" stroke-width="1.5"/></rect></svg>',
+    };
+  }
+
+  static load(data, callback) {
+    const shape = new TParallelorgram(data, callback);
+    shape.selected = data.selected;
+    return shape;
+  }
+
+  draw(ctx, hitRegion = false) {
+    this.path = new Path2D();
+    const { x, y } = this.center ? this.center : Vector.zero();
+    const { size } = this;
+    const dist1 = this.#extraoptions.values[0];
+    const half_h = size.height / 2;
+    const half_w = size.width / 2;
+    const left = x - half_w;
+    const right = left + size.width;
+    const top = y - half_h;
+
+    ctx.beginPath();
+    this.path.moveTo(left + size.width * dist1, top);
+    this.path.lineTo(left + size.width, top);
+    this.path.lineTo(right - size.width * dist1, top + size.height);
+    this.path.lineTo(left, top + size.height);
+    this.path.lineTo(left + size.width * dist1, top);
 
     this.applyStyles(ctx, this.path);
   }
@@ -474,5 +673,9 @@ const BasicShapes = {
   Pentagon,
   Hexagon,
   CrossShape,
+  Diament,
+  Trapezoid,
+  Parallelorgram,
+  EllipsePie,
 };
 export { BasicShapes };
