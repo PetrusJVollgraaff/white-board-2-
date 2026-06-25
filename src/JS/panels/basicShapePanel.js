@@ -1,12 +1,5 @@
 import { createDOMElement } from "../display/model";
-import { AngleTriangle } from "../shapes/basic/angletriangle";
-import { CrossShape } from "../shapes/basic/crossshape";
-import { EllipseShape } from "../shapes/basic/ellipse";
-import { Hexagon } from "../shapes/basic/hexagon";
-import { IsoscelesTriangle } from "../shapes/basic/isoscelestriangle";
-import { Octagon } from "../shapes/basic/octagon";
-import { Pentagon } from "../shapes/basic/pentagon";
-import { RectShape } from "../shapes/basic/rectangle";
+import { BasicShapes as BS } from "../shapes/basic/shape";
 
 class BasicShapePanel {
   #callback = () => {};
@@ -14,20 +7,19 @@ class BasicShapePanel {
   #elm = null;
 
   #tools = {
-    RectShape: RectShape.btn(),
-    EllipseShape: EllipseShape.btn(),
-    IsoscelesTriangle: IsoscelesTriangle.btn(),
-    AngleTriangle: AngleTriangle.btn(),
-    Octagon: Octagon.btn(),
-    Pentagon: Pentagon.btn(),
-    Hexagon: Hexagon.btn(),
-    CrossShape: CrossShape.btn(),
+    RectShape: BS.RectShape.btn(),
+    EllipseShape: BS.EllipseShape.btn(),
+    IsoscelesTriangle: BS.IsoscelesTriangle.btn(),
+    AngleTriangle: BS.AngleTriangle.btn(),
+    Octagon: BS.Octagon.btn(),
+    Pentagon: BS.Pentagon.btn(),
+    Hexagon: BS.Hexagon.btn(),
+    CrossShape: BS.CrossShape.btn(),
   };
 
   constructor(elmP, callback) {
     this.#elmP = elmP;
     this.#callback = callback;
-
     this.#init();
   }
 

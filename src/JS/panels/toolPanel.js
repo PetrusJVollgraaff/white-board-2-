@@ -1,6 +1,5 @@
 import { createDOMElement } from "../display/model";
-import { EllipseShape } from "../shapes/basic/ellipse";
-import { RectShape } from "../shapes/basic/rectangle";
+import { BasicShapes } from "../shapes/basic/shape";
 import { FreeHandShape } from "../shapes/patterns/freehand";
 import { LineShape } from "../shapes/patterns/line";
 
@@ -11,13 +10,6 @@ class ToolPanel {
 
   #Active = "select";
 
-  #SelectBtn = null;
-  #RectBtn = null;
-  #EllipseBtn = null;
-  #LineBtn = null;
-  #FreeHandBtn = null;
-  #PanBtn = null;
-
   #tools = {
     select: {
       type: "button",
@@ -25,8 +17,8 @@ class ToolPanel {
       innerhtml:
         '<svg viewBox="0 0 16 16"><path d="M3 1l4.5 13L9 9l5 2z"></path></svg>',
     },
-    RectShape: RectShape.btn(),
-    EllipseShape: EllipseShape.btn(),
+    RectShape: BasicShapes.RectShape.btn(),
+    EllipseShape: BasicShapes.EllipseShape.btn(),
     line: LineShape.btn(),
     freehand: FreeHandShape.btn(),
     pan: {
