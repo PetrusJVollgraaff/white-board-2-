@@ -1,4 +1,6 @@
+import { ArrowShapePanel } from "../../panels/arrowShapePanel";
 import { BasicShapePanel } from "../../panels/basicShapePanel";
+import { StarShapePanel } from "../../panels/starShapePanel";
 import { ToolPanel } from "../../panels/toolPanel";
 import { ZoomPanel } from "../../panels/zoomPanel";
 import { DropDown } from "../dropdown";
@@ -17,6 +19,8 @@ class BottomNav {
 
   #init() {
     this.#buildBasicShapeDrop();
+    this.#buildArrowShapeDrop();
+    this.#buildStarShapeDrop();
     new ZoomPanel(this.#elm, this.#callback);
     new ToolPanel(this.#elm, this.#callback);
   }
@@ -31,6 +35,34 @@ class BottomNav {
       extraclass: ["grid_dropdown"],
       callback: (dropElm) => {
         new BasicShapePanel(dropElm, this.#callback);
+      },
+    });
+  }
+
+  #buildArrowShapeDrop() {
+    new DropDown({
+      elm: this.#elm.querySelector("li#arrowshape_ctn"),
+      innerhtml:
+        '<svg viewBox="0 0 16 16"><rect x="2" y="4" width="12" height="8" fill="none" stroke="currentColor" stroke-width="1.5"></rect></svg>',
+      html: "button",
+      dir: "up",
+      extraclass: ["grid_dropdown"],
+      callback: (dropElm) => {
+        new ArrowShapePanel(dropElm, this.#callback);
+      },
+    });
+  }
+
+  #buildStarShapeDrop() {
+    new DropDown({
+      elm: this.#elm.querySelector("li#starshape_ctn"),
+      innerhtml:
+        '<svg viewBox="0 0 16 16"><rect x="2" y="4" width="12" height="8" fill="none" stroke="currentColor" stroke-width="1.5"></rect></svg>',
+      html: "button",
+      dir: "up",
+      extraclass: ["grid_dropdown"],
+      callback: (dropElm) => {
+        new StarShapePanel(dropElm, this.#callback);
       },
     });
   }
