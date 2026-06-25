@@ -27,6 +27,7 @@ class DropDown {
     this.#dir = dir;
     this.#extraclass = this.#extraclass.concat(extraclass);
     this.#init();
+    console.log(this.#elm, this.#dropElm);
   }
 
   #init() {
@@ -64,6 +65,15 @@ class DropDown {
     this.#elm.addEventListener("click", () => {
       this.#dropshow = !this.#dropshow;
       this.#dropElm.setAttribute("data-s", this.#dropshow);
+    });
+
+    window.addEventListener("click", (evt) => {
+      const { target } = evt;
+
+      if (target.closest("li") != this.#elm && this.#dropshow) {
+        this.#dropshow = !this.#dropshow;
+        this.#dropElm.setAttribute("data-s", this.#dropshow);
+      }
     });
   }
 }

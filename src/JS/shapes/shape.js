@@ -23,8 +23,12 @@ class Shape {
     },
   };
 
+  static getDefaultOptions() {
+    return JSON.parse(JSON.stringify(Shape.defaultOptions));
+  }
+
   static setOptions(options) {
-    for (const key in this.defaultOptions) {
+    for (const key in options) {
       if (this.defaultOptions.hasOwnProperty(key))
         this.defaultOptions[key] = {
           ...this.defaultOptions[key],
@@ -33,7 +37,7 @@ class Shape {
     }
   }
 
-  constructor(options = Shape.defaultOptions(), callback) {
+  constructor(options = Shape.getDefaultOptions(), callback) {
     this.id = null;
     this.center = Vector.zero();
     this.options = options;

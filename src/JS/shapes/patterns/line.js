@@ -7,7 +7,11 @@ class LineShape extends Shape {
   #pathSet = new Set();
 
   constructor(
-    { corner1 = Vector.zero(), options = Shape.defaultOptions, points = null },
+    {
+      corner1 = Vector.zero(),
+      options = Shape.getDefaultOptions(),
+      points = null,
+    },
     callback,
   ) {
     super(options, callback);

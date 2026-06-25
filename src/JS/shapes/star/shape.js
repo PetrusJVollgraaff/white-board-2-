@@ -6,7 +6,7 @@ class StarShape extends Shape {
     {
       center = Vector.zero(),
       size = { width: 0, height: 0 },
-      options = Shape.defaultOptions,
+      options = Shape.getDefaultOptions(),
     },
     callback,
   ) {
@@ -72,6 +72,7 @@ class StarShape extends Shape {
 }
 
 class Star5Point extends StarShape {
+  shape = "Star5Point";
   constructor(data, callback) {
     super(data, callback);
   }
@@ -128,6 +129,7 @@ class Star5Point extends StarShape {
 }
 
 class Star6Point extends StarShape {
+  shape = "Star6Point";
   constructor(data, callback) {
     super(data, callback);
   }
@@ -182,6 +184,7 @@ class Star6Point extends StarShape {
 }
 
 class Star8Point extends StarShape {
+  shape = "Star8Point";
   #angles = Array.from({ length: 8 }, (_, i) => i * 45);
   #extraoptions = {
     values: [0.5],
@@ -229,6 +232,7 @@ class Star8Point extends StarShape {
 }
 
 class Star12Point extends StarShape {
+  shape = "Star12Point";
   #angles = Array.from({ length: 12 }, (_, i) => i * 30);
   #extraoptions = {
     values: [0.5],
@@ -276,6 +280,7 @@ class Star12Point extends StarShape {
 }
 
 class Star24Point extends StarShape {
+  shape = "Star24Point";
   #angles = Array.from({ length: 24 }, (_, i) => i * 15);
   #extraoptions = {
     values: [0.5],

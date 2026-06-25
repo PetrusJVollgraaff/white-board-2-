@@ -10,17 +10,9 @@ class ShapeFactory {
   static registerShapes() {
     this.registerShape(FreeHandShape, "FreeHandShape");
     this.registerShape(LineShape, "LineShape");
-    for (const key in BasicShapes) {
-      this.registerShape(BasicShapes[key], key);
-    }
-
-    for (const key in ArrowShapes) {
-      this.registerShape(ArrowShapes[key], key);
-    }
-
-    for (const key in StarShapes) {
-      this.registerShape(StarShapes[key], key);
-    }
+    for (const key in BasicShapes) this.registerShape(BasicShapes[key], key);
+    for (const key in ArrowShapes) this.registerShape(ArrowShapes[key], key);
+    for (const key in StarShapes) this.registerShape(StarShapes[key], key);
   }
 
   static registerShape(classType, typeName) {

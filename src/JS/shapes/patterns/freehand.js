@@ -10,7 +10,7 @@ class FreeHandShape extends Shape {
   constructor(
     {
       startPoint = Vector.zero(),
-      options = Shape.defaultOptions,
+      options = Shape.getDefaultOptions(),
       points = null,
     },
     callback,

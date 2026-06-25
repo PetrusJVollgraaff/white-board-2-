@@ -6,7 +6,7 @@ class BasicShape extends Shape {
     {
       center = Vector.zero(),
       size = { width: 0, height: 0 },
-      options = Shape.defaultOptions,
+      options = Shape.getDefaultOptions(),
     },
     callback,
   ) {

@@ -12,6 +12,7 @@ import { ShapeSelection } from "./JS/transformbox/selections";
 import { ToolFactory } from "./JS/utils/toolFactory";
 import { ShapeFactory } from "./JS/utils/shapeFactory";
 import { ShapeToolFactory } from "./JS/utils/shapeToolFactory";
+import { Shape } from "./JS/shapes/shape";
 
 ToolFactory.registerTools();
 ShapeFactory.registerShapes();
@@ -149,8 +150,10 @@ class DrawingBoard extends EventTarget {
 
   set setFillSettings(obj) {
     const shapes = this.#layerManager.activeLayerShapes;
+    Shape.setOptions(obj);
     if (shapes)
       shapes.forEach((s) => {
+        console.log(s, s.selected);
         if (s.selected) s.setOptions = { options: obj };
       });
   }
@@ -159,6 +162,7 @@ class DrawingBoard extends EventTarget {
     const shapes = this.#layerManager.activeLayerShapes;
     if (shapes)
       shapes.forEach((s) => {
+        console.log(s, s.selected);
         if (s.selected) s[data.action] = data.obj;
       });
   }
