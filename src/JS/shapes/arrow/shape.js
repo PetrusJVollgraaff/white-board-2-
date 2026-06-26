@@ -18,7 +18,7 @@ class ArrowShape extends Shape {
   }
 
   serialize() {
-    return JSON.parse(JSON.stringify({ ...{ shape: this.shape }, ...this }));
+    return JSON.parse(JSON.stringify({ ...{ shape: this }, ...this }));
   }
 
   isHandleSelected(ctx, mousePos) {
@@ -84,6 +84,23 @@ class BlockArrow1 extends ArrowShape {
     return shape;
   }
 
+  setExtraValue(mousePos, startPosition, handle, save = true) {
+    const { width, height } = this.sizes;
+    const diff = this.getDiff(mousePos);
+    const newvalue = Math.min(Math.max(diff.x, 0), width) / width;
+    this.#extraoptions.values[0] = newvalue;
+
+    /*viewport.dispatchEvent(
+      new CustomEvent("extraChanged", {
+        detail: {
+          shape: this,
+          extraoptions: { values },
+          save,
+        },
+      })
+    );*/
+  }
+
   getExtraHandlePos() {
     const { x, y } = this.center;
     const { width, height } = this.size;
@@ -130,6 +147,24 @@ class BlockArrow2 extends ArrowShape {
 
   hasExtraOptions() {
     return this.#extraoptions;
+  }
+
+  setExtraValue(mousePos, startPosition, handle, save = true) {
+    const { width, height } = this.size;
+
+    const diff = this.getDiff(mousePos);
+    const newvalue = Math.min(Math.max(diff.x, 0), width) / width;
+    this.#extraoptions.values[0] = newvalue;
+
+    /*viewport.dispatchEvent(
+      new CustomEvent("extraChanged", {
+        detail: {
+          shape: this,
+          extraoptions: { values },
+          save,
+        },
+      })
+    );*/
   }
 
   getExtraHandlePos(center, size) {
@@ -190,12 +225,45 @@ class BlockArrow3 extends ArrowShape {
     handles: 1,
   };
 
+  getDiff(mousePos) {
+    const { center, size, rotation } = this;
+    const y = center.y - size.height / 2;
+    const x = center.x - size.width / 2;
+    const diff = Vector.subtract(mousePos, new Vector({ x, y }));
+    const polar = diff.toPolar();
+    polar.dir -= rotation;
+    diff.toXY(polar);
+
+    return diff;
+  }
+
   constructor(data, callback) {
     super(data, callback);
   }
 
   hasExtraOptions() {
     return this.#extraoptions;
+  }
+
+  setExtraValue(mousePos, startPosition, handle, save = true) {
+    const { width, height } = this.size;
+    const half_h = height / 2;
+    const diff = this.getDiff(mousePos);
+
+    const newvalue1 = Math.min(Math.max(diff.x, 0), width) / width;
+    const newvalue2 = Math.min(Math.max(diff.y, 0), half_h) / half_h;
+    this.#extraoptions.values[0] = newvalue1;
+    this.#extraoptions.values[1] = newvalue2;
+
+    /*viewport.dispatchEvent(
+      new CustomEvent("extraChanged", {
+        detail: {
+          shape: this,
+          extraoptions: { values },
+          save,
+        },
+      }),
+    );*/
   }
 
   getExtraHandlePos() {
@@ -265,6 +333,39 @@ class BlockArrow4 extends ArrowShape {
 
   hasExtraOptions() {
     return this.#extraoptions;
+  }
+
+  setExtraValue(mousePos, startPosition, handle, save = true) {
+    const { width, height } = this.size;
+    const half_w = width / 2;
+    const half_h = height / 2;
+    const diff = this.getDiff(mousePos);
+    const newvalue1 = Math.min(Math.max(diff.x, 0), half_w) / half_w;
+    const newvalue2 = Math.min(Math.max(diff.y, 0), half_h) / half_h;
+    this.extraoptions.values[0] = newvalue1;
+    this.extraoptions.values[1] = newvalue2;
+
+    /*viewport.dispatchEvent(
+      new CustomEvent("extraChanged", {
+        detail: {
+          shape: this,
+          extraoptions: { values },
+          save,
+        },
+      }),
+    );*/
+  }
+
+  getDiff(mousePos) {
+    const { center, size, rotation } = this;
+    const y = center.y - size.height / 2;
+    const x = center.x - size.width / 2;
+    const diff = Vector.subtract(mousePos, new Vector({ x, y }));
+    const polar = diff.toPolar();
+    polar.dir -= rotation;
+    diff.toXY(polar);
+
+    return diff;
   }
 
   getExtraHandlePos() {
@@ -339,6 +440,56 @@ class BlockArrow5 extends ArrowShape {
 
   hasExtraOptions() {
     return this.#extraoptions;
+  }
+
+  setExtraValue(mousePos, startPos, handle, save = true) {
+    const { width, height } = this.size;
+    const half_w = width / 2;
+    const half_h = height / 2;
+
+    const diff = this.getDiff(mousePos);
+    const prevValue = this.#extraoptions.values;
+
+    if (handle.type == "handle_1") {
+      const max = width * prevValue[2];
+      const newvalue1 = Math.min(Math.max(diff.x, 0), max) / width;
+      this.extraoptions.values[0] = newvalue1;
+    } else if (handle.type == "handle_2") {
+      const max = half_h * prevValue[1];
+      const newvalue1 = Math.min(Math.max(diff.y, 0), max) / half_h;
+      this.extraoptions.values[3] = newvalue1;
+    } else if (handle.type == "handle_3") {
+      const miny = half_h * prevValue[3];
+      const minx = width * prevValue[0];
+
+      const newvalue1 = Math.min(Math.max(diff.y, miny), half_h) / half_h;
+      const newvalue2 = Math.min(Math.max(diff.x, minx), width) / width;
+
+      this.extraoptions.values[1] = newvalue1;
+      this.extraoptions.values[2] = newvalue2;
+    }
+
+    /*viewport.dispatchEvent(
+      new CustomEvent("extraChanged", {
+        detail: {
+          shape: this,
+          extraoptions: { values },
+          save,
+        },
+      }),
+    );*/
+  }
+
+  getDiff(mousePos) {
+    const { center, size, rotation } = this;
+    const y = center.y - size.height / 2;
+    const x = center.x - size.width / 2;
+    const diff = Vector.subtract(mousePos, new Vector({ x, y }));
+    const polar = diff.toPolar();
+    polar.dir -= rotation;
+    diff.toXY(polar);
+
+    return diff;
   }
 
   getExtraHandlePos(handle) {

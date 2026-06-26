@@ -17,6 +17,35 @@ class StarShape extends Shape {
     this.options = options;
   }
 
+  setExtraValue(mousePos, startPos, handle, save = true) {
+    const { size, center, rotation } = this;
+
+    const half_w = size.width / 2;
+    const left = center.x - half_w;
+
+    const diff = Vector.subtract(
+      mousePos,
+      new Vector({ x: left, y: center.y }),
+    );
+    const polar = diff.toPolar();
+    polar.dir -= this.rotation;
+    diff.toXY(polar);
+
+    const newvalue = 1 - Math.min(Math.max(diff.x, 0), half_w) / half_w;
+    this.#extraoptions.values[0] = newvalue;
+
+    /*this.callback({
+      event: {
+        name: "extraChanged",
+        detail: {
+          shape: this,
+          extraoptions: { values: [newvalue] },
+          save,
+        },
+      },
+    });*/
+  }
+
   getExtraHandlePos() {
     return Vector.zero();
   }

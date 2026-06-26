@@ -201,9 +201,20 @@ class DrawingBoard extends EventTarget {
   }
 
   get getSelections() {
+    const shapes = this.#layerManager.activeLayerShapes;
+
     return (doc) =>
-      this.#selectedItems.length > 0
-        ? this.#selectedItems.find((s) => s.isSelected(this.#mainCtx, doc))
+      shapes.length > 0
+        ? shapes.find((s) => s.selections?.isSelected(this.#mainCtx, doc))
+        : null;
+  }
+
+  get getAdjustments() {
+    const shapes = this.#layerManager.activeLayerShapes;
+
+    return (doc) =>
+      shapes.length > 0
+        ? shapes.find((s) => s.adjustments?.isSelected(this.#mainCtx, doc))
         : null;
   }
 
@@ -249,7 +260,6 @@ class DrawingBoard extends EventTarget {
     const { value } = data;
     if (value == "delete") {
       this.#layerManager.removeShapes();
-      this.#selectedItems = [];
       this.render();
     } else {
       ToolFactory.getTool("history")[value]((data) => {
@@ -381,7 +391,7 @@ class DrawingBoard extends EventTarget {
     this.addEventListener("rotationChanged", this.#handleChanges.bind(this));
     this.addEventListener("shapesAdded", this.#handleChanges.bind(this));
     this.addEventListener("shapesReordered", this.#handleChanges.bind(this));
-    this.addEventListener("shapeSelected", (event) => {
+    /*this.addEventListener("shapeSelected", (event) => {
       this.applySelections();
       this.#handleChanges(event);
     });
@@ -389,7 +399,7 @@ class DrawingBoard extends EventTarget {
     this.addEventListener("shapeUnselected", (event) => {
       this.applySelections();
       this.#handleChanges(event);
-    });
+    });*/
     //this.addEventListener("history", PropertiesPanel.updateDisplay);
   }
 

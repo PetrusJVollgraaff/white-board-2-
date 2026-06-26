@@ -13,11 +13,19 @@ class SelectTool {
     const startPosition = _._vp.toDoc(vp.x, vp.y);
 
     const shape = _.getShape(startPosition);
-    const selection = _.getSelections(startPosition);
+    const selectionShape = _.getSelections(startPosition);
+    const adjustment = _.getAdjustments(startPosition);
 
-    if (selection) {
-      const handle = selection.isSelected(this.getmainCtx, startPosition);
-      selection.addEventListeners(target, startPosition, handle, _);
+    if (selectionShape) {
+      const { selections } = selectionShape;
+      const handle = selections.isSelected(this.getmainCtx, startPosition);
+      selections.addEventListeners(target, startPosition, handle, _);
+      return;
+    }
+
+    if (adjustment) {
+      const handle = adjustment.isSelected(this.getmainCtx, startPosition);
+      adjustment.addEventListeners(target, startPosition, handle, _);
       return;
     }
 

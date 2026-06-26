@@ -126,7 +126,7 @@ class Shape {
     this.selections = new ShapeSelection(this);
     const hasExtra = this.hasExtraOptions();
     if (hasExtra) {
-      this.adjustment = new ShapeAdjustment(this);
+      this.adjustments = new ShapeAdjustment(this);
     }
 
     this.callback({
@@ -140,7 +140,7 @@ class Shape {
   unselect(save = true) {
     this.selected = false;
     this.selections = null;
-    this.adjustment = null;
+    this.adjustments = null;
     this.callback({
       event: {
         name: "shapeUnselected",
@@ -152,7 +152,7 @@ class Shape {
   set setCenter({ center = Vector.zero(), save = true }) {
     this.center = center;
     this.selections?.updatePosition();
-    this.adjustment?.updateExtra();
+    this.adjustments?.updateExtra();
     this.callback({
       event: {
         name: "positionChanged",
@@ -175,7 +175,7 @@ class Shape {
     this.ratio = this.size.width / this.size.height;
 
     this.selections?.updateSize();
-    this.adjustment?.updateExtra();
+    this.adjustments?.updateExtra();
     this.callback({
       event: {
         name: "sizeChanged",
@@ -187,7 +187,7 @@ class Shape {
   set setRotation({ angle, save = true }) {
     this.rotation = angle;
     this.selections?.updateRotation();
-    this.adjustment?.updateExtra();
+    this.adjustments?.updateExtra();
 
     this.callback({
       event: {
@@ -282,7 +282,7 @@ class Shape {
     ctx.restore();
 
     this.selections?.draw(ctx);
-    this.adjustment?.draw(ctx);
+    this.adjustments?.draw(ctx);
   }
 
   setStrokeStyle(ctx) {
@@ -312,6 +312,20 @@ class Shape {
 
   draw(ctx) {
     throw new Error("draw method must be implemented");
+  }
+
+  getDiff(mousePos) {
+    const { center, size, rotation } = this;
+    const left = center.x - size.width / 2;
+    const diff = Vector.subtract(
+      mousePos,
+      new Vector({ x: left, y: center.y }),
+    );
+    const polar = diff.toPolar();
+    polar.dir -= rotation;
+    diff.toXY(polar);
+
+    return diff;
   }
 }
 

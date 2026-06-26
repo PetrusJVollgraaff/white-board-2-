@@ -305,7 +305,6 @@ class ShapeSelection extends Selection {
             };
             main.rightNav.setSize = shape.getSize;
           }
-          //}
         }
       }
     };
@@ -368,27 +367,22 @@ class ShapeAdjustment extends Selection {
     }
   }
 
-  addEventListeners(startPosition, handle, selectedShapes) {
+  addEventListeners(startPosition, handle, main) {
     const moveCallback = (e) => {
+      const vp = main.vpPt(evt);
+      const mousePosition = main._vp.toDoc(vp.x, vp.y);
       const { EXTRA } = SelectionHandle;
       if (Object.values(EXTRA).includes(handle.type)) {
-        //selectedShapes.forEach((s) =>
-        //  s.setExtraValue(e, handle, startPosition)
-        //);
+        //  shape.setExtraValue(mousePosition, startPosition, handle )
       }
-
-      //viewport.drawShapes(shapes);
-      //PropertiesPanel.updateDisplay(selectedShapes);
     };
 
     const upCallback = (e) => {
-      //viewport
-      //  .getStageCanvas()
-      //  .removeEventListener("pointermove", moveCallback);
-      //viewport.getStageCanvas().removeEventListener("pointerup", upCallback);
+      target.removeEventListener("pointermove", moveCallback);
+      target.removeEventListener("pointerup", upCallback);
     };
-    //viewport.getStageCanvas().addEventListener("pointermove", moveCallback);
-    //viewport.getStageCanvas().addEventListener("pointerup", upCallback);
+    target.addEventListener("pointermove", moveCallback);
+    target.addEventListener("pointerup", upCallback);
   }
 
   draw(ctx, hitRegion = false) {

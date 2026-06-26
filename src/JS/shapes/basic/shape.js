@@ -119,6 +119,39 @@ class CrossShape extends BasicShape {
     super(data, callback);
   }
 
+  getDiff(mousePos) {
+    const { center, size, rotation } = this;
+    const y = center.y - size.height / 2;
+    const x = center.x - size.width / 2;
+    const diff = Vector.subtract(mousePos, new Vector({ x, y }));
+    const polar = diff.toPolar();
+    polar.dir -= rotation;
+    diff.toXY(polar);
+
+    return diff;
+  }
+
+  setExtraValue(mousePos, startPosition, handle, save = true) {
+    const { width, height } = this.size;
+    const half_w = width / 2;
+    const half_h = height / 2;
+    const diff = this.getDiff(mousePos);
+
+    const minsize = Math.min(half_w, half_h);
+    const newvalue = Math.min(Math.max(diff.x, 0), minsize) / minsize;
+    this.#extraoptions.values[0] = newvalue;
+
+    /*viewport.dispatchEvent(
+      new CustomEvent("extraChanged", {
+        detail: {
+          shape: this,
+          extraoptions: { values },
+          save,
+        },
+      })
+    );*/
+  }
+
   hasExtraOptions() {
     return this.#extraoptions;
   }
@@ -251,6 +284,35 @@ class EllipsePie extends BasicShape {
     super(data, callback);
   }
 
+  getDiff(mousePos) {
+    const diff = mousePos;
+    const polar = diff.toPolar();
+    polar.dir -= this.rotation;
+    diff.toXY(polar);
+
+    return diff;
+  }
+
+  setExtraValue(mousePos, startPosition, handle, save = true) {
+    const diff = this.getDiff(mousePos);
+    const pos = handle.type != "handle_1" ? 1 : 0;
+    const centerV = new Vector(this.center);
+    const delta = diff.subtract(centerV);
+    let degrees = Vector.RadianToDegree(delta.direction());
+
+    this.#extraoptions.values[pos] = degrees;
+
+    /*viewport.dispatchEvent(
+      new CustomEvent("extraChanged", {
+        detail: {
+          shape: this,
+          extraoptions: { values },
+          save,
+        },
+      })
+    );*/
+  }
+
   getExtraHandlePos(handle) {
     const { width, height } = this.size;
     const extraPoint = calculatePoint(
@@ -332,6 +394,41 @@ class Hexagon extends BasicShape {
     return new Vector({ x: toppoint_x, y: top + SelectionHandle.size });
   }
 
+  getDiff(mousePos) {
+    const { center, size, rotation } = this;
+    const y = center.y - size.height / 2 + SelectionHandle.size;
+    const x = center.x - size.width / 2;
+    const diff = Vector.subtract(mousePos, new Vector({ x, y }));
+    const polar = diff.toPolar();
+    polar.dir -= rotation;
+    diff.toXY(polar);
+
+    return diff;
+  }
+
+  setExtraValue(mousePos, startPosition, handle, save = true) {
+    const { width, height } = this.size;
+    const half_w = width / 2;
+    const half_h = height / 2;
+
+    const diff = this.getDiff(mousePos);
+
+    const minsize = Math.min(half_w, half_h);
+    const fixvalue = Math.min(Math.max(diff.x, 0), minsize);
+    const newvalue = 1 - Math.abs(fixvalue / minsize).toFixed(2);
+    this.#extraoptions.values[0] = newvalue;
+
+    /*viewport.dispatchEvent(
+      new CustomEvent("extraChanged", {
+        detail: {
+          shape: this,
+          extraoptions: { values },
+          save,
+        },
+      })
+    );*/
+  }
+
   hasExtraOptions() {
     return this.#extraoptions;
   }
@@ -388,6 +485,18 @@ class IsoscelesTriangle extends BasicShape {
 
   constructor(data, callback) {
     super(data, callback);
+  }
+
+  getDiff(mousePos) {
+    const { center, size, rotation } = this;
+    const y = center.y - size.height / 2;
+    const x = center.x - size.width / 2;
+    const diff = Vector.subtract(mousePos, new Vector({ x, y }));
+    const polar = diff.toPolar();
+    polar.dir -= rotation;
+    diff.toXY(polar);
+
+    return diff;
   }
 
   getExtraHandlePos(center, size) {
@@ -457,6 +566,41 @@ class Octagon extends BasicShape {
 
   hasExtraOptions() {
     return this.#extraoptions;
+  }
+
+  getDiff(mousePos) {
+    const { center, size, rotation } = this;
+    const y = center.y - size.height / 2 + SelectionHandle.size;
+    const x = center.x - size.width / 2;
+    const diff = Vector.subtract(mousePos, new Vector({ x, y }));
+    const polar = diff.toPolar();
+    polar.dir -= rotation;
+    diff.toXY(polar);
+
+    return diff;
+  }
+
+  setExtraValue(mousePos, startPosition, handle, save = true) {
+    const { width, height } = this.size;
+    const half_w = width / 2;
+    const half_h = height / 2;
+
+    const diff = this.getDiff(mousePos);
+
+    const minsize = Math.min(half_w, half_h);
+    const fixvalue = Math.min(Math.max(diff.x, 0), minsize);
+    const newvalue = 1 - Math.abs(fixvalue / minsize).toFixed(2);
+    this.#extraoptions.values[0] = newvalue;
+
+    /*viewport.dispatchEvent(
+      new CustomEvent("extraChanged", {
+        detail: {
+          shape: this,
+          extraoptions: { values },
+          save,
+        },
+      })
+    );*/
   }
 
   getExtraHandlePos() {
@@ -668,6 +812,52 @@ class Trapezoid extends BasicShape {
     super(data, callback);
   }
 
+  getDiff(mousePos) {
+    const { center, size, rotation } = this;
+    const left = center.x - size.width / 2;
+    const diff = Vector.subtract(
+      mousePos,
+      new Vector({ x: left, y: center.y }),
+    );
+    const polar = diff.toPolar();
+    polar.dir -= rotation;
+    diff.toXY(polar);
+
+    return diff;
+  }
+
+  setExtraValue(e, handle, startPosition, save = true) {
+    const sizes = {
+      width: this.size.width,
+      height: this.size.height,
+      half_w: this.size.width / 2,
+      half_h: this.size.height / 2,
+    };
+    const mousePos = viewport.getAdjustedPosition(
+      new Vec2(e.offsetX, e.offsetY),
+    );
+
+    const diff = this.shape.getDiff(
+      mousePos,
+      this.center,
+      this.size,
+      this.rotation,
+    );
+
+    const newvalue = Math.min(Math.max(diff.x, 0), sizes.half_w) / sizes.half_w;
+    this.#extraoptions.values[0] = newvalue;
+
+    viewport.dispatchEvent(
+      new CustomEvent("extraChanged", {
+        detail: {
+          shape: this,
+          extraoptions: { values },
+          save,
+        },
+      }),
+    );
+  }
+
   hasExtraOptions() {
     return this.#extraoptions;
   }
@@ -735,6 +925,38 @@ class Parallelorgram extends BasicShape {
 
   hasExtraOptions() {
     return this.#extraoptions;
+  }
+
+  getDiff(mousePos) {
+    const { center, size, rotation } = this;
+    const left = center.x - size.width / 2;
+    const diff = Vector.subtract(
+      mousePos,
+      new Vector({ x: left, y: center.y }),
+    );
+    const polar = diff.toPolar();
+    polar.dir -= rotation;
+    diff.toXY(polar);
+
+    return diff;
+  }
+
+  setExtraValue(mousePos, startPosition, handle, save = true) {
+    const { width } = this.size;
+    const diff = this.getDiff(mousePos);
+
+    const newvalue = Math.min(Math.max(diff.x, 0), width) / width;
+    this.extraoptions.values[0] = newvalue;
+
+    /*viewport.dispatchEvent(
+      new CustomEvent("extraChanged", {
+        detail: {
+          shape: this,
+          extraoptions: { values },
+          save,
+        },
+      })
+    );*/
   }
 
   getExtraHandlePos() {
