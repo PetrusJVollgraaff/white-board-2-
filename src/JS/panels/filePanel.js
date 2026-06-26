@@ -82,7 +82,6 @@ class FilePanel {
     for (const value in this.#tools) {
       if (value == "load") {
         this.#tools[value].elm.addEventListener("click", (e) => {
-          console.log(e);
           e.preventDefault();
           e.stopPropagation();
 

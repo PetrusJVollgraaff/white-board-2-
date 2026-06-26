@@ -150,7 +150,6 @@ class DrawingBoard extends EventTarget {
     Shape.setOptions(obj);
     if (shapes)
       shapes.forEach((s) => {
-        console.log(s, s.selected);
         if (s.selected) s.setOptions = { options: obj };
       });
   }
@@ -159,7 +158,6 @@ class DrawingBoard extends EventTarget {
     const shapes = this.#layerManager.activeLayerShapes;
     if (shapes)
       shapes.forEach((s) => {
-        console.log(s, s.selected);
         if (s.selected) s[data.action] = data.obj;
       });
   }
@@ -230,11 +228,6 @@ class DrawingBoard extends EventTarget {
     document.getElementById("zoom-level").textContent = this._vp.zoomLabel;
 
     this.#layerManager.drawShape(this.#mainCtx, shapes);
-    this.#selectedItems.forEach((s) => {
-      Layer.rotateCanvas(this.#mainCtx, s.center, s.rotation);
-      s.draw(this.#mainCtx);
-      Layer.rotateCanvas(this.#mainCtx, s.center, -s.rotation);
-    });
     this.#mainCtx.restore();
   }
 

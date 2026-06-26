@@ -1,3 +1,4 @@
+import { Layer } from "../../display/Layer";
 import { Vector } from "../../utils/vector";
 import { Shape } from "../shape";
 
@@ -30,16 +31,13 @@ class ArrowShape extends Shape {
 
   isSelected(ctx, mousePos) {
     const { fill, stroke } = this.options;
+    const { x, y } = mousePos;
     let selected = false;
-
-    //viewport.selectedLayer.rotateCanvas(this.center, this.rotation);
-
-    var isfill = fill.visible
-      ? ctx.isPointInPath(this.path, mousePos.x, mousePos.y)
-      : false;
-    selected = isfill || ctx.isPointInStroke(this.path, mousePos.x, mousePos.y);
-
-    //viewport.selectedLayer.rotateCanvas(this.center, -this.rotation);
+    ctx.save();
+    Layer.rotateCanvas(ctx, this.center, this.rotation);
+    var isfill = fill.visible ? ctx.isPointInPath(this.path, x, y) : false;
+    selected = isfill || ctx.isPointInStroke(this.path, x, y);
+    ctx.restore();
     return selected;
   }
 
@@ -67,6 +65,10 @@ class BlockArrow1 extends ArrowShape {
     super(data, callback);
   }
 
+  hasExtraOptions() {
+    return this.#extraoptions;
+  }
+
   static btn() {
     return {
       type: "button",
@@ -80,6 +82,19 @@ class BlockArrow1 extends ArrowShape {
     const shape = new BlockArrow1(data, callback);
     shape.selected = data.selected;
     return shape;
+  }
+
+  getExtraHandlePos() {
+    const { x, y } = this.center;
+    const { width, height } = this.size;
+    const [dist1] = this.#extraoptions.values;
+
+    const half_w = width / 2;
+    const left = x - half_w;
+    const top = y - height / 2;
+    const extraPoint = left + width * dist1;
+
+    return new Vector({ x: extraPoint, y: top });
   }
 
   draw(ctx, hitRegion = false) {
@@ -111,6 +126,23 @@ class BlockArrow2 extends ArrowShape {
 
   constructor(data, callback) {
     super(data, callback);
+  }
+
+  hasExtraOptions() {
+    return this.#extraoptions;
+  }
+
+  getExtraHandlePos(center, size) {
+    const { x, y } = this.center;
+    const { width, height } = this.size;
+    const [dist1] = this.#extraoptions.values;
+
+    const half_w = width / 2;
+    const left = x - half_w;
+    const top = y - height / 2;
+    const extraPoint = left + width * dist1;
+
+    return new Vector({ x: extraPoint, y: top });
   }
 
   static btn() {
@@ -162,6 +194,24 @@ class BlockArrow3 extends ArrowShape {
     super(data, callback);
   }
 
+  hasExtraOptions() {
+    return this.#extraoptions;
+  }
+
+  getExtraHandlePos() {
+    const { x, y } = this.center;
+    const { width, height } = this.size;
+    const [dist1, dist2] = this.#extraoptions.values;
+
+    const half_h = height / 2;
+    const left = x - width / 2;
+    const top = y - half_h;
+    const extraPoint1 = left + width * dist1;
+    const extraPoint2 = top + half_h * dist2;
+
+    return new Vector({ x: extraPoint1, y: extraPoint2 });
+  }
+
   static btn() {
     return {
       type: "button",
@@ -211,6 +261,25 @@ class BlockArrow4 extends ArrowShape {
 
   constructor(data, callback) {
     super(data, callback);
+  }
+
+  hasExtraOptions() {
+    return this.#extraoptions;
+  }
+
+  getExtraHandlePos() {
+    const { x, y } = this.center;
+    const { width, height } = this.size;
+    const [dist1, dist2] = this.#extraoptions.values;
+
+    const half_w = width / 2;
+    const half_h = height / 2;
+    const left = x - half_w;
+    const top = y - half_h;
+    const extraPoint1 = left + half_w * dist1;
+    const extraPoint2 = top + half_h * dist2;
+
+    return new Vector({ x: extraPoint1, y: extraPoint2 });
   }
 
   static btn() {
@@ -266,6 +335,34 @@ class BlockArrow5 extends ArrowShape {
 
   constructor(data, callback) {
     super(data, callback);
+  }
+
+  hasExtraOptions() {
+    return this.#extraoptions;
+  }
+
+  getExtraHandlePos(handle) {
+    const { x, y } = this.center;
+    const { width, height } = this.size;
+    const [dist1, dist2, dist3, dist4] = this.extraoptions.values;
+
+    const half_w = width / 2;
+    const half_h = height / 2;
+    const left = x - half_w;
+    const top = y - half_h;
+    const right = left + size.width;
+
+    if (handle == 0) {
+      const extraPoint1 = left + width * dist1;
+      return new Vector({ x: extraPoint1, y: top });
+    } else if (handle == 1) {
+      const extraPoint2 = top + half_h * dist4;
+      return new Vector({ x: right, y: extraPoint2 });
+    } else {
+      const extraPoint1 = left + width * dist3;
+      const extraPoint2 = top + half_h * dist2;
+      return new Vector({ x: extraPoint1, y: extraPoint2 });
+    }
   }
 
   static btn() {

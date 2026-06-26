@@ -319,4 +319,88 @@ class ShapeSelection extends Selection {
   }
 }
 
-export { ShapeSelection, SelectionHandle, Selection };
+class ShapeAdjustment extends Selection {
+  #shape = null;
+  center = Vector.zero();
+  rotation = 0;
+  #handles = [];
+  constructor(shape) {
+    super();
+    this.#shape = shape;
+    this.center = shape.getCenter;
+    this.rotation = shape.rotation;
+
+    this.#generate();
+    shape.adjustment = this;
+  }
+
+  updateExtra() {
+    this.#update();
+  }
+
+  #update() {
+    const { handles } = this.#shape.hasExtraOptions();
+    const points = this.#shape.getPoints;
+    this.box = BoundingBox.fromPoints(points.map((p) => p.add(this.center)));
+
+    this.rotation = this.#shape.rotation;
+
+    for (var i = 0; i < handles; i++) {
+      const extrapoint = this.#shape.getExtraHandlePos(i);
+
+      this.#handles[i].center = extrapoint;
+    }
+  }
+
+  #generate() {
+    const { handles } = this.#shape.hasExtraOptions();
+    const { EXTRA } = SelectionHandle;
+    const points = this.#shape.getPoints;
+
+    this.box = BoundingBox.fromPoints(points.map((p) => p.add(this.center)));
+
+    for (var i = 0; i < handles; i++) {
+      const extrapoint = this.#shape.getExtraHandlePos(i);
+
+      this.#handles.push(
+        new SelectionHandle(extrapoint, EXTRA["HANDLE_" + (i + 1)]),
+      );
+    }
+  }
+
+  addEventListeners(startPosition, handle, selectedShapes) {
+    const moveCallback = (e) => {
+      const { EXTRA } = SelectionHandle;
+      if (Object.values(EXTRA).includes(handle.type)) {
+        //selectedShapes.forEach((s) =>
+        //  s.setExtraValue(e, handle, startPosition)
+        //);
+      }
+
+      //viewport.drawShapes(shapes);
+      //PropertiesPanel.updateDisplay(selectedShapes);
+    };
+
+    const upCallback = (e) => {
+      //viewport
+      //  .getStageCanvas()
+      //  .removeEventListener("pointermove", moveCallback);
+      //viewport.getStageCanvas().removeEventListener("pointerup", upCallback);
+    };
+    //viewport.getStageCanvas().addEventListener("pointermove", moveCallback);
+    //viewport.getStageCanvas().addEventListener("pointerup", upCallback);
+  }
+
+  draw(ctx, hitRegion = false) {
+    ctx.save();
+    ctx.beginPath();
+
+    for (const handle of this.#handles) {
+      handle.draw(ctx, hitRegion);
+    }
+
+    ctx.restore();
+  }
+}
+
+export { ShapeSelection, SelectionHandle, Selection, ShapeAdjustment };

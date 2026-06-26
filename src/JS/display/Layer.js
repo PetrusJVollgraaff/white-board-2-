@@ -401,7 +401,6 @@ class Layer extends EventTarget {
       ctx.save();
       Layer.rotateCanvas(ctx, s.center, s.rotation);
       s.draw(ctx);
-      //Layer.rotateCanvas(ctx, s.center, -s.rotation);
       ctx.restore();
     }
     ctx.restore();

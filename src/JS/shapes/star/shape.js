@@ -1,3 +1,4 @@
+import { Layer } from "../../display/Layer";
 import { Vector } from "../../utils/vector";
 import { Shape } from "../shape";
 
@@ -16,6 +17,10 @@ class StarShape extends Shape {
     this.options = options;
   }
 
+  getExtraHandlePos() {
+    return Vector.zero();
+  }
+
   serialize() {
     return JSON.parse(JSON.stringify({ ...{ shape: this.shape }, ...this }));
   }
@@ -30,16 +35,13 @@ class StarShape extends Shape {
 
   isSelected(ctx, mousePos) {
     const { fill, stroke } = this.options;
+    const { x, y } = mousePos;
     let selected = false;
-
-    //viewport.selectedLayer.rotateCanvas(this.center, this.rotation);
-
-    var isfill = fill.visible
-      ? ctx.isPointInPath(this.path, mousePos.x, mousePos.y)
-      : false;
-    selected = isfill || ctx.isPointInStroke(this.path, mousePos.x, mousePos.y);
-
-    //viewport.selectedLayer.rotateCanvas(this.center, -this.rotation);
+    ctx.save();
+    Layer.rotateCanvas(ctx, this.center, this.rotation);
+    var isfill = fill.visible ? ctx.isPointInPath(this.path, x, y) : false;
+    selected = isfill || ctx.isPointInStroke(this.path, x, y);
+    ctx.restore();
     return selected;
   }
 
@@ -75,6 +77,10 @@ class Star5Point extends StarShape {
   shape = "Star5Point";
   constructor(data, callback) {
     super(data, callback);
+  }
+
+  hasExtraOptions() {
+    return null;
   }
 
   static btn() {
@@ -133,6 +139,11 @@ class Star6Point extends StarShape {
   constructor(data, callback) {
     super(data, callback);
   }
+
+  hasExtraOptions() {
+    return null;
+  }
+
   static btn() {
     return {
       type: "button",
@@ -191,6 +202,22 @@ class Star8Point extends StarShape {
     handles: 1,
   };
 
+  hasExtraOptions() {
+    return this.#extraoptions;
+  }
+
+  getExtraHandlePos() {
+    const { x, y } = this.center;
+    const { width, height } = this.size;
+    const [dist1] = this.extraoptions.values;
+
+    const half_w = width / 2;
+    const left = x - half_w;
+    const extraPoint = left + half_w * Math.abs(dist1 - 1);
+
+    return new Vector({ x: extraPoint, y });
+  }
+
   constructor(data, callback) {
     super(data, callback);
   }
@@ -243,6 +270,22 @@ class Star12Point extends StarShape {
     super(data, callback);
   }
 
+  hasExtraOptions() {
+    return this.#extraoptions;
+  }
+
+  getExtraHandlePos() {
+    const { x, y } = this.center;
+    const { width, height } = this.size;
+    const [dist1] = this.extraoptions.values;
+
+    const half_w = width / 2;
+    const left = x - half_w;
+    const extraPoint = left + half_w * Math.abs(dist1 - 1);
+
+    return new Vector({ x: extraPoint, y });
+  }
+
   static btn() {
     return {
       type: "button",
@@ -289,6 +332,22 @@ class Star24Point extends StarShape {
 
   constructor(data, callback) {
     super(data, callback);
+  }
+
+  hasExtraOptions() {
+    return this.#extraoptions;
+  }
+
+  getExtraHandlePos() {
+    const { x, y } = this.center;
+    const { width, height } = this.size;
+    const [dist1] = this.extraoptions.values;
+
+    const half_w = width / 2;
+    const left = x - half_w;
+    const extraPoint = left + half_w * Math.abs(dist1 - 1);
+
+    return new Vector({ x: extraPoint, y });
   }
 
   static btn() {

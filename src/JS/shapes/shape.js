@@ -1,5 +1,5 @@
 import { BoundingBox } from "../transformbox/boundingBox";
-import { ShapeSelection } from "../transformbox/selections";
+import { ShapeAdjustment, ShapeSelection } from "../transformbox/selections";
 import { Vector } from "../utils/vector";
 
 class Shape {
@@ -124,6 +124,11 @@ class Shape {
   select(save = true) {
     this.selected = true;
     this.selections = new ShapeSelection(this);
+    const hasExtra = this.hasExtraOptions();
+    if (hasExtra) {
+      this.adjustment = new ShapeAdjustment(this);
+    }
+
     this.callback({
       event: {
         name: "shapeSelected",
@@ -135,6 +140,7 @@ class Shape {
   unselect(save = true) {
     this.selected = false;
     this.selections = null;
+    this.adjustment = null;
     this.callback({
       event: {
         name: "shapeUnselected",
@@ -146,6 +152,7 @@ class Shape {
   set setCenter({ center = Vector.zero(), save = true }) {
     this.center = center;
     this.selections?.updatePosition();
+    this.adjustment?.updateExtra();
     this.callback({
       event: {
         name: "positionChanged",
@@ -168,6 +175,7 @@ class Shape {
     this.ratio = this.size.width / this.size.height;
 
     this.selections?.updateSize();
+    this.adjustment?.updateExtra();
     this.callback({
       event: {
         name: "sizeChanged",
@@ -177,9 +185,9 @@ class Shape {
   }
 
   set setRotation({ angle, save = true }) {
-    console.log(angle);
     this.rotation = angle;
     this.selections?.updateRotation();
+    this.adjustment?.updateExtra();
 
     this.callback({
       event: {
@@ -272,6 +280,9 @@ class Shape {
 
     ctx.stroke(path);
     ctx.restore();
+
+    this.selections?.draw(ctx);
+    this.adjustment?.draw(ctx);
   }
 
   setStrokeStyle(ctx) {

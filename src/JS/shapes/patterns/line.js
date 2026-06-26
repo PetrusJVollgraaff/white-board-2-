@@ -1,3 +1,4 @@
+import { Layer } from "../../display/Layer";
 import { Vector } from "../../utils/vector";
 import { Shape } from "../shape";
 
@@ -59,11 +60,12 @@ class LineShape extends Shape {
     const { fill, stroke } = this.options;
     let selected = false;
 
-    //viewport.selectedLayer.rotateCanvas(this.center, this.rotation);
+    ctx.save();
+    Layer.rotateCanvas(ctx, this.center, this.rotation);
 
     selected = ctx.isPointInStroke(this.path, mousePos.x, mousePos.y);
 
-    //viewport.selectedLayer.rotateCanvas(this.center, -this.rotation);
+    ctx.restore();
     return selected;
   }
 

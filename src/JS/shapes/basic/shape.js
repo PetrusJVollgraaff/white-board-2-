@@ -1,4 +1,5 @@
 import { Layer } from "../../display/Layer";
+import { SelectionHandle } from "../../transformbox/selections";
 import { Vector } from "../../utils/vector";
 import { Shape } from "../shape";
 
@@ -15,6 +16,10 @@ class BasicShape extends Shape {
     this.center = center instanceof Vector ? center : new Vector(center);
     this.size = size;
     this.options = options;
+  }
+
+  getExtraHandlePos(handle = 1) {
+    return Vector.zero();
   }
 
   serialize() {
@@ -57,13 +62,13 @@ class BasicShape extends Shape {
 class AngleTriangle extends BasicShape {
   shape = "AngleTriangle";
   #pathSet = new Set();
-  #extraoptions = {
-    values: [0.5],
-    handles: 1,
-  };
 
   constructor(data, callback) {
     super(data, callback);
+  }
+
+  hasExtraOptions() {
+    return null;
   }
 
   static btn() {
@@ -112,6 +117,25 @@ class CrossShape extends BasicShape {
 
   constructor(data, callback) {
     super(data, callback);
+  }
+
+  hasExtraOptions() {
+    return this.#extraoptions;
+  }
+
+  getExtraHandlePos() {
+    const { x, y } = this.center;
+    const { width, height } = this.size;
+
+    const half_h = height / 2;
+    const half_w = width / 2;
+    const minSize = Math.min(half_h, half_w);
+
+    const left = x - half_w;
+    const top = y - half_h;
+    const extraPoint = left + minSize * this.#extraoptions.values[0];
+
+    return new Vector({ x: extraPoint, y: top });
   }
 
   static btn() {
@@ -175,6 +199,10 @@ class EllipseShape extends BasicShape {
     super(data, callback);
   }
 
+  hasExtraOptions() {
+    return null;
+  }
+
   static btn() {
     return {
       type: "button",
@@ -221,6 +249,22 @@ class EllipsePie extends BasicShape {
 
   constructor(data, callback) {
     super(data, callback);
+  }
+
+  getExtraHandlePos(handle) {
+    const { width, height } = this.size;
+    const extraPoint = calculatePoint(
+      Vector.DegreeToRadians(this.#extraoptions.values[handle]),
+      this.center,
+      width - SelectionHandle.size * 2,
+      height - SelectionHandle.size * 2,
+    );
+
+    return new Vector(extraPoint);
+  }
+
+  hasExtraOptions() {
+    return this.#extraoptions;
   }
 
   static btn() {
@@ -278,6 +322,20 @@ class Hexagon extends BasicShape {
     super(data, callback);
   }
 
+  getExtraHandlePos(center, size) {
+    const { x, y } = this.center;
+    const { width, height } = this.size;
+    const half_w = width / 2;
+    const top = y - height / 2;
+    const toppoint_x = x - half_w * this.#extraoptions.values[0];
+
+    return new Vector({ x: toppoint_x, y: top + SelectionHandle.size });
+  }
+
+  hasExtraOptions() {
+    return this.#extraoptions;
+  }
+
   static btn() {
     return {
       type: "button",
@@ -332,6 +390,21 @@ class IsoscelesTriangle extends BasicShape {
     super(data, callback);
   }
 
+  getExtraHandlePos(center, size) {
+    const { x, y } = this.center;
+    const { height, width } = this.size;
+
+    const left = x - width / 2;
+    const top = y - height / 2;
+    const toppoint_x = left + width * this.#extraoptions.values[0];
+
+    return new Vector({ x: toppoint_x, y: top + SelectionHandle.size });
+  }
+
+  hasExtraOptions() {
+    return this.#extraoptions;
+  }
+
   static btn() {
     return {
       type: "button",
@@ -382,6 +455,25 @@ class Octagon extends BasicShape {
     super(data, callback);
   }
 
+  hasExtraOptions() {
+    return this.#extraoptions;
+  }
+
+  getExtraHandlePos() {
+    const [dist1] = this.#extraoptions.values;
+    const { x, y } = this.center;
+    const { width, height } = this.size;
+
+    const half_w = width / 2;
+    const top = y - height / 2;
+    const toppoint_x = x - half_w * dist1;
+
+    return new Vector({
+      x: toppoint_x,
+      y: top + SelectionSelectionHandle.size,
+    });
+  }
+
   static btn() {
     return {
       type: "button",
@@ -404,8 +496,8 @@ class Octagon extends BasicShape {
     this.path = new Path2D();
     const { x, y } = this.center ? this.center : Vector.zero();
     const { size } = this;
+    const [dist1] = this.#extraoptions.values;
 
-    const dist1 = this.#extraoptions.values[0];
     const half_width = size.width / 2;
     const half_height = size.height / 2;
     const left = x - size.width / 2;
@@ -434,6 +526,10 @@ class Pentagon extends BasicShape {
 
   constructor(data, callback) {
     super(data, callback);
+  }
+
+  hasExtraOptions() {
+    return null;
   }
 
   static btn() {
@@ -482,6 +578,10 @@ class RectShape extends BasicShape {
     super(data, callback);
   }
 
+  hasExtraOptions() {
+    return null;
+  }
+
   static btn() {
     return {
       type: "button",
@@ -517,6 +617,10 @@ class Diament extends BasicShape {
 
   constructor(data, callback) {
     super(data, callback);
+  }
+
+  hasExtraOptions() {
+    return null;
   }
 
   static btn() {
@@ -562,6 +666,22 @@ class Trapezoid extends BasicShape {
 
   constructor(data, callback) {
     super(data, callback);
+  }
+
+  hasExtraOptions() {
+    return this.#extraoptions;
+  }
+
+  getExtraHandlePos() {
+    const { x, y } = this.center;
+    const { height, width } = this.size;
+
+    const half_w = width / 2;
+    const left = x - half_w;
+    const bottom = y + height / 2;
+    const extraPoint = left + half_w * this.#extraoptions.values[0];
+
+    return new Vector({ x: extraPoint, y: bottom });
   }
 
   static btn() {
@@ -613,6 +733,21 @@ class Parallelorgram extends BasicShape {
     super(data, callback);
   }
 
+  hasExtraOptions() {
+    return this.#extraoptions;
+  }
+
+  getExtraHandlePos() {
+    const { x, y } = this.center;
+    const { height, width } = this.size;
+    const half_w = width / 2;
+    const left = x - half_w;
+    const top = y - height / 2;
+    const extraPoint = left + width * this.#extraoptions.values[0];
+
+    return new Vector({ x: extraPoint, y: top });
+  }
+
   static btn() {
     return {
       type: "button",
@@ -648,6 +783,18 @@ class Parallelorgram extends BasicShape {
 
     this.applyStyles(ctx, this.path);
   }
+}
+
+function calculatePoint(eccentricAngle, center, width, height) {
+  // Calculate semi-major and semi-minor axes
+  let a = width / 2;
+  let b = height / 2;
+
+  // Calculate new point using the parametric equations for an ellipse
+  let x = center.x + a * Math.cos(eccentricAngle);
+  let y = center.y + b * Math.sin(eccentricAngle);
+
+  return { x, y };
 }
 
 const BasicShapes = {

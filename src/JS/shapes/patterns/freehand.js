@@ -1,3 +1,4 @@
+import { Layer } from "../../display/Layer";
 import { BoundingBox } from "../../transformbox/boundingBox";
 import { Vector } from "../../utils/vector";
 import { Shape } from "../shape";
@@ -56,16 +57,13 @@ class FreeHandShape extends Shape {
 
   isSelected(ctx, mousePos) {
     const { fill, stroke } = this.options;
+    const { x, y } = mousePos;
     let selected = false;
-
-    //viewport.selectedLayer.rotateCanvas(this.center, this.rotation);
-
-    var isfill = fill.visible
-      ? ctx.isPointInPath(this.path, mousePos.x, mousePos.y)
-      : false;
-    selected = isfill || ctx.isPointInStroke(this.path, mousePos.x, mousePos.y);
-
-    //viewport.selectedLayer.rotateCanvas(this.center, -this.rotation);
+    ctx.save();
+    Layer.rotateCanvas(ctx, this.center, this.rotation);
+    var isfill = fill.visible ? ctx.isPointInPath(this.path, x, y) : false;
+    selected = isfill || ctx.isPointInStroke(this.path, x, y);
+    ctx.restore();
     return selected;
   }
 
