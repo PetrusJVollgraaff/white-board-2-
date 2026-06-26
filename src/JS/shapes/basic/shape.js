@@ -1,3 +1,4 @@
+import { Layer } from "../../display/Layer";
 import { Vector } from "../../utils/vector";
 import { Shape } from "../shape";
 
@@ -21,25 +22,22 @@ class BasicShape extends Shape {
   }
 
   isHandleSelected(ctx, mousePos) {
-    let selected = false;
-    if (this.selected && this?.selections)
-      selected = this.selections?.isSelected(ctx, mousePos);
+    const { selected, selections: gizmo } = this;
+    let isSelected =
+      selected && gizmo ? gizmo?.isSelected(ctx, mousePos) : false;
 
-    return selected;
+    return isSelected;
   }
 
   isSelected(ctx, mousePos) {
     const { fill, stroke } = this.options;
+    const { x, y } = mousePos;
     let selected = false;
-
-    //viewport.selectedLayer.rotateCanvas(this.center, this.rotation);
-
-    var isfill = fill.visible
-      ? ctx.isPointInPath(this.path, mousePos.x, mousePos.y)
-      : false;
-    selected = isfill || ctx.isPointInStroke(this.path, mousePos.x, mousePos.y);
-
-    //viewport.selectedLayer.rotateCanvas(this.center, -this.rotation);
+    ctx.save();
+    Layer.rotateCanvas(ctx, this.center, this.rotation);
+    var isfill = fill.visible ? ctx.isPointInPath(this.path, x, y) : false;
+    selected = isfill || ctx.isPointInStroke(this.path, x, y);
+    ctx.restore();
     return selected;
   }
 

@@ -130,7 +130,7 @@ class Vector {
   }
 
   magnitude() {
-    return Math.sqrt(this.x ** 2 + this.y ** 2);
+    return Math.sqrt(this.x * this.x + this.y * this.y);
   }
 
   scale(scaler) {
@@ -158,7 +158,8 @@ class Vector {
   }
 
   toXY({ dir, mag }) {
-    return new Vector({ x: mag * Math.cos(dir), y: mag * Math.sin(dir) });
+    this.x = mag * Math.cos(dir);
+    this.y = mag * Math.sin(dir);
   }
 }
 

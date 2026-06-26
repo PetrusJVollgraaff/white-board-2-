@@ -259,9 +259,8 @@ class Layer extends EventTarget {
     });
   }
 
-  static rotateCanvas(ctx, center, rotation) {
-    console.log(ctx, center, rotation);
-    if (rotation == undefined) return;
+  static rotateCanvas(ctx, center = Vector.zero(), rotation = 0) {
+    if (!rotation) return;
     ctx.translate(center.x, center.y);
     ctx.rotate(rotation);
     ctx.translate(-center.x, -center.y);
@@ -399,9 +398,11 @@ class Layer extends EventTarget {
     ctx.save();
     ctx.globalAlpha = this.#opacity / 100;
     for (const s of [...this.#shapes, ...shape]) {
+      ctx.save();
       Layer.rotateCanvas(ctx, s.center, s.rotation);
       s.draw(ctx);
-      Layer.rotateCanvas(ctx, s.center, -s.rotation);
+      //Layer.rotateCanvas(ctx, s.center, -s.rotation);
+      ctx.restore();
     }
     ctx.restore();
   }

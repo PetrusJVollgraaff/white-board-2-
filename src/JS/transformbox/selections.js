@@ -1,3 +1,4 @@
+import { Layer } from "../display/Layer";
 import { Vector } from "../utils/vector";
 import { BoundingBox } from "./boundingBox";
 
@@ -42,7 +43,12 @@ class SelectionHandle {
 
   isSelected(ctx, mouse, { center, rotation }) {
     let selected = false;
+
+    ctx.save();
+    Layer.rotateCanvas(ctx, center, rotation);
     selected = ctx.isPointInPath(this.path, mouse.x, mouse.y);
+
+    ctx.restore();
     return selected;
   }
 
@@ -216,8 +222,10 @@ class ShapeSelection extends Selection {
       const vp = main.vpPt(evt);
       const mousePosition = main._vp.toDoc(vp.x, vp.y);
       mouseDelta = Vector.subtract(mousePosition, startPosition);
-      //const polar = diff.toPolar();
-      //polar.dir -= this.rotation;
+
+      const polar = mouseDelta.toPolar();
+      polar.dir -= this.rotation;
+      mouseDelta.toXY(polar);
 
       let ratio = new Vector({
         x: mouseDelta.x / prevSize.width,
@@ -280,8 +288,6 @@ class ShapeSelection extends Selection {
           const oldRotation = oldRotations[i];
 
           if (handle.type === TYPES.ROTATE) {
-            //const fixedStart = viewport.getAdjustedPosition(startPosition);
-            //const fixedMouse = viewport.getAdjustedPosition(mousePosition);
             const fixedStart = main._vp.toDoc(startPosition.x, startPosition.y);
             const fixedMouse = main._vp.toDoc(mousePosition.x, mousePosition.y);
 
