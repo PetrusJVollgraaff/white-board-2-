@@ -228,7 +228,7 @@ class BlockArrow3 extends ArrowShape {
     const { width, height } = this.size;
     const half_h = height / 2;
 
-    const y = this.center.y - half_h / 2;
+    const y = this.center.y - half_h;
     const x = this.center.x - this.size.width / 2;
     const diff = Vector.subtract(mousepos, new Vector({ x, y }));
     const polar = diff.toPolar();

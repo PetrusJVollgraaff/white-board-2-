@@ -92,7 +92,7 @@ class Vector {
   }
 
   static RadianToDegree(radian) {
-    return Vec2.fixDegree((radian * 180) / Math.PI);
+    return Vector.fixDegree((radian * 180) / Math.PI);
   }
 
   static fixDegree(degrees) {
