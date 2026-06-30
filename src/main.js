@@ -162,6 +162,14 @@ class DrawingBoard extends EventTarget {
       });
   }
 
+  set setConstrain(data) {
+    const shapes = this.#layerManager.activeLayerShapes;
+    if (shapes)
+      shapes.forEach((s) => {
+        if (s.selected) s[data.action] = data.obj;
+      });
+  }
+
   set setArrangeShapes(data) {
     this.#layerManager.arrangeLayerShapes = data.method;
   }

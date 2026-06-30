@@ -74,6 +74,7 @@ class SizePanel {
   size = { width: 0, height: 0, ratio: 0 };
   center = Vector.zero();
   angle = 0;
+  constrain = 0;
 
   #callback = () => {};
   constructor({ elmP, main, callback }) {
@@ -89,13 +90,14 @@ class SizePanel {
     size = { width: 0, height: 0 },
     angle = 0,
     ratio = 0,
+    isconstrain = false,
   }) {
-    const { x, y, width, height, rotation } = this.#elms;
-
+    const { x, y, width, height, rotation, constrain } = this.#elms;
     this.size = size;
     this.center = center;
     this.angle = angle;
     this.size.ratio = ratio;
+    this.constrain = isconstrain;
 
     x.elm.value = this.center.x;
     y.elm.value = this.center.y;
@@ -104,6 +106,8 @@ class SizePanel {
     height.elm.value = this.size.height;
 
     rotation.elm.value = this.angle;
+
+    constrain.elm.checked = this.constrain;
   }
 
   #init() {
@@ -158,10 +162,10 @@ class SizePanel {
             rotation: Number(evt.target.value),
           };*/
         } else {
-          /*this.#main.setConstrain = {
+          this.#main.setConstrain = {
             action: "setConstrain",
-            constrain: Number(evt.target.value.checked),
-          };*/
+            obj: { constrain: Number(evt.target.value.checked) },
+          };
         }
       });
     });

@@ -47,6 +47,7 @@ class Shape {
     this.selected = false;
     this.callback = callback;
     this.ratio = 0;
+    this.constrain = false;
   }
 
   static getHitRGB(id) {
@@ -77,6 +78,7 @@ class Shape {
       size: this.size,
       angle: this.rotation,
       ratio: this.ratio,
+      isconstrain: this.constrain,
     };
   }
 
@@ -149,6 +151,12 @@ class Shape {
 
   set setCenter({ center = Vector.zero(), save = true }) {
     this.center = center;
+
+    this.EventCallback(save);
+  }
+
+  set setConstrain({ constrain = null, save = true }) {
+    this.constrain = constrain ? constrain : !this.constrain;
 
     this.EventCallback(save);
   }
