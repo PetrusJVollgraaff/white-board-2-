@@ -26,14 +26,17 @@ class GraphicPanel {
     transparent: {
       elm: null,
       event: "input",
-      option: { type: "input", attributes: { type: "number", min: 1 } },
+      option: {
+        type: "input",
+        attributes: { type: "range", min: 0, max: 100, step: 1 },
+      },
     },
     brightness: {
       elm: null,
       event: "input",
       option: {
         type: "input",
-        attributes: { type: "number", min: -100, max: 100 },
+        attributes: { type: "range", min: -100, max: 100, step: 1 },
       },
     },
     contrast: {
@@ -41,7 +44,7 @@ class GraphicPanel {
       event: "input",
       option: {
         type: "input",
-        attributes: { type: "number", min: -100, max: 100 },
+        attributes: { type: "range", min: -100, max: 100, step: 1 },
       },
     },
     red: {
@@ -49,7 +52,7 @@ class GraphicPanel {
       event: "input",
       option: {
         type: "input",
-        attributes: { type: "number", min: -100, max: 100 },
+        attributes: { type: "range", min: -100, max: 100, step: 1 },
       },
     },
     green: {
@@ -57,7 +60,7 @@ class GraphicPanel {
       event: "input",
       option: {
         type: "input",
-        attributes: { type: "number", min: -100, max: 100 },
+        attributes: { type: "range", min: -100, max: 100, step: 1 },
       },
     },
     blue: {
@@ -65,7 +68,7 @@ class GraphicPanel {
       event: "input",
       option: {
         type: "input",
-        attributes: { type: "number", min: -100, max: 100 },
+        attributes: { type: "range", min: -100, max: 100, step: 1 },
       },
     },
     gamma: {
@@ -73,7 +76,7 @@ class GraphicPanel {
       event: "input",
       option: {
         type: "input",
-        attributes: { type: "number", min: 0.1, max: 10, step: 0.1 },
+        attributes: { type: "range", min: 0.1, max: 10, step: 0.1 },
       },
     },
   };
@@ -92,15 +95,9 @@ class GraphicPanel {
     const { mode, transparent, brightness, contrast } = this.#elms;
     const { red, green, blue, gamma } = this.#elms;
 
-    mode.elm.value = data.mode;
-    transparent.elm.value = data.transparent;
-    brightness.elm.value = data.brightness;
-    contrast.elm.value = data.contrast;
-
-    red.elm.value = data.red;
-    green.elm.value = data.green;
-    blue.elm.value = data.blue;
-    gamma.elm.value = data.gamma;
+    for (const key in this.#elms) {
+      this.#elms[key].value = data[key];
+    }
   }
 
   #init() {

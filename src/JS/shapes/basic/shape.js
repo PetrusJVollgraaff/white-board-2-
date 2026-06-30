@@ -878,7 +878,7 @@ class Parallelorgram extends BasicShape {
   }
 
   static load(data, callback) {
-    const shape = new TParallelorgram(data, callback);
+    const shape = new Parallelorgram(data, callback);
     shape.selected = data.selected;
     return shape;
   }
