@@ -9,6 +9,7 @@ class BottomNav {
   #callback = () => {};
   #elm = null;
   #main = null;
+  #tooPanel = null;
   constructor({ elm, main, callback }) {
     this.#elm = elm;
     this.#main = main;
@@ -18,11 +19,11 @@ class BottomNav {
   }
 
   #init() {
+    this.#tooPanel = new ToolPanel(this.#elm, this.#callback);
     this.#buildBasicShapeDrop();
     this.#buildArrowShapeDrop();
     this.#buildStarShapeDrop();
     new ZoomPanel(this.#elm, this.#callback);
-    new ToolPanel(this.#elm, this.#callback);
   }
 
   #buildBasicShapeDrop() {
@@ -34,7 +35,10 @@ class BottomNav {
       dir: "up",
       extraclass: ["grid_dropdown"],
       callback: (dropElm) => {
-        new BasicShapePanel(dropElm, this.#callback);
+        new BasicShapePanel(dropElm, (data) => {
+          if (data.action == "setTool") this.#tooPanel.setSelected = null;
+          this.#callback(data);
+        });
       },
     });
   }
@@ -48,7 +52,10 @@ class BottomNav {
       dir: "up",
       extraclass: ["grid_dropdown"],
       callback: (dropElm) => {
-        new ArrowShapePanel(dropElm, this.#callback);
+        new ArrowShapePanel(dropElm, (data) => {
+          if (data.action == "setTool") this.#tooPanel.setSelected = null;
+          this.#callback(data);
+        });
       },
     });
   }
@@ -62,7 +69,10 @@ class BottomNav {
       dir: "up",
       extraclass: ["grid_dropdown"],
       callback: (dropElm) => {
-        new StarShapePanel(dropElm, this.#callback);
+        new StarShapePanel(dropElm, (data) => {
+          if (data.action == "setTool") this.#tooPanel.setSelected = null;
+          this.#callback(data);
+        });
       },
     });
   }

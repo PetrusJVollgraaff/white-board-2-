@@ -8,7 +8,7 @@ class ToolPanel {
   #elmP = null;
   #elm = null;
 
-  #Active = "select";
+  #Active = null;
 
   #tools = {
     select: {
@@ -35,6 +35,12 @@ class ToolPanel {
     this.#elm = this.#elmP.querySelector("li#tool_ctn");
 
     this.#init();
+  }
+
+  set setSelected(val = null) {
+    this.#Active = val;
+    const active = this.#elmP.querySelector("button.active");
+    if (active) active.classList.remove("active");
   }
 
   #setSelected(Elm, val) {
