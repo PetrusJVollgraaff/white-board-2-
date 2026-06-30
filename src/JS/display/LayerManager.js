@@ -52,10 +52,11 @@ class LayerManager {
     this.#layers[idx].setOpacity = value;
   }
 
-  set arrangeLayerShapes(value) {
+  set arrangeLayerShapes(method) {
     const layer = this.activeLayer;
-
-    if (layer) layer[value];
+    if (layer) {
+      layer[method]();
+    }
   }
 
   #layerCallback(data) {

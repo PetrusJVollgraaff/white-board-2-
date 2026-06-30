@@ -15,6 +15,7 @@ class Layer extends EventTarget {
   #thumbElm = null;
   #selected = false;
   #callback;
+  #callback2;
   #size = { w: 0, h: 0 };
   #main = null;
   order = 0;
@@ -34,13 +35,14 @@ class Layer extends EventTarget {
     this.#main = main;
     this.#id = id ?? Layer._uid();
     this.#callback = callback;
+    this.#callback2 = this.#main.ShapeCallback.bind(this.#main);
 
     if (opts) {
       this.#visible = opts.visible ?? true;
       this.#opacity = opts.opacity ?? 100;
       this.#shapes = ShapeFactory.loadShapes(
         opts.shapes ?? [],
-        this.#main.ShapeCallback.bind(this.#main),
+        this.#callback2,
       );
       // mergeHistory: array of layer snapshots that were merged to create this layer
       // Allows full unmerge back to original layers
@@ -136,15 +138,21 @@ class Layer extends EventTarget {
     this.#elm.classList[action](className);
   }
 
+  #reOrderEvent() {
+    this.#callback2({
+      event: {
+        name: "shapesReordered",
+        detail: { save: true },
+      },
+    });
+  }
+
   sendToBack() {
-    const selShapes = this.#shapes.map((s) => s.selected);
-    const unselShapes = this.#shapes.map((s) => !s.selected);
+    const selShapes = this.#shapes.filter((s) => s.selected);
+    const unselShapes = this.#shapes.filter((s) => !s.selected);
 
     this.#shapes = selShapes.concat(unselShapes);
-
-    this.#main.dispatchEvent(
-      new CustomEvent("shapesReordered", { detail: { save: true } }),
-    );
+    this.#reOrderEvent();
   }
 
   sendBackward() {
@@ -158,20 +166,15 @@ class Layer extends EventTarget {
       }
     }
 
-    this.#main.dispatchEvent(
-      new CustomEvent("shapesReordered", { detail: { save: true } }),
-    );
+    this.#reOrderEvent();
   }
 
   bringToFront() {
-    const selShapes = this.#shapes.map((s) => s.selected);
-    const unselShapes = this.#shapes.map((s) => !s.selected);
+    const selShapes = this.#shapes.filter((s) => s.selected);
+    const unselShapes = this.#shapes.filter((s) => !s.selected);
 
     this.#shapes = unselShapes.concat(selShapes);
-
-    this.#main.dispatchEvent(
-      new CustomEvent("shapesReordered", { detail: { save: true } }),
-    );
+    this.#reOrderEvent();
   }
 
   bringForward() {
@@ -186,9 +189,7 @@ class Layer extends EventTarget {
       }
     }
 
-    this.#main.dispatchEvent(
-      new CustomEvent("shapesReordered", { detail: { save: true } }),
-    );
+    this.#reOrderEvent();
   }
 
   render(selectedId, { w, h }) {

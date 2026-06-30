@@ -74,11 +74,13 @@ class ShapeSelection extends Selection {
   #shape = null;
   center = Vector.zero();
   rotation = 0;
+  constrain = false;
   constructor(shape) {
     super();
     this.#shape = shape;
     this.center = shape.getCenter;
     this.rotation = shape.rotation;
+    this.constrain = shape.constrain;
 
     this.#generate();
     shape.selections = this;
@@ -115,6 +117,7 @@ class ShapeSelection extends Selection {
   update() {
     this.rotation = this.#shape.rotation;
     this.center = this.#shape.getCenter;
+    this.constrain = this.#shape.constrain;
     const { size } = SelectionHandle;
     const points = this.#shape.getPoints;
     this.box = BoundingBox.fromPoints(points.map((p) => p.add(this.center)));
@@ -185,8 +188,60 @@ class ShapeSelection extends Selection {
     ctx.restore();
   }
 
+  #newRatio(handle, ratio) {
+    const { TYPES } = SelectionHandle;
+
+    switch (handle) {
+      case TYPES.RIGHT:
+        return new Vector({ x: ratio.x, y: 1 });
+      case TYPES.LEFT:
+        return new Vector({ x: 2 - ratio.x, y: 1 });
+      case TYPES.TOP:
+        return new Vector({ x: 1, y: 2 - ratio.y });
+      case TYPES.BOTTOM:
+        return new Vector({ x: 1, y: ratio.y });
+      case TYPES.TOP_LEFT:
+        return new Vector({ x: 2 - ratio.x, y: 2 - ratio.y });
+      case TYPES.TOP_RIGHT:
+        return new Vector({ x: ratio.x, y: 2 - ratio.y });
+      case TYPES.BOTTOM_LEFT:
+        return new Vector({ x: 2 - ratio.x, y: ratio.y });
+      case TYPES.BOTTOM_RIGHT:
+        return new Vector({ x: ratio.x, y: ratio.y });
+    }
+  }
+
+  #scaleRatio(ratio) {
+    const scaler = Math.max(Math.abs(ratio.x), Math.abs(ratio.y));
+    return new Vector({
+      x: Math.sign(ratio.x) * scaler,
+      y: Math.sign(ratio.y) * scaler,
+    });
+  }
+
+  #setShapeSize(shape, oldBox, startingSigns, ratio, main) {
+    const { widthSign, heightSign } = startingSigns;
+    const { x, y } = ratio;
+    const { width, height } = oldBox;
+
+    shape.setSize = {
+      width: width * x * widthSign,
+      height: height * y * heightSign,
+      save: false,
+    };
+    main.rightNav.setSize = shape.getSize;
+  }
+
   addEventListeners(target, startPosition, handle, main) {
     const selectedShapes = main.getSelectedShapes;
+    const { TYPES } = SelectionHandle;
+
+    if (selectedShapes.length == 1 && handle.type === TYPES.CONSTRAIN) {
+      selectedShapes[0].setConstrain = { save: false };
+      main.rightNav.setSize = selectedShapes[0].getSize;
+      return;
+    }
+
     const oldRotations = selectedShapes.map((s) => s.rotation);
     const oldBoxes = selectedShapes.map((s) =>
       BoundingBox.fromPoints(s.getPoints.map((p) => p.add(this.center))),
@@ -201,8 +256,7 @@ class ShapeSelection extends Selection {
     });
 
     let mouseDelta = null;
-    const { width, height } = this.box;
-    const prevSize = { width, height };
+    const prevSize = { ...this.box };
 
     const moveCallback = (evt) => {
       const vp = main.vpPt(evt);
@@ -220,34 +274,20 @@ class ShapeSelection extends Selection {
       })
         .scale(2)
         .add(new Vector({ x: 1, y: 1 }));
-      const { TYPES } = SelectionHandle;
 
       if (Object.values(TYPES).includes(handle.type)) {
-        switch (handle.type) {
-          case TYPES.RIGHT:
-            ratio = new Vector({ x: ratio.x, y: 1 });
-            break;
-          case TYPES.LEFT:
-            ratio = new Vector({ x: 2 - ratio.x, y: 1 });
-            break;
-          case TYPES.TOP:
-            ratio = new Vector({ x: 1, y: 2 - ratio.y });
-            break;
-          case TYPES.BOTTOM:
-            ratio = new Vector({ x: 1, y: ratio.y });
-            break;
-          case TYPES.TOP_LEFT:
-            ratio = new Vector({ x: 2 - ratio.x, y: 2 - ratio.y });
-            break;
-          case TYPES.TOP_RIGHT:
-            ratio = new Vector({ x: ratio.x, y: 2 - ratio.y });
-            break;
-          case TYPES.BOTTOM_LEFT:
-            ratio = new Vector({ x: 2 - ratio.x, y: ratio.y });
-            break;
-          case TYPES.BOTTOM_RIGHT:
-            ratio = new Vector({ x: ratio.x, y: ratio.y });
-            break;
+        ratio = this.#newRatio(handle.type, ratio);
+
+        // endregion
+        if (selectedShapes.length == 1) {
+          const shape = selectedShapes[0];
+          const oldBox = oldBoxes[0];
+          const oldRotation = oldRotations[0];
+          if (shape.constrain) {
+            ratio = this.#scaleRatio(ratio);
+            this.#setShapeSize(shape, oldBox, startingSigns[0], ratio, main);
+            return;
+          }
         }
 
         // Preserve aspect ratio if shift key is held
@@ -261,14 +301,9 @@ class ShapeSelection extends Selection {
             TYPES.BOTTOM_RIGHT,
           ].includes(handle.type)
         ) {
-          const scaler = Math.max(Math.abs(ratio.x), Math.abs(ratio.y));
-          ratio = new Vector({
-            x: Math.sign(ratio.x) * scaler,
-            y: Math.sign(ratio.y) * scaler,
-          });
+          ratio = this.#scaleRatio(ratio);
         }
 
-        // endregion
         for (let i = 0; i < selectedShapes.length; i++) {
           const shape = selectedShapes[i];
           const oldBox = oldBoxes[i];
@@ -282,15 +317,11 @@ class ShapeSelection extends Selection {
             const v1 = Vector.subtract(startPosition, oldBox.center);
             const v2 = Vector.subtract(mousePosition, oldBox.center);
             const angle = Vector.getSignAngle(v2, v1);
-            const combinedAngle = oldRotation + angle;
-            shape.setRotation = { angle: combinedAngle, save: false };
-          } else if (handle.type !== TYPES.CONSTRAIN) {
-            shape.setSize = {
-              width: oldBox.width * ratio.x * startingSigns[i].widthSign,
-              height: oldBox.height * ratio.y * startingSigns[i].heightSign,
-              save: false,
-            };
+
+            shape.setRotation = { angle: oldRotation + angle, save: false };
             main.rightNav.setSize = shape.getSize;
+          } else {
+            this.#setShapeSize(shape, oldBox, startingSigns[0], ratio, main);
           }
         }
       }
