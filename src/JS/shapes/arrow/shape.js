@@ -21,17 +21,17 @@ class ArrowShape extends Shape {
     return JSON.parse(JSON.stringify({ ...{ shape: this }, ...this }));
   }
 
-  isHandleSelected(ctx, mousePos) {
+  isHandleSelected(ctx, mousepos) {
     let selected = false;
     if (this.selected && this?.selections)
-      selected = this.selections?.isSelected(ctx, mousePos);
+      selected = this.selections?.isSelected(ctx, mousepos);
 
     return selected;
   }
 
-  isSelected(ctx, mousePos) {
+  isSelected(ctx, mousepos) {
     const { fill, stroke } = this.options;
-    const { x, y } = mousePos;
+    const { x, y } = mousepos;
     let selected = false;
     ctx.save();
     Layer.rotateCanvas(ctx, this.center, this.rotation);
@@ -69,6 +69,21 @@ class BlockArrow1 extends ArrowShape {
     return this.#extraoptions;
   }
 
+  setExtraValue({ mousepos, save = true }) {
+    const { width } = this.size;
+
+    const x = this.center.x - width / 2;
+    const diff = Vector.subtract(mousepos, new Vector({ x, y: this.center.y }));
+    const polar = diff.toPolar();
+    polar.dir -= this.rotation;
+    diff.toXY(polar);
+
+    const newvalue = Math.min(Math.max(diff.x, 0), width) / width;
+    this.#extraoptions.values[0] = newvalue;
+
+    this.EventCallback(save);
+  }
+
   static btn() {
     return {
       type: "button",
@@ -82,23 +97,6 @@ class BlockArrow1 extends ArrowShape {
     const shape = new BlockArrow1(data, callback);
     shape.selected = data.selected;
     return shape;
-  }
-
-  setExtraValue(mousePos, startPosition, handle, save = true) {
-    const { width, height } = this.sizes;
-    const diff = this.getDiff(mousePos);
-    const newvalue = Math.min(Math.max(diff.x, 0), width) / width;
-    this.#extraoptions.values[0] = newvalue;
-
-    /*viewport.dispatchEvent(
-      new CustomEvent("extraChanged", {
-        detail: {
-          shape: this,
-          extraoptions: { values },
-          save,
-        },
-      })
-    );*/
   }
 
   getExtraHandlePos() {
@@ -149,22 +147,19 @@ class BlockArrow2 extends ArrowShape {
     return this.#extraoptions;
   }
 
-  setExtraValue(mousePos, startPosition, handle, save = true) {
-    const { width, height } = this.size;
+  setExtraValue({ mousepos, save = true }) {
+    const { width } = this.size;
 
-    const diff = this.getDiff(mousePos);
+    const x = this.center.x - width / 2;
+    const diff = Vector.subtract(mousepos, new Vector({ x, y: this.center.y }));
+    const polar = diff.toPolar();
+    polar.dir -= this.rotation;
+    diff.toXY(polar);
+
     const newvalue = Math.min(Math.max(diff.x, 0), width) / width;
     this.#extraoptions.values[0] = newvalue;
 
-    /*viewport.dispatchEvent(
-      new CustomEvent("extraChanged", {
-        detail: {
-          shape: this,
-          extraoptions: { values },
-          save,
-        },
-      })
-    );*/
+    this.EventCallback(save);
   }
 
   getExtraHandlePos(center, size) {
@@ -225,45 +220,31 @@ class BlockArrow3 extends ArrowShape {
     handles: 1,
   };
 
-  getDiff(mousePos) {
-    const { center, size, rotation } = this;
-    const y = center.y - size.height / 2;
-    const x = center.x - size.width / 2;
-    const diff = Vector.subtract(mousePos, new Vector({ x, y }));
-    const polar = diff.toPolar();
-    polar.dir -= rotation;
-    diff.toXY(polar);
-
-    return diff;
-  }
-
   constructor(data, callback) {
     super(data, callback);
   }
 
-  hasExtraOptions() {
-    return this.#extraoptions;
-  }
-
-  setExtraValue(mousePos, startPosition, handle, save = true) {
+  setExtraValue({ mousepos, handle, startPos, save = true }) {
     const { width, height } = this.size;
     const half_h = height / 2;
-    const diff = this.getDiff(mousePos);
+
+    const y = this.center.y - half_h / 2;
+    const x = this.center.x - this.size.width / 2;
+    const diff = Vector.subtract(mousepos, new Vector({ x, y }));
+    const polar = diff.toPolar();
+    polar.dir -= this.rotation;
+    diff.toXY(polar);
 
     const newvalue1 = Math.min(Math.max(diff.x, 0), width) / width;
     const newvalue2 = Math.min(Math.max(diff.y, 0), half_h) / half_h;
     this.#extraoptions.values[0] = newvalue1;
     this.#extraoptions.values[1] = newvalue2;
 
-    /*viewport.dispatchEvent(
-      new CustomEvent("extraChanged", {
-        detail: {
-          shape: this,
-          extraoptions: { values },
-          save,
-        },
-      }),
-    );*/
+    this.EventCallback(save);
+  }
+
+  hasExtraOptions() {
+    return this.#extraoptions;
   }
 
   getExtraHandlePos() {
@@ -335,37 +316,24 @@ class BlockArrow4 extends ArrowShape {
     return this.#extraoptions;
   }
 
-  setExtraValue(mousePos, startPosition, handle, save = true) {
+  setExtraValue({ mousepos, startPosition, handle, save = true }) {
     const { width, height } = this.size;
     const half_w = width / 2;
     const half_h = height / 2;
-    const diff = this.getDiff(mousePos);
-    const newvalue1 = Math.min(Math.max(diff.x, 0), half_w) / half_w;
-    const newvalue2 = Math.min(Math.max(diff.y, 0), half_h) / half_h;
-    this.extraoptions.values[0] = newvalue1;
-    this.extraoptions.values[1] = newvalue2;
 
-    /*viewport.dispatchEvent(
-      new CustomEvent("extraChanged", {
-        detail: {
-          shape: this,
-          extraoptions: { values },
-          save,
-        },
-      }),
-    );*/
-  }
-
-  getDiff(mousePos) {
-    const { center, size, rotation } = this;
-    const y = center.y - size.height / 2;
-    const x = center.x - size.width / 2;
-    const diff = Vector.subtract(mousePos, new Vector({ x, y }));
+    const y = this.center.y - half_h;
+    const x = this.center.x - half_w;
+    const diff = Vector.subtract(mousepos, new Vector({ x, y }));
     const polar = diff.toPolar();
-    polar.dir -= rotation;
+    polar.dir -= this.rotation;
     diff.toXY(polar);
 
-    return diff;
+    const newvalue1 = Math.min(Math.max(diff.x, 0), half_w) / half_w;
+    const newvalue2 = Math.min(Math.max(diff.y, 0), half_h) / half_h;
+    this.#extraoptions.values[0] = newvalue1;
+    this.#extraoptions.values[1] = newvalue2;
+
+    this.EventCallback(save);
   }
 
   getExtraHandlePos() {
@@ -442,22 +410,27 @@ class BlockArrow5 extends ArrowShape {
     return this.#extraoptions;
   }
 
-  setExtraValue(mousePos, startPos, handle, save = true) {
+  setExtraValue({ mousepos, handle, save = true }) {
+    const prevValue = this.#extraoptions.values;
     const { width, height } = this.size;
     const half_w = width / 2;
     const half_h = height / 2;
 
-    const diff = this.getDiff(mousePos);
-    const prevValue = this.#extraoptions.values;
+    const y = this.center.y - half_h;
+    const x = this.center.x - half_w;
+    const diff = Vector.subtract(mousepos, new Vector({ x, y }));
+    const polar = diff.toPolar();
+    polar.dir -= this.rotation;
+    diff.toXY(polar);
 
     if (handle.type == "handle_1") {
       const max = width * prevValue[2];
       const newvalue1 = Math.min(Math.max(diff.x, 0), max) / width;
-      this.extraoptions.values[0] = newvalue1;
+      this.#extraoptions.values[0] = newvalue1;
     } else if (handle.type == "handle_2") {
       const max = half_h * prevValue[1];
       const newvalue1 = Math.min(Math.max(diff.y, 0), max) / half_h;
-      this.extraoptions.values[3] = newvalue1;
+      this.#extraoptions.values[3] = newvalue1;
     } else if (handle.type == "handle_3") {
       const miny = half_h * prevValue[3];
       const minx = width * prevValue[0];
@@ -465,43 +438,23 @@ class BlockArrow5 extends ArrowShape {
       const newvalue1 = Math.min(Math.max(diff.y, miny), half_h) / half_h;
       const newvalue2 = Math.min(Math.max(diff.x, minx), width) / width;
 
-      this.extraoptions.values[1] = newvalue1;
-      this.extraoptions.values[2] = newvalue2;
+      this.#extraoptions.values[1] = newvalue1;
+      this.#extraoptions.values[2] = newvalue2;
     }
 
-    /*viewport.dispatchEvent(
-      new CustomEvent("extraChanged", {
-        detail: {
-          shape: this,
-          extraoptions: { values },
-          save,
-        },
-      }),
-    );*/
-  }
-
-  getDiff(mousePos) {
-    const { center, size, rotation } = this;
-    const y = center.y - size.height / 2;
-    const x = center.x - size.width / 2;
-    const diff = Vector.subtract(mousePos, new Vector({ x, y }));
-    const polar = diff.toPolar();
-    polar.dir -= rotation;
-    diff.toXY(polar);
-
-    return diff;
+    this.EventCallback(save);
   }
 
   getExtraHandlePos(handle) {
     const { x, y } = this.center;
     const { width, height } = this.size;
-    const [dist1, dist2, dist3, dist4] = this.extraoptions.values;
+    const [dist1, dist2, dist3, dist4] = this.#extraoptions.values;
 
     const half_w = width / 2;
     const half_h = height / 2;
     const left = x - half_w;
     const top = y - half_h;
-    const right = left + size.width;
+    const right = left + width;
 
     if (handle == 0) {
       const extraPoint1 = left + width * dist1;

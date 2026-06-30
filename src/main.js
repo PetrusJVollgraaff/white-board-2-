@@ -385,12 +385,10 @@ class DrawingBoard extends EventTarget {
   }
 
   #customEvents() {
-    this.addEventListener("optionsChanged", this.#handleChanges.bind(this));
-    this.addEventListener("positionChanged", this.#handleChanges.bind(this));
-    this.addEventListener("sizeChanged", this.#handleChanges.bind(this));
-    this.addEventListener("rotationChanged", this.#handleChanges.bind(this));
     this.addEventListener("shapesAdded", this.#handleChanges.bind(this));
     this.addEventListener("shapesReordered", this.#handleChanges.bind(this));
+    this.addEventListener("shapesChange", this.#handleChanges.bind(this));
+
     /*this.addEventListener("shapeSelected", (event) => {
       this.applySelections();
       this.#handleChanges(event);

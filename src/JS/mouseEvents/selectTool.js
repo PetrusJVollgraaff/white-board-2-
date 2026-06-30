@@ -14,19 +14,24 @@ class SelectTool {
 
     const shape = _.getShape(startPosition);
     const selectionShape = _.getSelections(startPosition);
-    const adjustment = _.getAdjustments(startPosition);
+    const adjustmentShape = _.getAdjustments(startPosition);
 
     if (selectionShape) {
       const { selections } = selectionShape;
       const handle = selections.isSelected(this.getmainCtx, startPosition);
-      selections.addEventListeners(target, startPosition, handle, _);
-      return;
+      if (handle) {
+        selections.addEventListeners(target, startPosition, handle, _);
+        return;
+      }
     }
 
-    if (adjustment) {
-      const handle = adjustment.isSelected(this.getmainCtx, startPosition);
-      adjustment.addEventListeners(target, startPosition, handle, _);
-      return;
+    if (adjustmentShape) {
+      const { adjustments } = adjustmentShape;
+      const handle = adjustments.isSelected(this.getmainCtx, startPosition);
+      if (handle) {
+        adjustments.addEventListeners(target, startPosition, handle, _);
+        return;
+      }
     }
 
     const isClickingSelectedShape = shape && shape.selected;
@@ -35,7 +40,11 @@ class SelectTool {
       if (!ctrlKey && !shiftKey) _.setItemsUnselect = false;
     }
 
-    if (!shape) return;
+    if (!shape) {
+      _.setItemsUnselect = false;
+      _.render();
+      return;
+    }
 
     if (!isClickingSelectedShape) {
       shape.select();

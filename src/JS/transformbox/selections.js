@@ -84,22 +84,6 @@ class ShapeSelection extends Selection {
     shape.selections = this;
   }
 
-  updatePosition() {
-    this.center = this.#shape.getCenter;
-    this.#update();
-  }
-
-  updateSize() {
-    this.#update();
-  }
-
-  updateRotation() {
-    this.rotation = this.#shape?.rotation
-      ? this.#shape.rotation
-      : this.#shape.angle;
-    this.#update();
-  }
-
   #generate() {
     const { TYPES, size } = SelectionHandle;
     const points = this.#shape.getPoints;
@@ -128,7 +112,9 @@ class ShapeSelection extends Selection {
     ];
   }
 
-  #update() {
+  update() {
+    this.rotation = this.#shape.rotation;
+    this.center = this.#shape.getCenter;
     const { size } = SelectionHandle;
     const points = this.#shape.getPoints;
     this.box = BoundingBox.fromPoints(points.map((p) => p.add(this.center)));
@@ -221,6 +207,7 @@ class ShapeSelection extends Selection {
     const moveCallback = (evt) => {
       const vp = main.vpPt(evt);
       const mousePosition = main._vp.toDoc(vp.x, vp.y);
+
       mouseDelta = Vector.subtract(mousePosition, startPosition);
 
       const polar = mouseDelta.toPolar();
@@ -322,7 +309,7 @@ class ShapeAdjustment extends Selection {
   #shape = null;
   center = Vector.zero();
   rotation = 0;
-  #handles = [];
+  handles = [];
   constructor(shape) {
     super();
     this.#shape = shape;
@@ -333,11 +320,7 @@ class ShapeAdjustment extends Selection {
     shape.adjustment = this;
   }
 
-  updateExtra() {
-    this.#update();
-  }
-
-  #update() {
+  update() {
     const { handles } = this.#shape.hasExtraOptions();
     const points = this.#shape.getPoints;
     this.box = BoundingBox.fromPoints(points.map((p) => p.add(this.center)));
@@ -347,7 +330,7 @@ class ShapeAdjustment extends Selection {
     for (var i = 0; i < handles; i++) {
       const extrapoint = this.#shape.getExtraHandlePos(i);
 
-      this.#handles[i].center = extrapoint;
+      this.handles[i].center = extrapoint;
     }
   }
 
@@ -361,19 +344,19 @@ class ShapeAdjustment extends Selection {
     for (var i = 0; i < handles; i++) {
       const extrapoint = this.#shape.getExtraHandlePos(i);
 
-      this.#handles.push(
+      this.handles.push(
         new SelectionHandle(extrapoint, EXTRA["HANDLE_" + (i + 1)]),
       );
     }
   }
 
-  addEventListeners(startPosition, handle, main) {
-    const moveCallback = (e) => {
+  addEventListeners(target, startpos, handle, main) {
+    const moveCallback = (evt) => {
       const vp = main.vpPt(evt);
-      const mousePosition = main._vp.toDoc(vp.x, vp.y);
+      const mousepos = main._vp.toDoc(vp.x, vp.y);
       const { EXTRA } = SelectionHandle;
       if (Object.values(EXTRA).includes(handle.type)) {
-        //  shape.setExtraValue(mousePosition, startPosition, handle )
+        this.#shape.setExtraValue({ mousepos, startpos, handle });
       }
     };
 
@@ -389,7 +372,7 @@ class ShapeAdjustment extends Selection {
     ctx.save();
     ctx.beginPath();
 
-    for (const handle of this.#handles) {
+    for (const handle of this.handles) {
       handle.draw(ctx, hitRegion);
     }
 

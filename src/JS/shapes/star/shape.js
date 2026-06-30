@@ -17,35 +17,6 @@ class StarShape extends Shape {
     this.options = options;
   }
 
-  setExtraValue(mousePos, startPos, handle, save = true) {
-    const { size, center, rotation } = this;
-
-    const half_w = size.width / 2;
-    const left = center.x - half_w;
-
-    const diff = Vector.subtract(
-      mousePos,
-      new Vector({ x: left, y: center.y }),
-    );
-    const polar = diff.toPolar();
-    polar.dir -= this.rotation;
-    diff.toXY(polar);
-
-    const newvalue = 1 - Math.min(Math.max(diff.x, 0), half_w) / half_w;
-    this.#extraoptions.values[0] = newvalue;
-
-    /*this.callback({
-      event: {
-        name: "extraChanged",
-        detail: {
-          shape: this,
-          extraoptions: { values: [newvalue] },
-          save,
-        },
-      },
-    });*/
-  }
-
   getExtraHandlePos() {
     return Vector.zero();
   }
@@ -54,17 +25,17 @@ class StarShape extends Shape {
     return JSON.parse(JSON.stringify({ ...{ shape: this.shape }, ...this }));
   }
 
-  isHandleSelected(ctx, mousePos) {
+  isHandleSelected(ctx, mousepos) {
     let selected = false;
     if (this.selected && this?.selections)
-      selected = this.selections?.isSelected(ctx, mousePos);
+      selected = this.selections?.isSelected(ctx, mousepos);
 
     return selected;
   }
 
-  isSelected(ctx, mousePos) {
+  isSelected(ctx, mousepos) {
     const { fill, stroke } = this.options;
-    const { x, y } = mousePos;
+    const { x, y } = mousepos;
     let selected = false;
     ctx.save();
     Layer.rotateCanvas(ctx, this.center, this.rotation);
@@ -231,6 +202,27 @@ class Star8Point extends StarShape {
     handles: 1,
   };
 
+  constructor(data, callback) {
+    super(data, callback);
+  }
+
+  setExtraValue({ mousepos, save = true }) {
+    const { width } = this.size;
+
+    const half_w = width / 2;
+    const x = this.center.x - half_w;
+
+    const diff = Vector.subtract(mousepos, new Vector({ x, y: this.center.y }));
+    const polar = diff.toPolar();
+    polar.dir -= this.rotation;
+    diff.toXY(polar);
+
+    const newvalue = 1 - Math.min(Math.max(diff.x, 0), half_w) / half_w;
+    this.#extraoptions.values[0] = newvalue;
+
+    this.EventCallback(save);
+  }
+
   hasExtraOptions() {
     return this.#extraoptions;
   }
@@ -238,17 +230,13 @@ class Star8Point extends StarShape {
   getExtraHandlePos() {
     const { x, y } = this.center;
     const { width, height } = this.size;
-    const [dist1] = this.extraoptions.values;
+    const [dist1] = this.#extraoptions.values;
 
     const half_w = width / 2;
     const left = x - half_w;
     const extraPoint = left + half_w * Math.abs(dist1 - 1);
 
     return new Vector({ x: extraPoint, y });
-  }
-
-  constructor(data, callback) {
-    super(data, callback);
   }
 
   static btn() {
@@ -303,10 +291,27 @@ class Star12Point extends StarShape {
     return this.#extraoptions;
   }
 
+  setExtraValue({ mousepos, save = true }) {
+    const { width } = this.size;
+
+    const half_w = width / 2;
+    const x = this.center.x - half_w;
+
+    const diff = Vector.subtract(mousepos, new Vector({ x, y: this.center.y }));
+    const polar = diff.toPolar();
+    polar.dir -= this.rotation;
+    diff.toXY(polar);
+
+    const newvalue = 1 - Math.min(Math.max(diff.x, 0), half_w) / half_w;
+    this.#extraoptions.values[0] = newvalue;
+
+    this.EventCallback(save);
+  }
+
   getExtraHandlePos() {
     const { x, y } = this.center;
     const { width, height } = this.size;
-    const [dist1] = this.extraoptions.values;
+    const [dist1] = this.#extraoptions.values;
 
     const half_w = width / 2;
     const left = x - half_w;
@@ -367,10 +372,27 @@ class Star24Point extends StarShape {
     return this.#extraoptions;
   }
 
+  setExtraValue({ mousepos, save = true }) {
+    const { width } = this.size;
+
+    const half_w = width / 2;
+    const x = this.center.x - half_w;
+
+    const diff = Vector.subtract(mousepos, new Vector({ x, y: this.center.y }));
+    const polar = diff.toPolar();
+    polar.dir -= this.rotation;
+    diff.toXY(polar);
+
+    const newvalue = 1 - Math.min(Math.max(diff.x, 0), half_w) / half_w;
+    this.#extraoptions.values[0] = newvalue;
+
+    this.EventCallback(save);
+  }
+
   getExtraHandlePos() {
     const { x, y } = this.center;
     const { width, height } = this.size;
-    const [dist1] = this.extraoptions.values;
+    const [dist1] = this.#extraoptions.values;
 
     const half_w = width / 2;
     const left = x - half_w;

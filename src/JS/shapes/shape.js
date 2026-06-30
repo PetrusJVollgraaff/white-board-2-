@@ -125,9 +125,7 @@ class Shape {
     this.selected = true;
     this.selections = new ShapeSelection(this);
     const hasExtra = this.hasExtraOptions();
-    if (hasExtra) {
-      this.adjustments = new ShapeAdjustment(this);
-    }
+    if (hasExtra) this.adjustments = new ShapeAdjustment(this);
 
     this.callback({
       event: {
@@ -151,14 +149,8 @@ class Shape {
 
   set setCenter({ center = Vector.zero(), save = true }) {
     this.center = center;
-    this.selections?.updatePosition();
-    this.adjustments?.updateExtra();
-    this.callback({
-      event: {
-        name: "positionChanged",
-        detail: { shape: this, save },
-      },
-    });
+
+    this.EventCallback(save);
   }
 
   set setWidth(width) {
@@ -174,27 +166,13 @@ class Shape {
     this.setHeight = height;
     this.ratio = this.size.width / this.size.height;
 
-    this.selections?.updateSize();
-    this.adjustments?.updateExtra();
-    this.callback({
-      event: {
-        name: "sizeChanged",
-        detail: { shape: this, save },
-      },
-    });
+    this.EventCallback(save);
   }
 
   set setRotation({ angle, save = true }) {
     this.rotation = angle;
-    this.selections?.updateRotation();
-    this.adjustments?.updateExtra();
 
-    this.callback({
-      event: {
-        name: "rotationChanged",
-        detail: { shape: this, save },
-      },
-    });
+    this.EventCallback(save);
   }
 
   set setOptions({ options, save = true }) {
@@ -203,9 +181,16 @@ class Shape {
         this.options[key] = { ...this.options[key], ...options[key] };
     }
 
+    this.EventCallback(save);
+  }
+
+  EventCallback(save = true) {
+    this.selections?.update();
+    this.adjustments?.update();
+
     this.callback({
       event: {
-        name: "optionsChanged",
+        name: "shapesChange",
         detail: { shape: this, save },
       },
     });
