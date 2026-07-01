@@ -2,6 +2,7 @@ import {
   FreeHandTool,
   LineTool,
   ShapeTool,
+  TextTool,
 } from "../mouseEvents/mouseEventTools";
 
 class ShapeToolFactory {
@@ -10,6 +11,7 @@ class ShapeToolFactory {
   static registerTools() {
     this.registerTool(FreeHandTool, "FreeHandShape");
     this.registerTool(LineTool, "LineShape");
+    this.registerTool(TextTool, "TextShape");
     this.registerTool(ShapeTool, "shape");
   }
 
@@ -18,7 +20,8 @@ class ShapeToolFactory {
   }
 
   static getTool(tool) {
-    if (tool == "FreeHandShape" || tool == "LineShape") {
+    console.log(tool);
+    if (tool == "FreeHandShape" || tool == "LineShape" || tool == "TextShape") {
       return this.#available[tool].tool;
     }
 

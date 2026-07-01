@@ -100,6 +100,35 @@ class LineTool {
   }
 }
 
+class TextTool {
+  static #Event = null;
+
+  static addPointerDownListener(evt) {
+    var _ = this;
+
+    const { target } = evt;
+    if (evt.button == 0) {
+      const vp = _.vpPt(evt);
+      const center = _._vp.toDoc(vp.x, vp.y);
+      const ShapeClass = ShapeFactory.newShape(_.getActiveTool);
+      let shape = new ShapeClass({ center }, _.ShapeCallback.bind(_));
+
+      _.appendShape(shape);
+      _.render();
+    }
+  }
+
+  static configureEventListener(viewport, main) {
+    this.#Event = this.addPointerDownListener.bind(main);
+    viewport.addEventListener("pointerdown", this.#Event);
+  }
+
+  static removeEventListeners(viewport) {
+    viewport.removeEventListener("pointerdown", this.#Event);
+    this.#Event = null;
+  }
+}
+
 class PanTools {
   static #Event = null;
 
@@ -308,4 +337,4 @@ class ShapeTool {
   }
 }
 
-export { FreeHandTool, LineTool, PanTools, SelectTool, ShapeTool };
+export { FreeHandTool, LineTool, PanTools, SelectTool, ShapeTool, TextTool };

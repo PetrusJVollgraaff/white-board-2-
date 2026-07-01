@@ -2,6 +2,7 @@ import { createDOMElement } from "../display/model";
 import { BasicShapes } from "../shapes/basic/shape";
 import { FreeHandShape } from "../shapes/patterns/freehand";
 import { LineShape } from "../shapes/patterns/line";
+import { TextShape } from "../shapes/text/shape";
 
 class ToolPanel {
   #callback = () => {};
@@ -21,6 +22,7 @@ class ToolPanel {
     EllipseShape: BasicShapes.EllipseShape.btn(),
     LineShape: LineShape.btn(),
     FreeHandShape: FreeHandShape.btn(),
+    TextShape: TextShape.btn(),
     pan: {
       type: "button",
       attributes: { "data-tool": "pan", title: "Pan (H / Space)" },

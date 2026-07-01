@@ -3,11 +3,11 @@ import { SelectionHandle } from "../../transformbox/selections";
 import { Vector } from "../../utils/vector";
 import { Shape } from "../shape";
 
-class Text extends Shape {
-  shape = "Text";
+class TextShape extends Shape {
+  shape = "TextShape";
 
   static detaultText = {
-    fontSize: 60,
+    fontSize: 16,
     fontFamily: "Arial",
     textAlign: "center",
     textBaseline: "middle",
@@ -15,9 +15,23 @@ class Text extends Shape {
   };
 
   static getDetaultText() {
-    return JSON.parse(JSON.stringify(Shape.detaultText));
+    return JSON.parse(JSON.stringify(TextShape.detaultText));
   }
 
+  static btn() {
+    return {
+      type: "button",
+      attributes: {
+        "data-tool": "textshape",
+        title: "Text",
+      },
+      innerhtml:
+        '<svg viewBox="0 0 16 16"><text x="8" y="15" font-size="18" text-anchor="middle" fill="currentColor">Τ</text></svg>',
+    };
+  }
+  #text = null;
+  #thinWhiteSpace = null;
+  #dilation = 10;
   constructor(
     {
       center = Vector.zero(),
@@ -27,21 +41,35 @@ class Text extends Shape {
     callback,
   ) {
     super(options, callback);
-    this.center = center instanceof Vector ? center : new Vector(center);
-
-    this.#text = getDetaultText();
+    this.center = center;
+    this.#text = TextShape.getDetaultText();
     this.#thinWhiteSpace = String.fromCharCode(8202);
     this.setBuildText();
   }
 
   static load(data, callback) {
-    const text = new Text(data, callback);
+    const text = new TextShape(data, callback);
     text.selected = data.selected;
     return text;
   }
 
   serialize() {
     return JSON.parse(JSON.stringify({ ...{ shape: this.shape }, ...this }));
+  }
+
+  hasExtraOptions() {
+    return null;
+  }
+
+  isSelected(ctx, mousepos) {
+    const { x, y } = mousepos;
+    const { width, height } = this.size;
+    const left = this.center.x - width / 2;
+    const top = this.center.y - height / 2;
+    const right = this.center.x + width / 2;
+    const bottom = this.center.y + height / 2;
+
+    return x >= left && x <= right && y >= top && y <= bottom;
   }
 
   setCorner2(corner2) {
@@ -84,15 +112,12 @@ class Text extends Shape {
 
   setBuildText() {
     // WARNING, potential memory leak
-    const { value, fontSize } = this.#text;
+    const { value, fontSize: height } = this.#text;
     const tmpCanvas = document.createElement("canvas");
     const tmpCtx = tmpCanvas.getContext("2d");
     this.setProperties(tmpCtx);
-    const metrics = tmpCtx.measureText(value);
-    this.size = {
-      width: metrics.width,
-      height: fontSize,
-    };
+    const { width } = tmpCtx.measureText(value);
+    this.size = { width, height };
   }
 
   getWidestLine() {
@@ -106,6 +131,8 @@ class Text extends Shape {
   }
 
   parseText() {
+    const { textAlign } = this.#text;
+
     let lines = this.#text.value.split("\n");
     let longestLineWidth = 0;
     for (let line of lines) {
@@ -113,12 +140,9 @@ class Text extends Shape {
         longestLineWidth = this.getTextWidthOnCanvas(line);
       }
     }
-    if (this.#text._textAlign) {
-      switch (this.#text._textAlign) {
-        case "Center":
-          this.#text.xOffsets = {};
-          break;
-        case "Left":
+    if (textAlign) {
+      switch (textAlign) {
+        case "left":
           for (let i = 0; i < lines.length; i++) {
             let line = lines[i];
             if (this.getTextWidthOnCanvas(line) < longestLineWidth) {
@@ -128,7 +152,7 @@ class Text extends Shape {
             }
           }
           break;
-        case "Right":
+        case "right":
           for (let i = 0; i < lines.length; i++) {
             let line = lines[i];
             if (this.getTextWidthOnCanvas(line) < longestLineWidth) {
@@ -138,6 +162,8 @@ class Text extends Shape {
             }
           }
           break;
+        default:
+          this.#text.xOffsets = {};
       }
     }
 
@@ -177,51 +203,42 @@ class Text extends Shape {
   }
 
   draw(ctx, hitRegion = false) {
-    const { fontSize, dilation, xOffsets } = this.#text;
-    //left = this.center.x - this.size.width / 2;
-    const x = this.center.y - this.size.height / 2;
-
-    let lines = this.parseText();
-
-    this.drawShowdowFill(ctx);
+    const lines = this.parseText();
+    const { fontSize, xOffsets } = this.#text;
+    const y = this.center.y - this.size.height / 2;
+    //this.drawShowdowFill(ctx);
 
     ctx.save();
     this.setProperties(ctx);
 
-    if (hitRegion) {
-      let row = 0;
-      for (let line of lines) {
-        let xOffset = xOffsets[row] || 0;
-        const y = this.center.x + xOffset;
-        ctx.beginPath();
-        const rgb = Shape.getHitRGB(this.id.split("_")[1]);
-        ctx.fillStyle = rgb;
-        ctx.strokeStyle = rgb;
-        ctx.lineWidth = this.options.stroke.size + dilation;
-        ctx.fillText(line, y, x + fontSize / 2 + row * fontSize);
-        ctx.strokeText(line, y, x + fontSize / 2 + row * fontSize);
-        row++;
-      }
-    } else {
-      let row = 0;
-      for (let line of lines) {
-        let xOffset = xOffsets[row] || 0;
-        const y = this.center.x + xOffset;
-        ctx.beginPath();
-        ctx.fillStyle = this.createColors(ctx, this.options.fill);
+    let row = 0;
+    for (let line of lines) {
+      let xOffset = xOffsets[row] || 0;
+      const x = this.center.x + xOffset;
+      ctx.beginPath();
+      ctx.fillStyle = this.createColors(ctx, this.options.fill);
 
-        ctx.fillText(line, y, x + fontSize / 2 + row * fontSize);
+      ctx.fillText(line, x, y + fontSize / 2 + row * fontSize);
 
-        if (this.options.stroke) {
-          ctx.lineWidth = this.options.stroke.size;
-          ctx.strokeStyle = this.createColors(ctx, this.options.stroke);
-          ctx.strokeText(line, y, x + fontSize / 2 + row * fontSize);
-        }
-        row++;
+      if (this.options.stroke) {
+        ctx.lineWidth = this.options.stroke.size;
+        ctx.strokeStyle = this.createColors(ctx, this.options.stroke);
+        ctx.strokeText(line, x, y + fontSize / 2 + row * fontSize);
       }
+      row++;
     }
 
     ctx.restore();
+
+    this.selections?.draw(ctx);
+  }
+
+  set setWidth(width) {
+    this.size.width = width;
+  }
+
+  set setHeight(height) {
+    this.size.height = height;
   }
 }
-export { Text };
+export { TextShape };
