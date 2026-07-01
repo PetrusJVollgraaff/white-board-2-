@@ -221,7 +221,7 @@ class Shape {
 
   createColors(ctx, options, ctxstyle) {
     const { type, image, color, opacity, linear } = options;
-    const { width, height } = this.size;
+    const { width, height } = this?.size;
 
     /*if (type == "linear" || type == "axial") {
       const radius = Math.min(height, width);

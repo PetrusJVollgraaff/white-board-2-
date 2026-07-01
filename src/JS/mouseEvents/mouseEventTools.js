@@ -17,13 +17,6 @@ class FreeHandTool {
       const ShapeClass = ShapeFactory.newShape(_.getActiveTool);
       let shape = new ShapeClass({ startPoint }, _.ShapeCallback.bind(_));
 
-      /*let shape = new FreeHandShape(
-        {
-          startPoint,
-        },
-        _.ShapeCallback.bind(_),
-      );*/
-
       const moveCallback = function (evt) {
         const vp = _.vpPt(evt);
         const mousePosition = _._vp.toDoc(vp.x, vp.y);
@@ -75,8 +68,6 @@ class LineTool {
       const corner1 = _._vp.toDoc(vp.x, vp.y);
       const ShapeClass = ShapeFactory.newShape(_.getActiveTool);
       let shape = new ShapeClass({ corner1 }, _.ShapeCallback.bind(_));
-
-      //let shape = new LineShape({ corner1 }, _.ShapeCallback.bind(_));
 
       const moveCallback = function (evt) {
         const vp = _.vpPt(evt);

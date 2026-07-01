@@ -19,8 +19,8 @@ class ToolPanel {
     },
     RectShape: BasicShapes.RectShape.btn(),
     EllipseShape: BasicShapes.EllipseShape.btn(),
-    line: LineShape.btn(),
-    freehand: FreeHandShape.btn(),
+    LineShape: LineShape.btn(),
+    FreeHandShape: FreeHandShape.btn(),
     pan: {
       type: "button",
       attributes: { "data-tool": "pan", title: "Pan (H / Space)" },

@@ -8,8 +8,8 @@ class ShapeToolFactory {
   static #available = {};
 
   static registerTools() {
-    this.registerTool(FreeHandTool, "freehand");
-    this.registerTool(LineTool, "line");
+    this.registerTool(FreeHandTool, "FreeHandShape");
+    this.registerTool(LineTool, "LineShape");
     this.registerTool(ShapeTool, "shape");
   }
 
@@ -18,7 +18,7 @@ class ShapeToolFactory {
   }
 
   static getTool(tool) {
-    if (tool == "freehand" || tool == "line") {
+    if (tool == "FreeHandShape" || tool == "LineShape") {
       return this.#available[tool].tool;
     }
 
