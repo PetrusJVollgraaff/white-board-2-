@@ -118,47 +118,66 @@ function applyWatermark(gl, text) {
 }
 
 function applyTestFilters(gl, filters) {
-  const contrast = filters.contrast / 100.0 + 1.0;
-  const intercept = 0.5 * (1.0 - contrast);
-
   const fragmentShaderSource = `
         precision mediump float;
-        varying vec2 v_texCoord;
-        uniform sampler2D u_texture;
-        uniform vec3 u_rgbAdjust;
-        uniform float u_brightness;
-        uniform float u_contrast;
-        uniform float u_intercept;
-        uniform float u_transparency;
-        uniform float u_gamma;
+        uniform sampler2D uImage;
+
+        uniform float uBrightness;
+        uniform float uContrast;
+
+        uniform float uRed;
+        uniform float uGreen;
+        uniform float uBlue;
+
+        uniform float uGamma;
+        uniform float uOpacity;
+        uniform int uColorMode;
+
+        varying vec2 vTextCoord
         
         void main() {
-            vec4 color = texture2D(u_texture, v_texCoord);
-            color.r += u_rgbAdjust.r;
-            color.g += u_rgbAdjust.g;
-            color.b += u_rgbAdjust.b;
-            
-            color.rgb += u_brightness;
-            color.rgb = color.rgb * u_contrast + vec3(u_intercept);
-            color.rgb = pow(color.rgb, vec3(1.0 / u_gamma));
+            vec4 color = texture2D(uImage,vTexCoord);
 
-            color.a *= u_transparency;
+            //Color Modes
+
+            if(uColorMode == 1){
+              float g = dot(color.rgb, vec3(.299,.587,.114));
+            }else if(uColorMode == 2){
+              color.rgb=vec3(
+                dot(color.rgb,vec3(.393,.769,.189)),
+                dot(color.rgb,vec3(.349,.686,.168)),
+                dot(color.rgb,vec3(.272,.534,.131)),
+              )'
+            }else if(uColorMode == 3){
+              color.rgb=1.0-color.rgb;
+            }
+
+
+            // RGB
+
+            color.r *= uRed;
+            color.g *= uGreen;
+            color.b *= uBlue;
+            
+            // Brightness
+
+            color.rgb *= uBrightness;
+
+            // Contrast
+
+            color.rgb = (color.rgb-.5 * uContrast+.5);
+
+            // Gamma
+
+            color.rgb = pow(color.rgb, vec3(1.0 / uGamma));
+
+
+            // Opacity
+            color.a *= uOpacity;
 
             gl_FragColor = color;
         }
     `;
-  createAndApplyShader(gl, fragmentShaderSource, {
-    u_rgbAdjust: [
-      filters.rgb.r / 100,
-      filters.rgb.g / 100,
-      filters.rgb.b / 100,
-    ],
-    u_brightness: filters.brightness / 100,
-    u_contrast: contrast,
-    u_intercept: intercept,
-    u_transparency: filters.opacity / 100,
-    u_gamma: filters.gamma,
-  });
 }
 
 function applyBlur(gl, blurRadius) {
@@ -187,99 +206,6 @@ function applyBlur(gl, blurRadius) {
       }
   `;
   createAndApplyShader(gl, fragmentShaderSource, { u_blurRadius: blurRadius });
-}
-
-function applyBrightness(gl, value) {
-  const fragmentShaderSource = `
-        precision mediump float;
-        varying vec2 v_texCoord;
-        uniform sampler2D u_texture;
-        uniform float u_brightness;
-        
-        void main() {
-            vec4 color = texture2D(u_texture, v_texCoord);
-            color.rgb += u_brightness;
-            gl_FragColor = color;
-        }
-    `;
-  createAndApplyShader(gl, fragmentShaderSource, { u_brightness: value / 100 });
-}
-
-function applyContrast(gl, value) {
-  const contrast = value / 100.0 + 1.0;
-  const intercept = 0.5 * (1.0 - contrast);
-
-  const fragmentShaderSource = `
-        precision mediump float;
-        varying vec2 v_texCoord;
-        uniform sampler2D u_texture;
-        uniform float u_contrast;
-        uniform float u_intercept;
-        
-        void main() {
-            vec4 color = texture2D(u_texture, v_texCoord);
-            color.rgb = color.rgb * u_contrast + vec3(u_intercept);
-            gl_FragColor = color;
-        }
-    `;
-  createAndApplyShader(gl, fragmentShaderSource, {
-    u_contrast: contrast,
-    u_intercept: intercept,
-  });
-}
-
-function applyTransparency(gl, value) {
-  const fragmentShaderSource = `
-        precision mediump float;
-        varying vec2 v_texCoord;
-        uniform sampler2D u_texture;
-        uniform float u_transparency;
-        
-        void main() {
-            vec4 color = texture2D(u_texture, v_texCoord);
-            color.a *= u_transparency;
-            gl_FragColor = color;
-        }
-    `;
-  createAndApplyShader(gl, fragmentShaderSource, {
-    u_transparency: value / 100,
-  });
-}
-
-function applyRGBAdjustment(gl, rgb) {
-  const fragmentShaderSource = `
-        precision mediump float;
-        varying vec2 v_texCoord;
-        uniform sampler2D u_texture;
-        uniform vec3 u_rgbAdjust;
-        
-        void main() {
-            vec4 color = texture2D(u_texture, v_texCoord);
-            color.r += u_rgbAdjust.r;
-            color.g += u_rgbAdjust.g;
-            color.b += u_rgbAdjust.b;
-            gl_FragColor = color;
-        }
-    `;
-  createAndApplyShader(gl, fragmentShaderSource, {
-    u_rgbAdjust: [rgb.r / 100, rgb.g / 100, rgb.b / 100],
-  });
-}
-
-function applyGammaCorrection(gl, value) {
-  const fragmentShaderSource = `
-        precision mediump float;
-        varying vec2 v_texCoord;
-        uniform sampler2D u_texture;
-        uniform float u_gamma;
-        
-        void main() {
-            vec4 color = texture2D(u_texture, v_texCoord);
-            color.rgb = pow(color.rgb, vec3(1.0 / u_gamma));
-            gl_FragColor = color;
-        }
-    `;
-  createAndApplyShader(gl, fragmentShaderSource, { u_gamma: value });
 }
 
 function createAndApplyShader(gl, fragmentShaderSource, uniforms = {}) {

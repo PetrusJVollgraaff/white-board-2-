@@ -3,6 +3,7 @@ import { LineShape } from "../shapes/patterns/line";
 import { BasicShapes } from "../shapes/basic/shape";
 import { ArrowShapes } from "../shapes/arrow/shape";
 import { StarShapes } from "../shapes/star/shape";
+import { ImagesShape } from "../shapes/image/shape";
 
 class ShapeFactory {
   static #available = {};
@@ -10,6 +11,7 @@ class ShapeFactory {
   static registerShapes() {
     this.registerShape(FreeHandShape, "FreeHandShape");
     this.registerShape(LineShape, "LineShape");
+    this.registerShape(ImagesShape, "ImagesShape");
     for (const key in BasicShapes) this.registerShape(BasicShapes[key], key);
     for (const key in ArrowShapes) this.registerShape(ArrowShapes[key], key);
     for (const key in StarShapes) this.registerShape(StarShapes[key], key);

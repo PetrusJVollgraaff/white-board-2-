@@ -1,6 +1,8 @@
-import { FreeHandTool } from "../mouseEvents/freehandTool";
-import { LineTool } from "../mouseEvents/lineTool";
-import { ShapeTool } from "../mouseEvents/shapeTool";
+import {
+  FreeHandTool,
+  LineTool,
+  ShapeTool,
+} from "../mouseEvents/mouseEventTools";
 
 class ShapeToolFactory {
   static #available = {};

@@ -1,8 +1,9 @@
 import { DataReader } from "../../utils/dataReader";
+import { Vector } from "../../utils/vector";
 import { Shape } from "../shape";
 
-class Images extends Shape {
-  shape = "Images";
+class ImagesShape extends Shape {
+  shape = "ImagesShape";
   #filters = [];
   #worker = null;
   #graphic = {
@@ -26,20 +27,17 @@ class Images extends Shape {
     {
       center = Vector.zero(),
       size = { width: 0, height: 0 },
-      filedata,
-      filetype,
-      bitmap = undefined,
+      bitmap = null,
       imageData = "",
     },
     callback,
+    options = Shape.getDefaultOptions(),
   ) {
     super(options, callback);
-    this.filedata = filedata;
-    this.filetype = filetype;
     this.size = size;
     this.imageData = imageData;
 
-    if (bitmap != undefined) {
+    if (bitmap) {
       this.original = {
         size: size,
         ratio: bitmap.width / bitmap.height,
@@ -49,11 +47,26 @@ class Images extends Shape {
       this.img = imageData;
     }
 
-    this.offscreen = DataReader.uint8ClampedArrayToCanvas(this.img, this.size);
+    //this.offscreen = DataReader.uint8ClampedArrayToCanvas(this.img, this.size);
+  }
+
+  hasExtraOptions() {
+    return null;
+  }
+
+  isSelected(ctx, mousepos) {
+    const { x, y } = mousepos;
+    const { width, height } = this.size;
+    const left = this.center.x - width / 2;
+    const top = this.center.y - height / 2;
+    const right = this.center.x + width / 2;
+    const bottom = this.center.y + height / 2;
+
+    return x >= left && x <= right && y >= top && y <= bottom;
   }
 
   static load(data, callback) {
-    const text = new Images(data, callback);
+    const text = new ImagesShape(data, callback);
     text.selected = data.selected;
     return text;
   }
@@ -102,12 +115,12 @@ class Images extends Shape {
     };
   }
 
-  async draw(ctx, hitRegion = false) {
+  draw(ctx, hitRegion = false) {
     const { width, height } = this.size;
 
     const x = this.center.x - width / 2;
     const y = this.center.y - height / 2;
-    imagePos = new Vector({ x, y }).add(viewport.zeroCenterOffset);
+    const imagePos = new Vector({ x, y });
 
     if (hitRegion) {
       ctx.beginPath();
@@ -115,21 +128,23 @@ class Images extends Shape {
       this.applyHitRegionStyles(ctx);
     } else {
       ctx.save();
-      ctx.translate(this.center.x, this.center.y);
-      ctx.scale(Math.sign(width), Math.sign(height));
       ctx.beginPath();
       //ctx.putImageData(this.img, imagePos.x, imagePos.y);
-      ctx.drawImage(
-        this.offscreen.canvas,
-        -width / 2,
-        -height / 2,
-        width,
-        height,
-      );
+      ctx.drawImage(this.img, x, y, width, height);
 
       ctx.restore();
+
+      this.selections?.draw(ctx);
     }
+  }
+
+  set setWidth(width) {
+    this.size.width = width;
+  }
+
+  set setHeight(height) {
+    this.size.height = height;
   }
 }
 
-export { Images };
+export { ImagesShape };

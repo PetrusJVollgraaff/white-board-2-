@@ -200,7 +200,7 @@ class DrawingBoard extends EventTarget {
   get getShape() {
     const shapes = this.#layerManager.activeLayerShapes;
     return (doc) =>
-      shapes ? shapes.find((s) => s.isSelected(this.#mainCtx, doc)) : null;
+      shapes ? shapes.findLast((s) => s.isSelected(this.#mainCtx, doc)) : null;
   }
 
   get getSelectedShapes() {

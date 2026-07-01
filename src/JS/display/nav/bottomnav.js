@@ -1,5 +1,6 @@
 import { ArrowShapePanel } from "../../panels/arrowShapePanel";
 import { BasicShapePanel } from "../../panels/basicShapePanel";
+import { ImagePanel } from "../../panels/imagePanel";
 import { StarShapePanel } from "../../panels/starShapePanel";
 import { ToolPanel } from "../../panels/toolPanel";
 import { ZoomPanel } from "../../panels/zoomPanel";
@@ -24,6 +25,9 @@ class BottomNav {
     this.#buildArrowShapeDrop();
     this.#buildStarShapeDrop();
     new ZoomPanel(this.#elm, this.#callback);
+    new ImagePanel(this.#elm, this.#main, (shape) => {
+      this.#main.appendShape(shape);
+    });
   }
 
   #buildBasicShapeDrop() {

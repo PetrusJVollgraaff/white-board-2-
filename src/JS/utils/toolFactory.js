@@ -1,15 +1,14 @@
 import { EditTool } from "../tools/EditTools";
 import { HistoryTool } from "../tools/HistoryTool";
-import { PanTools } from "../mouseEvents/panTool";
-import { SelectTool } from "../mouseEvents/selectTool";
+import { PanTools, SelectTool } from "../mouseEvents/mouseEventTools";
 
 class ToolFactory {
   static #available = {};
 
   static registerTools() {
     this.registerTool(HistoryTool, "history");
-    this.registerTool(SelectTool, "select");
     this.registerTool(EditTool, "edit");
+    this.registerTool(SelectTool, "select");
     this.registerTool(PanTools, "pan");
   }
 
