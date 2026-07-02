@@ -14,6 +14,7 @@ import { ShapeFactory } from "./JS/utils/shapeFactory";
 import { ShapeToolFactory } from "./JS/utils/shapeToolFactory";
 import { Shape } from "./JS/shapes/shape";
 import { Layer } from "./JS/display/Layer";
+import { TextCursor } from "./JS/textEvents/cursor";
 
 ToolFactory.registerTools();
 ShapeFactory.registerShapes();
@@ -392,10 +393,36 @@ class DrawingBoard extends EventTarget {
     this.#customEvents();
   }
 
+  #handleTextSelect(evt) {
+    const shapes = this.getSelectedShapes;
+
+    if (shapes.length > 1) {
+      TextCursor.stopEditMode();
+      return;
+    }
+
+    const { shape, clickedPoint } = evt.detail;
+    console.log(shape);
+
+    const { size, center } = shape;
+    const { height } = size;
+    const lines = shape.parseText();
+    const y = center.y - height / 2;
+
+    let ratioOnYaxis = Math.abs((clickedPoint.y - y) / height);
+    let lineIndex = Math.floor(ratioOnYaxis * lines.length);
+    let line = lines[lineIndex];
+
+    let index = shape.getIndexOfTextAtPoint(clickedPoint, line);
+
+    TextCursor.enterEditMode(shape, index, lineIndex, this);
+  }
+
   #customEvents() {
     this.addEventListener("shapesAdded", this.#handleChanges.bind(this));
     this.addEventListener("shapesReordered", this.#handleChanges.bind(this));
     this.addEventListener("shapesChange", this.#handleChanges.bind(this));
+    this.addEventListener("TextSelected", this.#handleTextSelect.bind(this));
 
     /*this.addEventListener("shapeSelected", (event) => {
       this.applySelections();

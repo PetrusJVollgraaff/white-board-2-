@@ -88,6 +88,10 @@ class TextShape extends Shape {
     //);
   }
 
+  get getTextProperties() {
+    return this.#text;
+  }
+
   setTextOptions(options, save = true) {
     for (const key in options) {
       if (this.#text.hasOwnProperty(key)) {

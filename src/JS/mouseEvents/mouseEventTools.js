@@ -1,6 +1,7 @@
 import { FreeHandShape } from "../shapes/patterns/freehand";
 import { LineShape } from "../shapes/patterns/line";
 import { Shape } from "../shapes/shape";
+import { TextShape } from "../shapes/text/shape";
 import { ShapeFactory } from "../utils/shapeFactory";
 import { Vector } from "../utils/vector";
 
@@ -19,13 +20,10 @@ class FreeHandTool {
 
       const moveCallback = function (evt) {
         const vp = _.vpPt(evt);
-        const mousePosition = _._vp.toDoc(vp.x, vp.y);
-        const { center, size } = Shape.getCenterAndSize(
-          startPoint,
-          mousePosition,
-        );
+        const mousePos = _._vp.toDoc(vp.x, vp.y);
+        const { center, size } = Shape.getCenterAndSize(startPoint, mousePos);
 
-        shape.addPoint = mousePosition;
+        shape.addPoint = mousePos;
 
         _.render([shape]);
       };
@@ -179,26 +177,26 @@ class SelectTool {
 
     const { ctrlKey, shiftKey, target } = evt;
     const vp = _.vpPt(evt);
-    const startPosition = _._vp.toDoc(vp.x, vp.y);
+    const startPos = _._vp.toDoc(vp.x, vp.y);
 
-    const shape = _.getShape(startPosition);
-    const selectionShape = _.getSelections(startPosition);
-    const adjustmentShape = _.getAdjustments(startPosition);
+    const shape = _.getShape(startPos);
+    const selectionShape = _.getSelections(startPos);
+    const adjustmentShape = _.getAdjustments(startPos);
 
     if (selectionShape) {
       const { selections } = selectionShape;
-      const handle = selections.isSelected(this.getmainCtx, startPosition);
+      const handle = selections.isSelected(this.getmainCtx, startPos);
       if (handle) {
-        selections.addEventListeners(target, startPosition, handle, _);
+        selections.addEventListeners(target, startPos, handle, _);
         return;
       }
     }
 
     if (adjustmentShape) {
       const { adjustments } = adjustmentShape;
-      const handle = adjustments.isSelected(this.getmainCtx, startPosition);
+      const handle = adjustments.isSelected(this.getmainCtx, startPos);
       if (handle) {
-        adjustments.addEventListeners(target, startPosition, handle, _);
+        adjustments.addEventListeners(target, startPos, handle, _);
         return;
       }
     }
@@ -217,6 +215,14 @@ class SelectTool {
 
     if (!isClickingSelectedShape) {
       shape.select();
+      if (shape instanceof TextShape) {
+        _.ShapeCallback({
+          event: {
+            name: "TextSelected",
+            detail: { shape, clickedPoint: startPos },
+          },
+        });
+      }
     }
 
     const OldCenter = shape.getCenter;
@@ -228,8 +234,8 @@ class SelectTool {
 
     const moveCallback = function (evt) {
       const vp = _.vpPt(evt);
-      const mousePosition = _._vp.toDoc(vp.x, vp.y);
-      mouseDelta = Vector.subtract(mousePosition, startPosition);
+      const mousePos = _._vp.toDoc(vp.x, vp.y);
+      mouseDelta = Vector.subtract(mousePos, startPos);
 
       isDragging = true;
       shape.setCenter = {
@@ -284,16 +290,13 @@ class ShapeTool {
     const { target } = evt;
     if (evt.button == 0) {
       const vp = _.vpPt(evt);
-      const startPosition = _._vp.toDoc(vp.x, vp.y);
+      const startPos = _._vp.toDoc(vp.x, vp.y);
       let shape = null;
 
       const moveCallback = function (evt) {
         const vp = _.vpPt(evt);
-        const mousePosition = _._vp.toDoc(vp.x, vp.y);
-        const { center, size } = Shape.getCenterAndSize(
-          startPosition,
-          mousePosition,
-        );
+        const mousePos = _._vp.toDoc(vp.x, vp.y);
+        const { center, size } = Shape.getCenterAndSize(startPos, mousePos);
 
         if (shape) {
           shape.setCenter = { center, save: false };
