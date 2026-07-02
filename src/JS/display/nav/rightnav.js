@@ -2,6 +2,7 @@ import { ColorPanel } from "../../panels/colorPanel";
 import { GraphicPanel } from "../../panels/graphicPanel";
 import { LayerPanel } from "../../panels/layerPanel";
 import { SizePanel } from "../../panels/sizePanel";
+import { TextPanel } from "../../panels/textPanel";
 import { createDOMElement } from "../model";
 
 class RightNav {
@@ -11,10 +12,11 @@ class RightNav {
   #main = null;
   #isHidden = false;
   #tabs = {
+    text: { title: "text", elm: null, btn: null },
     colors: { title: "colors", elm: null, btn: null },
     size: { title: "size & position", elm: null, btn: null },
+    graphic: { title: "graphic", elm: null, btn: null },
     layers: { title: "layers", elm: null, btn: null },
-    //graphic: { title: "graphic", elm: null, btn: null },
   };
   constructor({ elm, main, callback }) {
     this.#elm = elm;
@@ -29,6 +31,14 @@ class RightNav {
 
   set setColor(data) {
     this.ColorPanel.setValues = data;
+  }
+
+  set setText(data) {
+    this.TextPanel.setValues = data;
+  }
+
+  set setGraphic(data) {
+    this.GraphicPanel.setValues = data;
   }
 
   #init() {
@@ -84,11 +94,17 @@ class RightNav {
       callback: this.#callback,
     });
 
-    /*new GraphicPanel({
+    this.TextPanel = new TextPanel({
+      elmP: this.#tabs.text.elm.querySelector(".inner-tab"),
+      main: this.#main,
+      callback: this.#callback,
+    });
+
+    this.GraphicPanel = new GraphicPanel({
       elmP: this.#tabs.graphic.elm.querySelector(".inner-tab"),
       main: this.#main,
       callback: this.#callback,
-    });*/
+    });
   }
 
   #eventListener() {

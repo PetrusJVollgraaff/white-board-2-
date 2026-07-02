@@ -344,3 +344,66 @@ svg {
   fill: currentColor;
   pointer-events: none;
 }
+
+input[type="range"] {
+  position: relative;
+  width: 40%;
+  margin-right: 27px;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+}
+
+input[type="range"]::before {
+  content: attr(min);
+  position: absolute;
+  right: calc(100% + 5px);
+  top: -2px;
+  color: white;
+}
+
+input[type="range"]::after {
+  content: attr(max);
+  position: absolute;
+  left: calc(100% + 5px);
+  top: -2px;
+  color: white;
+}
+
+/* Chrome / Edge / Safari */
+input[type=range]::-webkit-slider-runnable-track {
+  height: 6px;
+  background: var(--text-dim);
+  border-radius: 3px;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  margin-top: -1.6px;
+  border-radius: 50%;
+  background: var(--surface2);
+}
+
+/* Firefox */
+input[type=range]::-moz-range-track {
+  height: 6px;
+  background: var(--text-dim);
+  border-radius: 3px;
+}
+
+input[type=range]::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border: none;
+  border-radius: 50%;
+  background: var(--surface2);
+}
+
+/*
+input[type=range]::-moz-range-progress {
+  height: 6px;
+  background: #4caf50;
+  border-radius: 3px;
+}*/

@@ -12,114 +12,19 @@ onmessage = function (evt) {
   postMessage(newImageData);
 };
 
-function loadTexture(gl, imageData) {
-  // Create a WebGL texture and bind the image data to it
-  const texture = gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D, texture);
+class ImageProcessor {
+  static VERT_SRC = `
+    attribute vec2 a_pos;
+    attribute vec2 a_uv;
+    attribute vec2 v_uv;
+    void main(){
+      gl_Position = vec4(a_pos, 0.0, 1.0);
+      v_uv = a_uv;
+    }
+  `;
 
-  // Use a placeholder for the texture (can be your image data)
-  const level = 0,
-    internalFormat = gl.RGBA,
-    format = gl.RGBA,
-    type = gl.UNSIGNED_BYTE;
-  gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, format, type, imageData);
-
-  // Define the texture parameters
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-
-  // Return the created texture
-  return texture;
-}
-
-function applyFilters(gl, filters, imageData) {
-  // Apply each filter based on the filter options
-  if (filters.mode == "grayscale") {
-    loadTexture(gl, imageData);
-    applyGrayscale(gl);
-    imageData = getImageDataFromWebGL(gl);
-  } else if (filters.mode == "black/white") {
-    loadTexture(gl, imageData);
-    applyBlackAndWhite(gl);
-    imageData = getImageDataFromWebGL(gl);
-  } else if (filters.mode == "watermark") {
-    loadTexture(gl, imageData);
-    //applyWatermark(gl, filters.watermark);
-    imageData = getImageDataFromWebGL(gl);
-  }
-
-  loadTexture(gl, imageData);
-  applyTestFilters(gl, filters);
-  return getImageDataFromWebGL(gl);
-
-  //loadTexture(gl, imageData);
-  //applyRGBAdjustment(gl, filters.rgb);
-  //imageData = getImageDataFromWebGL(gl);
-
-  //loadTexture(gl, imageData);
-  //applyTransparency(gl, filters.opacity);
-  //imageData = getImageDataFromWebGL(gl);
-
-  //loadTexture(gl, imageData);
-  //applyBrightness(gl, filters.brightness);
-  //imageData = getImageDataFromWebGL(gl);
-
-  //loadTexture(gl, imageData);
-  //applyContrast(gl, filters.contrast);
-  //imageData = getImageDataFromWebGL(gl);
-
-  //loadTexture(gl, imageData);
-  //applyGammaCorrection(gl, filters.gamma);
-  //imageData = getImageDataFromWebGL(gl);
-}
-
-function applyGrayscale(gl) {
-  const fragmentShaderSource = `
-        precision mediump float;
-        varying vec2 v_texCoord;
-        uniform sampler2D u_texture;
-        
-        void main() {
-            vec4 color = texture2D(u_texture, v_texCoord);
-            float gray = dot(color.rgb, vec3(0.299, 0.587, 0.114));
-            gl_FragColor = vec4(vec3(gray), color.a);
-        }
-    `;
-  createAndApplyShader(gl, fragmentShaderSource);
-}
-
-function applyBlackAndWhite(gl) {
-  const fragmentShaderSource = `
-        precision mediump float;
-        varying vec2 v_texCoord;
-        uniform sampler2D u_texture;
-        
-        void main() {
-            vec4 color = texture2D(u_texture, v_texCoord);
-            float gray = dot(color.rgb, vec3(0.299, 0.587, 0.114));
-            if (gray > 0.5) {
-                gray = 1.0;
-            } else {
-                gray = 0.0;
-            }
-            gl_FragColor = vec4(vec3(gray), color.a);
-        }
-    `;
-  createAndApplyShader(gl, fragmentShaderSource);
-}
-
-function applyWatermark(gl, text) {
-  // You can overlay text using another texture or by modifying the fragment shader
-  // Placeholder code for overlaying text
-  console.log("Applying watermark:", text);
-  applyTransparency(gl, 50);
-}
-
-function applyTestFilters(gl, filters) {
-  const fragmentShaderSource = `
-        precision mediump float;
+  static FRAG_SRC = `
+        precision highp float;
         uniform sampler2D uImage;
 
         uniform float uBrightness;
@@ -178,127 +83,160 @@ function applyTestFilters(gl, filters) {
             gl_FragColor = color;
         }
     `;
-}
 
-function applyBlur(gl, blurRadius) {
-  const fragmentShaderSource = `
-      precision mediump float;
-      varying vec2 v_texCoord;
-      uniform sampler2D u_texture;
-      uniform float u_blurRadius;
-      
-      // Blur in 9 directions
-      void main() {
-          vec4 sum = vec4(0.0);
-          float offset = u_blurRadius / 100.0;
+  constructor() {
+    this._gl = null;
+    this._prog = null;
+    this._glCanvas = null;
+    this._locs = {};
+    this._textCache = new Map();
+    this._ready = false;
+    this._failed = false;
+  }
 
-          sum += texture2D(u_texture, v_texCoord + vec2(-offset, -offset)) * 0.111;
-          sum += texture2D(u_texture, v_texCoord + vec2( offset, -offset)) * 0.111;
-          sum += texture2D(u_texture, v_texCoord + vec2(-offset,  offset)) * 0.111;
-          sum += texture2D(u_texture, v_texCoord + vec2( offset,  offset)) * 0.111;
-          sum += texture2D(u_texture, v_texCoord + vec2(0.0, -offset)) * 0.111;
-          sum += texture2D(u_texture, v_texCoord + vec2(0.0,  offset)) * 0.111;
-          sum += texture2D(u_texture, v_texCoord + vec2(-offset, 0.0)) * 0.111;
-          sum += texture2D(u_texture, v_texCoord + vec2( offset, 0.0)) * 0.111;
-          sum += texture2D(u_texture, v_texCoord) * 0.111;
+  process(img, adj) {
+    if (this._failed) return null;
+    if (!this._init()) return null;
 
-          gl_FragColor = sum;
-      }
-  `;
-  createAndApplyShader(gl, fragmentShaderSource, { u_blurRadius: blurRadius });
-}
+    const gl = this._gl;
+    const { naturalWidth: W, naturalHeight: H } = img;
 
-function createAndApplyShader(gl, fragmentShaderSource, uniforms = {}) {
-  const vertexShaderSource = `
-        attribute vec4 a_position;
-        attribute vec2 a_texCoord;
-        varying vec2 v_texCoord;
-        
-        void main() {
-            gl_Position = a_position;
-            v_texCoord = a_texCoord;
-        }
-    `;
+    if (this._glCanvas.width !== W || this._glCanvas.height !== H) {
+      this._glCanvas.width = W;
+      this._glCanvas.height = H;
+      gl.viewport(0, 0, W, H);
+    }
 
-  // Create, compile, and link shaders
-  const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
-  const fragmentShader = createShader(
-    gl,
-    gl.FRAGMENT_SHADER,
-    fragmentShaderSource,
-  );
-  const program = createProgram(gl, vertexShader, fragmentShader);
+    this._bindTexture(img);
 
-  gl.useProgram(program);
+    const modeMap = { normal: 0, grayscale: 1, sepia: 2, invert: 3 };
+    const L = this._locs;
+    gl.uniformli(L.tex, 0);
+    gl.uniformlf(L.brightness, (adj.brightness ?? 100) / 100);
+    gl.uniformlf(L.contrast, (adj.contrast ?? 100) / 100);
+    gl.uniformlf(L.red, (adj.red ?? 100) / 100);
+    gl.uniformlf(L.green, (adj.green ?? 100) / 100);
+    gl.uniformlf(L.blue, (adj.blue ?? 100) / 100);
+    gl.uniformlf(L.gamma, 1.0 / Math.max(0.01, (adj.gamma ?? 100) / 100));
+    gl.uniformli(L.mode, modeMap[adj.colorMode ?? "normal"] ?? 0);
 
-  // Set up vertices and texture coordinates
-  const positionLocation = gl.getAttribLocation(program, "a_position");
-  const texCoordLocation = gl.getAttribLocation(program, "a_texCoord");
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
 
-  const positionBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-  const positions = [-1, -1, 1, -1, -1, 1, 1, 1];
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+    const result = document.createElement("canvas");
+    result.width = W;
+    result.height = H;
+    result.getContext("2d").drawImage(this._glCanvas, 0, 0);
+    return result;
+  }
 
-  gl.enableVertexAttribArray(positionLocation);
-  gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+  get available() {
+    return !this._failed && this._init();
+  }
 
-  const texCoordBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-  const texCoords = [0, 0, 1, 0, 0, 1, 1, 1];
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texCoords), gl.STATIC_DRAW);
+  _init() {
+    if (this._ready) return true;
+    if (this._failed) return false;
 
-  gl.enableVertexAttribArray(texCoordLocation);
-  gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+    try {
+      const canvas = document.createElement("canvas");
 
-  // Set the texture uniform
-  const textureLocation = gl.getUniformLocation(program, "u_texture");
-  gl.uniform1i(textureLocation, 0); // Use texture unit 0
+      // preserveDrawingBuffer lets us read pixels after drawArrays completes
+      const gl = canvas.getContext("webgl", {
+        preserveDrawingBuffer: true,
+        premultipliedAlpha: false,
+        antialias: false,
+      });
+      if (!gl) throw new Error("WebGL not supported");
 
-  // Set additional uniforms
-  for (const [name, value] of Object.entries(uniforms)) {
-    const location = gl.getUniformLocation(program, name);
-    if (Array.isArray(value)) {
-      gl.uniform3fv(location, value);
-    } else {
-      gl.uniform1f(location, value);
+      // Compile vertex + fragment shaders
+      const vert = this._compile(gl, gl.VERTEX_SHADER, ImageProcessor.VERT_SRC);
+      const frag = this._compile(
+        gl,
+        gl.FRAGMENT_SHADER,
+        ImageProcessor.FRAG_SRC,
+      );
+
+      const prog = gl.createProgram();
+      gl.attachShader(prog, vert);
+      gl.attachShader(prog, frag);
+      gl.linkProgram(prog);
+      if (!gl.getProgramParameter(prog, gl.LINK_STATUS))
+        throw new Error("Program link: " + gl.getProgramInfoLog(prog));
+
+      gl.useProgram(prog);
+
+      // Full-screen clip-space quad: positions + UV coords interleaved
+      // 2 triangles covering [-1,-1]→[1,1]  with UV [0,0]→[1,1]
+      const verts = new Float32Array([
+        -1, -1, 0, 0, 1, -1, 1, 0, -1, 1, 0, 1, 1, -1, 1, 0, 1, 1, 1, 1, -1, 1,
+        0, 1,
+      ]);
+      const buf = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
+
+      const stride = 4 * 4; // 4 floats × 4 bytes
+      const aPos = gl.getAttribLocation(prog, "a_pos");
+      const aUV = gl.getAttribLocation(prog, "a_uv");
+      gl.enableVertexAttribArray(aPos);
+      gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, stride, 0);
+      gl.enableVertexAttribArray(aUV);
+      gl.vertexAttribPointer(aUV, 2, gl.FLOAT, false, stride, 8);
+
+      // Cache uniform locations
+      this._locs = {
+        tex: gl.getUniformLocation(prog, "u_tex"),
+        brightness: gl.getUniformLocation(prog, "u_brightness"),
+        contrast: gl.getUniformLocation(prog, "u_contrast"),
+        red: gl.getUniformLocation(prog, "u_red"),
+        green: gl.getUniformLocation(prog, "u_green"),
+        blue: gl.getUniformLocation(prog, "u_blue"),
+        gamma: gl.getUniformLocation(prog, "u_gamma"),
+        mode: gl.getUniformLocation(prog, "u_mode"),
+      };
+
+      // Activate texture unit 0 once — never changes
+      gl.activeTexture(gl.TEXTURE0);
+
+      this._glCanvas = canvas;
+      this._gl = gl;
+      this._prog = prog;
+      this._ready = true;
+      console.log("[WebGLImageProcessor] Initialised — GPU processing active");
+      return true;
+    } catch (err) {
+      console.warn("[WebGLImageProcessor] Falling back to CPU:", err.message);
+      this._failed = true;
+      return false;
     }
   }
 
-  // Draw the rectangle
-  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-}
+  _bindTexture(img) {
+    const gl = this._gl;
+    let tex = this._textCache.get(imageID);
 
-function createShader(gl, type, source) {
-  const shader = gl.createShader(type);
-  gl.shaderSource(shader, source);
-  gl.compileShader(shader);
-  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    console.error("Error compiling shader:", gl.getShaderInfoLog(shader));
-    gl.deleteShader(shader);
-    return null;
+    if (!tex) {
+      tex = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.UNSIGNED_BYTE, img);
+      this._textCache.set(imageID, tex);
+    } else {
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+    }
   }
-  return shader;
-}
 
-function createProgram(gl, vertexShader, fragmentShader) {
-  const program = gl.createProgram();
-  gl.attachShader(program, vertexShader);
-  gl.attachShader(program, fragmentShader);
-  gl.linkProgram(program);
-  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    console.error("Error linking program:", gl.getProgramInfoLog(program));
-    gl.deleteProgram(program);
-    return null;
+  _compile(gl, type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS))
+      throw new Error("Shader: " + gl.getShaderInfoLog(s));
+
+    return s;
   }
-  return program;
-}
-
-function getImageDataFromWebGL(gl) {
-  const width = gl.drawingBufferWidth;
-  const height = gl.drawingBufferHeight;
-  const pixels = new Uint8Array(width * height * 4);
-  gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-
-  return new ImageData(new Uint8ClampedArray(pixels), width, height);
 }

@@ -1,0 +1,30 @@
+div#text_ctn {
+    padding: 7px 8px;
+    gap: 5px;
+    display: flex;
+    flex-direction: column;
+}
+
+div#text_ctn>div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+div#text_ctn>div>span {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+div#text_ctn>div>label,
+div#text_ctn>div>div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    color: var(--text-dim);
+    white-space: nowrap;
+}

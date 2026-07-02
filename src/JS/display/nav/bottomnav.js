@@ -51,7 +51,7 @@ class BottomNav {
     new DropDown({
       elm: this.#elm.querySelector("li#arrowshape_ctn"),
       innerhtml:
-        '<svg viewBox="0 0 16 16"><rect x="2" y="4" width="12" height="8" fill="none" stroke="currentColor" stroke-width="1.5"></rect></svg>',
+        '<svg viewBox="0 0 16 16"><polygon points="0,0 11,0 16,8 11,16 0,16" fill="none" stroke="currentColor" stroke-width="1.5"/></polygon></svg>',
       html: "button",
       dir: "up",
       extraclass: ["grid_dropdown"],

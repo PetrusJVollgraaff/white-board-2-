@@ -89,7 +89,7 @@ class BlockArrow1 extends ArrowShape {
       type: "button",
       attributes: { "data-tool": "blockarrow2", title: "Block Arrow 2" },
       innerhtml:
-        '<svg viewBox="0 0 16 16"><polygon points="8,0 16,8 8,16 0,8" fill="none" stroke="currentColor" stroke-width="1.5"/></rect></svg>',
+        '<svg viewBox="0 0 16 16"><polygon points="0,0 11,0 16,8 11,16 0,16" fill="none" stroke="currentColor" stroke-width="1.5"/></polygon></svg>',
     };
   }
 
@@ -180,7 +180,7 @@ class BlockArrow2 extends ArrowShape {
       type: "button",
       attributes: { "data-tool": "blockarrow2", title: "Block Arrow 2" },
       innerhtml:
-        '<svg viewBox="0 0 16 16"><polygon points="8,0 16,8 8,16 0,8" fill="none" stroke="currentColor" stroke-width="1.5"/></rect></svg>',
+        '<svg viewBox="0 0 16 16"><polygon points="0,0 11,0 16,8 11,16 0,16 5,8" fill="none" stroke="currentColor" stroke-width="1.5"/></polygon></svg>',
     };
   }
 
@@ -266,7 +266,7 @@ class BlockArrow3 extends ArrowShape {
       type: "button",
       attributes: { "data-tool": "blockarrow3", title: "Block Arrow 3" },
       innerhtml:
-        '<svg viewBox="0 0 16 16"><polygon points="8,0 16,8 8,16 0,8" fill="none" stroke="currentColor" stroke-width="1.5"/></rect></svg>',
+        '<svg viewBox="0 0 16 16"><polygon points="0,4 11,4 11,0 16,8 11,16 11,12 0,12" fill="none" stroke="currentColor" stroke-width="1.5"/></polygon></svg>',
     };
   }
 
@@ -356,7 +356,7 @@ class BlockArrow4 extends ArrowShape {
       type: "button",
       attributes: { "data-tool": "blockarrow4", title: "Block Arrow 4" },
       innerhtml:
-        '<svg viewBox="0 0 16 16"><polygon points="8,0 16,8 8,16 0,8" fill="none" stroke="currentColor" stroke-width="1.5"/></rect></svg>',
+        '<svg viewBox="0 0 16 16"><polygon points="0,8 5,0 5,4    11,4 11,0 16,8 11,16 11,12 5,12 5,16   " fill="none" stroke="currentColor" stroke-width="1.5"/></polygon></svg>',
     };
   }
 

@@ -9,7 +9,7 @@ class TextShape extends Shape {
   static detaultText = {
     fontSize: 16,
     fontFamily: "Arial",
-    textAlign: "center",
+    textAlign: "left",
     textBaseline: "middle",
     value: "Enter Text Here",
   };
