@@ -20,7 +20,6 @@ class ShapeToolFactory {
   }
 
   static getTool(tool) {
-    console.log(tool);
     if (tool == "FreeHandShape" || tool == "LineShape" || tool == "TextShape") {
       return this.#available[tool].tool;
     }

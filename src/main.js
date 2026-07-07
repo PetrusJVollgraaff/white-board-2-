@@ -198,6 +198,10 @@ class DrawingBoard extends EventTarget {
     return this.#StageProperties.size;
   }
 
+  get getStageProperties() {
+    return this.#StageProperties;
+  }
+
   get getShape() {
     const shapes = this.#layerManager.activeLayerShapes;
     return (doc) =>
@@ -240,10 +244,12 @@ class DrawingBoard extends EventTarget {
 
     this.#mainCtx.clearRect(0, 0, width, height);
     this.#mainCtx.save();
+
     this.#mainCtx.fillStyle = "#ffffff";
     this.#mainCtx.fillRect(offset.x, offset.y, size.w * zoom, size.h * zoom);
     this.#mainCtx.scale(zoom, zoom);
     this.#mainCtx.translate(offset.x / zoom, offset.y / zoom);
+    this.#mainCtx.globalCompositeOperation = "multiply";
 
     document.getElementById("zoom-level").textContent = this._vp.zoomLabel;
 
@@ -402,7 +408,6 @@ class DrawingBoard extends EventTarget {
     }
 
     const { shape, clickedPoint } = evt.detail;
-    console.log(shape);
 
     const { size, center } = shape;
     const { height } = size;

@@ -20,6 +20,9 @@ class Layer extends EventTarget {
   #main = null;
   order = 0;
   #dragged = false;
+  #offscreen = null;
+  #ctx = null;
+  #StageProperties = null;
 
   constructor({
     name,
@@ -36,6 +39,12 @@ class Layer extends EventTarget {
     this.#id = id ?? Layer._uid();
     this.#callback = callback;
     this.#callback2 = this.#main.ShapeCallback.bind(this.#main);
+    this.#StageProperties = this.#main.getStageProperties;
+
+    const { width, height } = this.#StageProperties;
+
+    this.#offscreen = new OffscreenCanvas(width, height);
+    this.#ctx = this.#offscreen.getContext("2d");
 
     if (opts) {
       this.#visible = opts.visible ?? true;
@@ -58,6 +67,7 @@ class Layer extends EventTarget {
   }
 
   #init() {
+    this.#drawOffscreen();
     this.#build();
     this.#eventListener();
   }
@@ -394,17 +404,32 @@ class Layer extends EventTarget {
     });
   }
 
+  #drawOffscreen(shape = []) {
+    this.#ctx.save();
+    this.#ctx.globalAlpha = this.#opacity / 100;
+    for (const s of [...this.#shapes, ...shape]) {
+      this.#ctx.save();
+      Layer.rotateCanvas(this.#ctx, s.center, s.rotation);
+      s.draw(this.#ctx);
+      Layer.rotateCanvas(this.#ctx, s.center, -s.rotation);
+      this.#ctx.restore();
+    }
+
+    this.#ctx.restore();
+  }
+
   renderShapes(ctx, shape = []) {
     if (!this.#visible) return;
-    ctx.save();
-    ctx.globalAlpha = this.#opacity / 100;
-    for (const s of [...this.#shapes, ...shape]) {
-      ctx.save();
-      Layer.rotateCanvas(ctx, s.center, s.rotation);
-      s.draw(ctx);
-      ctx.restore();
+    const { width, height } = this.#StageProperties;
+    const { width: w, height: h } = this.#offscreen;
+    if (w != width || h != height) {
+      this.#offscreen.width = width;
+      this.#offscreen.height = height;
     }
-    ctx.restore();
+
+    if (this.#selected) this.#drawOffscreen(shape);
+
+    ctx.drawImage(this.#offscreen, 0, 0, width, height);
   }
 }
 
