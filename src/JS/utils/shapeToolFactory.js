@@ -9,19 +9,23 @@ class ShapeToolFactory {
   static #available = {};
 
   static registerTools() {
-    this.registerTool(FreeHandTool, "FreeHandShape");
-    this.registerTool(LineTool, "LineShape");
-    this.registerTool(TextTool, "TextShape");
-    this.registerTool(ShapeTool, "shape");
+    this.registerTool("FreeHandShape", FreeHandTool);
+    this.registerTool("LineShape", LineTool);
+    this.registerTool("TextShape", TextTool);
+    this.registerTool("shape", ShapeTool);
   }
 
-  static registerTool(classType, typeName) {
+  static registerTool(typeName, classType) {
     this.#available[typeName] = { tool: classType };
   }
 
-  static getTool(tool) {
-    if (tool == "FreeHandShape" || tool == "LineShape" || tool == "TextShape") {
-      return this.#available[tool].tool;
+  static getTool(typeName) {
+    if (
+      typeName == "FreeHandShape" ||
+      typeName == "LineShape" ||
+      typeName == "TextShape"
+    ) {
+      return this.#available[typeName].tool;
     }
 
     return this.#available.shape.tool;

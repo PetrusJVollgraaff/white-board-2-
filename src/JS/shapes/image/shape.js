@@ -115,27 +115,21 @@ class ImagesShape extends Shape {
     };
   }
 
-  draw(ctx, hitRegion = false) {
+  draw(ctx) {
     const { width, height } = this.size;
 
     const x = this.center.x - width / 2;
     const y = this.center.y - height / 2;
     const imagePos = new Vector({ x, y });
 
-    if (hitRegion) {
-      ctx.beginPath();
-      ctx.rect(x, y, width, height);
-      this.applyHitRegionStyles(ctx);
-    } else {
-      ctx.save();
-      ctx.beginPath();
-      //ctx.putImageData(this.img, imagePos.x, imagePos.y);
-      ctx.drawImage(this.img, x, y, width, height);
+    ctx.save();
+    ctx.beginPath();
+    //ctx.putImageData(this.img, imagePos.x, imagePos.y);
+    ctx.drawImage(this.img, x, y, width, height);
 
-      ctx.restore();
+    ctx.restore();
 
-      this.selections?.draw(ctx);
-    }
+    this.selections?.draw(ctx);
   }
 
   set setWidth(width) {

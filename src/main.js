@@ -58,14 +58,25 @@ class DrawingBoard extends EventTarget {
     this.#mainC.width = this.#viewportElm.clientWidth;
     this.#mainC.height = this.#viewportElm.clientHeight;
     this.#setStageProperties();
-
     this._vp = new ViewPort(this.#StageProperties.ratio);
+
+    this.#bindEvents();
+    this.#init();
+
+    new ResizeObserver(() => {
+      this.#rulers.syncSizes(this.#StageProperties);
+      this.render();
+    }).observe(this.#viewportElm);
+
+    this.#rulers.syncSizes(this.#StageProperties);
+    this.#fitToViewport();
+  }
+
+  #init() {
     this.#rulers = new RulerRenderer(
       document.getElementById("ruler-h"),
       document.getElementById("ruler-v"),
     );
-
-    this.#bindEvents();
 
     new BottomNav({
       elm: this.#bottomNavElm,
@@ -113,14 +124,6 @@ class DrawingBoard extends EventTarget {
         }
       },
     });
-
-    new ResizeObserver(() => {
-      this.#rulers.syncSizes(this.#StageProperties);
-      this.render();
-    }).observe(this.#viewportElm);
-
-    this.#rulers.syncSizes(this.#StageProperties);
-    this.#fitToViewport();
   }
 
   /** Setters */
@@ -149,6 +152,7 @@ class DrawingBoard extends EventTarget {
   set setFillSettings(obj) {
     const shapes = this.#layerManager.activeLayerShapes;
     Shape.setOptions(obj);
+
     if (shapes)
       shapes.forEach((s) => {
         if (s.selected) s.setOptions = { options: obj };
@@ -244,7 +248,6 @@ class DrawingBoard extends EventTarget {
 
     this.#mainCtx.clearRect(0, 0, width, height);
     this.#mainCtx.save();
-
     this.#mainCtx.fillStyle = "#ffffff";
     this.#mainCtx.fillRect(offset.x, offset.y, size.w * zoom, size.h * zoom);
     this.#mainCtx.scale(zoom, zoom);
@@ -276,24 +279,23 @@ class DrawingBoard extends EventTarget {
     if (value == "delete") {
       this.#layerManager.removeShapes();
       this.render();
-    } else {
-      ToolFactory.getTool("history")[value]((data) => {
-        const { event } = data;
-        this.#layerManager.load(event.detail);
-        this.applySelections();
-        this.render();
-      });
+      return;
     }
+
+    ToolFactory.getTool("history")[value]((data1) => {
+      const { event } = data1;
+      this.#layerManager.load(event.detail);
+      this.applySelections();
+      this.render();
+    });
   }
 
   #setEdit(data) {
-    const { value } = data;
-    ToolFactory.getTool("edit")[value](this.#layerManager, this);
+    ToolFactory.getTool("edit")[data.value](this.#layerManager, this);
   }
 
   #setTool(data) {
-    const { tool } = data;
-    this.#toolActive = tool;
+    this.#toolActive = data.tool;
     this.#setMousEvents();
   }
 
@@ -312,15 +314,16 @@ class DrawingBoard extends EventTarget {
   #setZoom(data) {
     if (data.value == "fit") {
       this.#fitToViewport();
-    } else {
-      const zoom = this._vp.getZoom;
-      const zoomstep = ViewPort.zoom_step;
-
-      var z = data.value == "in" ? zoom * zoomstep : zoom / zoomstep;
-      this._vp.applyZoom(z, this.#StageProperties.offset);
-      this.setOffset = this._vp.getOffset;
-      this.render();
+      return;
     }
+
+    const zoom = this._vp.getZoom;
+    const zoomstep = ViewPort.zoom_step;
+
+    var z = data.value == "in" ? zoom * zoomstep : zoom / zoomstep;
+    this._vp.applyZoom(z, this.#StageProperties.offset);
+    this.setOffset = this._vp.getOffset;
+    this.render();
   }
 
   #setFile(data) {
@@ -341,12 +344,10 @@ class DrawingBoard extends EventTarget {
           return ExportManager.ExportSVG();
       }
     }
-    if (value === "load") {
-      return;
-    }
-    if (value === "save") {
-      return;
-    }
+
+    if (value === "load") return;
+
+    if (value === "save") return;
   }
 
   #setLayer(data) {
@@ -358,15 +359,14 @@ class DrawingBoard extends EventTarget {
   }
 
   #setStageProperties() {
-    this.#StageProperties.ratio = this.#mainC.height / this.#mainC.width;
-    this.#StageProperties.right = this.#mainC.width;
-    this.#StageProperties.bottom = this.#mainC.height;
-    this.#StageProperties.width = this.#mainC.width;
-    this.#StageProperties.height = this.#mainC.height;
-    this.#StageProperties.center = new Vector({
-      x: this.#mainC.width / 2,
-      y: this.#mainC.height / 2,
-    });
+    const { width, height } = this.#mainC;
+
+    this.#StageProperties.ratio = height / width;
+    this.#StageProperties.right = width;
+    this.#StageProperties.bottom = height;
+    this.#StageProperties.width = width;
+    this.#StageProperties.height = height;
+    this.#StageProperties.center = new Vector({ x: width / 2, y: height / 2 });
   }
 
   #fitToViewport() {

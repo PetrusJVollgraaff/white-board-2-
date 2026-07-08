@@ -1,3 +1,5 @@
+import { ShapeFactory } from "../utils/shapeFactory";
+
 class EditTool {
   static clipboard = null;
 
@@ -26,9 +28,8 @@ class EditTool {
         this.clipboard,
         main.ShapeCallback.bind(main),
       );
-      shapes.forEach((shape) => {
-        layerManager.addShape(shape);
-      });
+
+      shapes.forEach((shape) => layerManager.addShape(shape));
     }
   }
 

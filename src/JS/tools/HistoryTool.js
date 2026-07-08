@@ -8,14 +8,10 @@ class HistoryTool {
     if (this.redoStack.length == 0) return;
 
     const layers = this.redoStack.pop();
+    const name = "history";
     this.undoStack.push(layers);
 
-    callback({
-      event: {
-        name: "history",
-        detail: { layers },
-      },
-    });
+    callback({ event: { name, detail: { layers } } });
   }
 
   static undo(callback) {
@@ -23,13 +19,10 @@ class HistoryTool {
     this.redoStack.push(this.undoStack.pop());
 
     if (this.undoStack.length == 0) return;
+    const name = "history";
+    const layers = this.undoStack[this.undoStack.length - 1];
 
-    callback({
-      event: {
-        name: "history",
-        detail: { layers: this.undoStack[this.undoStack.length - 1] },
-      },
-    });
+    callback({ event: { name, detail: { layers } } });
   }
 
   static record(layers) {

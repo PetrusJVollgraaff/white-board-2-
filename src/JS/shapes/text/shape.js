@@ -19,15 +19,11 @@ class TextShape extends Shape {
   }
 
   static btn() {
-    return {
-      type: "button",
-      attributes: {
-        "data-tool": "textshape",
-        title: "Text",
-      },
-      innerhtml:
-        '<svg viewBox="0 0 16 16"><text x="8" y="15" font-size="18" text-anchor="middle" fill="currentColor">Τ</text></svg>',
-    };
+    const type = "button";
+    const attributes = { "data-tool": "textshape", title: "Text" };
+    const innerhtml =
+      '<svg viewBox="0 0 16 16"><text x="8" y="15" font-size="18" text-anchor="middle" fill="currentColor">Τ</text></svg>';
+    return { type, attributes, innerhtml };
   }
   #text = null;
   #thinWhiteSpace = null;

@@ -6,18 +6,18 @@ class ToolFactory {
   static #available = {};
 
   static registerTools() {
-    this.registerTool(HistoryTool, "history");
-    this.registerTool(EditTool, "edit");
-    this.registerTool(SelectTool, "select");
-    this.registerTool(PanTools, "pan");
+    this.registerTool("history", HistoryTool);
+    this.registerTool("edit", EditTool);
+    this.registerTool("select", SelectTool);
+    this.registerTool("pan", PanTools);
   }
 
-  static registerTool(classType, typeName) {
+  static registerTool(typeName, classType) {
     this.#available[typeName] = { tool: classType };
   }
 
-  static getTool(tool) {
-    return this.#available[tool].tool;
+  static getTool(typeName) {
+    return this.#available[typeName].tool;
   }
 }
 

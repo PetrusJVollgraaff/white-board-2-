@@ -10,16 +10,16 @@ class ShapeFactory {
   static #available = {};
 
   static registerShapes() {
-    this.registerShape(FreeHandShape, "FreeHandShape");
-    this.registerShape(LineShape, "LineShape");
-    this.registerShape(TextShape, "TextShape");
-    this.registerShape(ImagesShape, "ImagesShape");
-    for (const key in BasicShapes) this.registerShape(BasicShapes[key], key);
-    for (const key in ArrowShapes) this.registerShape(ArrowShapes[key], key);
-    for (const key in StarShapes) this.registerShape(StarShapes[key], key);
+    this.registerShape("FreeHandShape", FreeHandShape);
+    this.registerShape("LineShape", LineShape);
+    this.registerShape("TextShape", TextShape);
+    this.registerShape("ImagesShape", ImagesShape);
+    for (const key in BasicShapes) this.registerShape(key, BasicShapes[key]);
+    for (const key in ArrowShapes) this.registerShape(key, ArrowShapes[key]);
+    for (const key in StarShapes) this.registerShape(key, StarShapes[key]);
   }
 
-  static registerShape(classType, typeName) {
+  static registerShape(typeName, classType) {
     this.#available[typeName] = { shape: classType };
   }
 
@@ -30,8 +30,8 @@ class ShapeFactory {
     return shape;
   }
 
-  static newShape(shape) {
-    return this.#available[shape].shape;
+  static newShape(typeName) {
+    return this.#available[typeName].shape;
   }
 
   static loadShapes(data, callback) {

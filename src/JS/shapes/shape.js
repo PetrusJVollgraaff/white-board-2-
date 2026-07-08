@@ -14,7 +14,6 @@ class Shape {
       color: "#FFFF00",
       opacity: 100,
     },
-
     stroke: {
       visible: true,
       type: "solid",
@@ -50,18 +49,11 @@ class Shape {
     this.constrain = false;
   }
 
-  static getHitRGB(id) {
-    const red = (id & 0xff0000) >> 16;
-    const green = (id & 0x00ff00) >> 8;
-    const blue = id & 0x0000ff;
-    return `rgb(${red},${green},${blue})`;
-  }
-
   static getCenterAndSize(corner1, corner2) {
-    const points = [corner1, corner2];
-    const center = Vector.mid(points);
-    const size = BoundingBox.fromPoints(points);
-    return { center, size };
+    return {
+      center: Vector.mid([corner1, corner2]),
+      size: BoundingBox.fromPoints([corner1, corner2]),
+    };
   }
 
   serialize() {
@@ -101,12 +93,11 @@ class Shape {
   get getSizeByPoints() {
     const minX = Math.min(...this.points.map((p) => p.x));
     const minY = Math.min(...this.points.map((p) => p.y));
+
     const maxX = Math.max(...this.points.map((p) => p.x));
     const maxY = Math.max(...this.points.map((p) => p.y));
-    return {
-      width: maxX - minX,
-      height: maxY - minY,
-    };
+
+    return { width: maxX - minX, height: maxY - minY };
   }
 
   recenter() {
@@ -126,27 +117,19 @@ class Shape {
   select(save = true) {
     this.selected = true;
     this.selections = new ShapeSelection(this);
+    const name = "shapeSelected";
     const hasExtra = this.hasExtraOptions();
     if (hasExtra) this.adjustments = new ShapeAdjustment(this);
 
-    this.callback({
-      event: {
-        name: "shapeSelected",
-        detail: { shape: this, save },
-      },
-    });
+    this.callback({ event: { name, detail: { shape: this, save } } });
   }
 
   unselect(save = true) {
     this.selected = false;
     this.selections = null;
     this.adjustments = null;
-    this.callback({
-      event: {
-        name: "shapeUnselected",
-        detail: { shape: this, save },
-      },
-    });
+    const name = "shapeUnselected";
+    this.callback({ event: { name, detail: { shape: this, save } } });
   }
 
   set setCenter({ center = Vector.zero(), save = true }) {
@@ -172,7 +155,7 @@ class Shape {
   set setSize({ width, height, save = true }) {
     this.setWidth = width;
     this.setHeight = height;
-    this.ratio = this.size.width / this.size.height;
+    this.ratio = width / height;
 
     this.EventCallback(save);
   }
@@ -193,30 +176,11 @@ class Shape {
   }
 
   EventCallback(save = true) {
+    const name = "shapesChange";
     this.selections?.update();
     this.adjustments?.update();
 
-    this.callback({
-      event: {
-        name: "shapesChange",
-        detail: { shape: this, save },
-      },
-    });
-  }
-
-  applyHitRegionStyles(ctx, dilaion = 10) {
-    const rgb = Shape.getHitRGB(this.id);
-    const { lineCap, lineJoin, stroke } = this.options;
-    ctx.lineCap = lineCap;
-    ctx.lineJoin = lineJoin;
-    ctx.fillStyle = rgb;
-    ctx.strokeStyle = rgb;
-    ctx.lineWidth = stroke.width + dilaion;
-
-    ctx.fill();
-    if (stroke.enable) {
-      ctx.stroke();
-    }
+    this.callback({ event: { name, detail: { shape: this, save } } });
   }
 
   createColors(ctx, options, ctxstyle) {
@@ -267,9 +231,7 @@ class Shape {
     ctx.lineCap = lineCap;
     ctx.lineJoin = lineJoin;
 
-    if (fill.visible) {
-      ctx.fill(path);
-    }
+    if (fill.visible) ctx.fill(path);
 
     ctx.stroke(path);
     ctx.restore();
@@ -305,20 +267,6 @@ class Shape {
 
   draw(ctx) {
     throw new Error("draw method must be implemented");
-  }
-
-  getDiff(mousePos) {
-    const { center, size, rotation } = this;
-    const left = center.x - size.width / 2;
-    const diff = Vector.subtract(
-      mousePos,
-      new Vector({ x: left, y: center.y }),
-    );
-    const polar = diff.toPolar();
-    polar.dir -= rotation;
-    diff.toXY(polar);
-
-    return diff;
   }
 }
 
