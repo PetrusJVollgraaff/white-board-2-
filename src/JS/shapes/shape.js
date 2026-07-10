@@ -56,6 +56,10 @@ class Shape {
     };
   }
 
+  clone() {
+    return structuredClone(this);
+  }
+
   serialize() {
     throw new Error("serialize method must be implemented");
   }
